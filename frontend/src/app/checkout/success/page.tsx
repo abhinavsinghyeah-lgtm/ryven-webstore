@@ -13,21 +13,31 @@ interface StoredData {
 
 export default function CheckoutSuccessPage() {
   const router = useRouter();
-  const [data, setData] = useState<StoredData | null>(null);
+  const [data] = useState<StoredData | null>(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
 
-  useEffect(() => {
     const raw = sessionStorage.getItem("ryven_last_order");
     if (!raw) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(raw) as StoredData;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    if (!data) {
       router.replace("/");
       return;
     }
-    try {
-      setData(JSON.parse(raw));
-      sessionStorage.removeItem("ryven_last_order");
-    } catch {
-      router.replace("/");
-    }
-  }, [router]);
+
+    sessionStorage.removeItem("ryven_last_order");
+  }, [data, router]);
 
   if (!data) return null;
 
@@ -39,9 +49,9 @@ export default function CheckoutSuccessPage() {
       <div className="w-full max-w-lg space-y-6">
         {/* Logo */}
         <div className="text-center mb-2">
-          <a href="/" className="text-xl font-bold tracking-[0.2em] text-[#111] uppercase">
+          <Link href="/" className="text-xl font-bold tracking-[0.2em] text-[#111] uppercase">
             RYVEN
-          </a>
+          </Link>
         </div>
 
         {/* Hero card */}

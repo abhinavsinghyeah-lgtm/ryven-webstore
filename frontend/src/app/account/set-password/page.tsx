@@ -64,9 +64,9 @@ export default function SetPasswordPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-10">
-          <a href="/" className="text-xl font-bold tracking-[0.2em] text-[#111] uppercase">
+          <Link href="/" className="text-xl font-bold tracking-[0.2em] text-[#111] uppercase">
             RYVEN
-          </a>
+          </Link>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-[#e8e8e4] p-7 space-y-6">

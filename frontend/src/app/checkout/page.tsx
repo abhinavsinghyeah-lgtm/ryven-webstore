@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CheckoutStep1 from "@/components/checkout/CheckoutStep1";
 import CheckoutStep2 from "@/components/checkout/CheckoutStep2";
@@ -160,9 +161,9 @@ export default function CheckoutPage() {
       <div className="max-w-lg mx-auto px-4 py-10 sm:py-16">
         {/* Logo */}
         <div className="mb-10 text-center">
-          <a href="/" className="text-xl font-bold tracking-[0.2em] text-[#111] uppercase">
+          <Link href="/" className="text-xl font-bold tracking-[0.2em] text-[#111] uppercase">
             RYVEN
-          </a>
+          </Link>
         </div>
 
         {/* Error banner */}
