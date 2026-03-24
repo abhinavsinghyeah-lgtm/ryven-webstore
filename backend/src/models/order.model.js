@@ -129,4 +129,104 @@ const updateOrderStatus = async ({ razorpayOrderId, status, razorpayPaymentId })
   await query(sql, [status, razorpayPaymentId || null, razorpayOrderId]);
 };
 
-module.exports = { createOrder, findOrderById, updateOrderStatus };
+const listOrdersByUser = async ({ userId, limit, offset }) => {
+  const sql = `
+    SELECT
+      o.id,
+      o.status,
+      o.total_paise AS "totalPaise",
+      o.currency,
+      o.created_at AS "createdAt",
+      COUNT(oi.id)::int AS "itemCount"
+    FROM orders o
+    LEFT JOIN order_items oi ON oi.order_id = o.id
+    WHERE o.user_id = $1
+    GROUP BY o.id
+    ORDER BY o.created_at DESC
+    LIMIT $2 OFFSET $3
+  `;
+
+  const result = await query(sql, [userId, limit, offset]);
+  return result.rows;
+};
+
+const countOrdersByUser = async (userId) => {
+  const result = await query("SELECT COUNT(*)::int AS total FROM orders WHERE user_id = $1", [userId]);
+  return result.rows[0].total;
+};
+
+const listOrdersForAdmin = async ({ status, limit, offset }) => {
+  const sql = `
+    SELECT
+      o.id,
+      o.status,
+      o.total_paise AS "totalPaise",
+      o.currency,
+      o.created_at AS "createdAt",
+      o.shipping_name AS "shippingName",
+      o.shipping_city AS "shippingCity",
+      o.shipping_state AS "shippingState",
+      u.email AS "customerEmail",
+      COUNT(oi.id)::int AS "itemCount"
+    FROM orders o
+    INNER JOIN users u ON u.id = o.user_id
+    LEFT JOIN order_items oi ON oi.order_id = o.id
+    WHERE ($1::text = '' OR o.status = $1)
+    GROUP BY o.id, u.email
+    ORDER BY o.created_at DESC
+    LIMIT $2 OFFSET $3
+  `;
+
+  const result = await query(sql, [status || "", limit, offset]);
+  return result.rows;
+};
+
+const countOrdersForAdmin = async ({ status }) => {
+  const sql = "SELECT COUNT(*)::int AS total FROM orders WHERE ($1::text = '' OR status = $1)";
+  const result = await query(sql, [status || ""]);
+  return result.rows[0].total;
+};
+
+const updateOrderStatusById = async ({ orderId, status }) => {
+  const sql = `
+    UPDATE orders
+    SET status = $1, updated_at = NOW()
+    WHERE id = $2
+    RETURNING
+      id,
+      status,
+      total_paise AS "totalPaise",
+      currency,
+      created_at AS "createdAt"
+  `;
+
+  const result = await query(sql, [status, orderId]);
+  return result.rows[0] || null;
+};
+
+const getAdminOrderStats = async () => {
+  const sql = `
+    SELECT
+      COUNT(*)::int AS "totalOrders",
+      COALESCE(SUM(total_paise), 0)::int AS "totalRevenuePaise",
+      COALESCE(SUM(CASE WHEN status = 'paid' THEN total_paise ELSE 0 END), 0)::int AS "paidRevenuePaise",
+      COUNT(*) FILTER (WHERE status = 'paid')::int AS "paidOrders",
+      COUNT(*) FILTER (WHERE status = 'pending')::int AS "pendingOrders"
+    FROM orders
+  `;
+
+  const result = await query(sql);
+  return result.rows[0];
+};
+
+module.exports = {
+  createOrder,
+  findOrderById,
+  updateOrderStatus,
+  listOrdersByUser,
+  countOrdersByUser,
+  listOrdersForAdmin,
+  countOrdersForAdmin,
+  updateOrderStatusById,
+  getAdminOrderStats,
+};

@@ -49,7 +49,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       await syncGuestCartAfterLogin();
       await refreshCart();
       setSuccess(isSignup ? "Account created. You are logged in." : "Welcome back. Logged in.");
-      router.push("/cart");
+      router.push(response.user.role === "admin" ? "/admin" : "/account");
     } catch (requestError) {
       const message = requestError instanceof Error ? requestError.message : "Something went wrong";
       setError(message);

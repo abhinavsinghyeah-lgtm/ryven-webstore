@@ -15,6 +15,19 @@ export const authStorage = {
     return localStorage.getItem(TOKEN_KEY);
   },
 
+  getUser() {
+    const raw = localStorage.getItem(USER_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(raw) as AuthResponse["user"];
+    } catch {
+      return null;
+    }
+  },
+
   clear() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
