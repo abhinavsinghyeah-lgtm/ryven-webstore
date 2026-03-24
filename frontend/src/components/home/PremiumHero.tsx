@@ -5,61 +5,58 @@ import type { Product } from "@/types/product";
 
 type PremiumHeroProps = {
   product: Product | null;
-  storeName?: string;
 };
 
-export function PremiumHero({ product, storeName }: PremiumHeroProps) {
+export function PremiumHero({ product }: PremiumHeroProps) {
   const imageUrl =
     product?.imageUrl ||
     "https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=1800&auto=format&fit=crop";
 
   return (
-    <section className="relative min-h-screen overflow-hidden border-b border-white/10">
-      <Image
-        src={imageUrl}
-        alt={product?.name || "RYVEN Hero"}
-        fill
-        className="object-cover opacity-40"
-        sizes="100vw"
-        priority
-      />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_35%,rgba(255,255,255,0.2)_0%,rgba(0,0,0,0.8)_50%,rgba(0,0,0,0.96)_100%)]" />
+    <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 pt-24 flex items-center justify-center">
+      {/* Decorative blobs */}
+      <div className="absolute top-12 left-10 w-64 h-64 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+      <div className="absolute bottom-20 right-20 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse" style={{ animationDelay: "2s" }}></div>
+      <div className="absolute top-1/2 left-1/3 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: "4s" }}></div>
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl items-center px-5 sm:px-8">
-        <div className="grid w-full gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-          <div className="fade-up">
-            <p className="text-xs uppercase tracking-[0.35em] text-white/60">Perfume House</p>
-            <h1 className="mt-4 font-display text-6xl leading-[0.9] tracking-tight text-white sm:text-7xl lg:text-8xl">
-              {storeName || "RYVEN"}
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col-reverse items-center justify-between gap-12 px-5 sm:flex-row sm:px-8">
+        {/* Left Content */}
+        <div className="flex flex-col gap-8 sm:gap-10">
+          <div className="space-y-4">
+            <p className="text-sm font-bold uppercase tracking-[0.15em] text-purple-600">Essence Collection</p>
+            <h1 className="font-display text-5xl sm:text-6xl font-bold leading-tight bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+              Capture Your Moment
             </h1>
-            <p className="mt-5 max-w-xl text-sm leading-relaxed text-white/75 sm:text-base">
-              Modern scent architecture for people who want presence. Clean opening, addictive heart, unforgettable
-              dry-down.
+            <p className="max-w-sm text-lg text-neutral-600">
+              Discover fragrances crafted to express your unique essence and elevate every moment.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/products" className="brand-btn-primary">
-                Shop now
-              </Link>
-              <Link href="/about" className="brand-btn-ghost">
-                About the house
-              </Link>
-            </div>
           </div>
 
-          <div className="relative mx-auto h-[60vh] w-full max-w-md lg:h-[74vh]">
-            <div className="absolute inset-x-8 bottom-0 h-24 rounded-full bg-white/25 blur-2xl" />
-            <div className="relative h-full overflow-hidden rounded-[2rem] border border-white/25 bg-black/30 p-3 backdrop-blur-sm">
+          <div className="flex gap-4">
+            <Link href="/products" className="brand-btn-primary">
+              Shop Now
+            </Link>
+            <Link href="/about" className="brand-btn-ghost">
+              Learn More
+            </Link>
+          </div>
+        </div>
+
+        {/* Right: Floating Product Image */}
+        <div className="relative w-full sm:w-auto flex justify-center">
+          <div className="relative w-72 h-96 sm:w-80 sm:h-[28rem]">
+            {/* Soft shadow/glow */}
+            <div className="absolute inset-0 bg-gradient-to-br from-pink-300 to-blue-300 rounded-3xl opacity-20 blur-2xl"></div>
+
+            {/* Floating container */}
+            <div className="soft-float relative w-full h-full rounded-3xl overflow-hidden border-2 border-white/60 shadow-2xl bg-white/80 backdrop-blur-sm flex items-center justify-center">
               <Image
                 src={imageUrl}
                 alt={product?.name || "Featured fragrance"}
                 fill
-                className="rounded-[1.5rem] object-cover"
-                sizes="(max-width: 1024px) 80vw, 34vw"
+                className="object-cover"
+                priority
               />
-              <div className="absolute inset-x-4 bottom-4 rounded-2xl border border-white/20 bg-black/45 p-4 backdrop-blur-md">
-                <p className="text-xs uppercase tracking-[0.2em] text-white/65">Launch pick</p>
-                <p className="mt-1 text-lg font-semibold text-white">{product?.name || "RYVEN Signature"}</p>
-              </div>
             </div>
           </div>
         </div>
