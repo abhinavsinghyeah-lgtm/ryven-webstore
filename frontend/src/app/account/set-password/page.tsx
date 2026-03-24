@@ -1,11 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { apiRequest } from "@/lib/api";
 
 export default function SetPasswordPage() {
+  return (
+    <Suspense fallback={<SetPasswordLoading />}>
+      <SetPasswordContent />
+    </Suspense>
+  );
+}
+
+function SetPasswordLoading() {
+  return (
+    <main className="min-h-screen bg-[#f1f1ee] flex items-center justify-center px-4">
+      <p className="text-sm text-[#666]">Loading...</p>
+    </main>
+  );
+}
+
+function SetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
