@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { apiRequest } from "@/lib/api";
@@ -20,9 +20,8 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<OrdersListResponse | null>(null);
   const [filter, setFilter] = useState("");
 
-  const token = useMemo(() => authStorage.getToken(), []);
-
   const loadOrders = useCallback(async (status = "") => {
+    const token = authStorage.getToken();
     if (!token) return;
     try {
       const data = await apiRequest<OrdersListResponse>(`/admin/orders?page=1&limit=50&status=${status}`, { token });
@@ -32,9 +31,10 @@ export default function AdminOrdersPage() {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
+    const token = authStorage.getToken();
     const user = authStorage.getUser();
     if (!token || !user) {
       router.replace("/login");
@@ -47,9 +47,10 @@ export default function AdminOrdersPage() {
     }
 
     void loadOrders("");
-  }, [loadOrders, router, token]);
+  }, [loadOrders, router]);
 
   const changeStatus = async (orderId: number, status: StatusValue) => {
+    const token = authStorage.getToken();
     if (!token) return;
     setError(null);
     try {

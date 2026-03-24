@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -26,9 +26,8 @@ export default function AdminProductsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState(initialForm);
 
-  const token = useMemo(() => authStorage.getToken(), []);
-
   useEffect(() => {
+    const token = authStorage.getToken();
     const user = authStorage.getUser();
     if (!token || !user) {
       router.replace("/login");
@@ -44,10 +43,11 @@ export default function AdminProductsPage() {
       .then((res) => setProducts(res.products))
       .catch((err) => setError(err instanceof Error ? err.message : "Could not load products"))
       .finally(() => setLoading(false));
-  }, [router, token]);
+  }, [router]);
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    const token = authStorage.getToken();
     if (!token) return;
 
     const slug = form.name

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -10,7 +10,6 @@ import type { StoreSettingsResponse } from "@/types/dashboard";
 
 export default function AdminSettingsPage() {
   const router = useRouter();
-  const token = useMemo(() => authStorage.getToken(), []);
 
   const [form, setForm] = useState({ storeName: "", logoUrl: "", tagline: "" });
   const [loading, setLoading] = useState(true);
@@ -19,6 +18,7 @@ export default function AdminSettingsPage() {
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
+    const token = authStorage.getToken();
     const user = authStorage.getUser();
     if (!token || !user) {
       router.replace("/login");
@@ -40,10 +40,11 @@ export default function AdminSettingsPage() {
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Could not load settings"))
       .finally(() => setLoading(false));
-  }, [router, token]);
+  }, [router]);
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    const token = authStorage.getToken();
     if (!token) return;
 
     setError(null);
