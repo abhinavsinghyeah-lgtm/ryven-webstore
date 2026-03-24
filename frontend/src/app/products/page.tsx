@@ -4,16 +4,23 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { apiRequest } from "@/lib/api";
 import type { ProductCatalogResponse } from "@/types/product";
 
-async function getCatalog() {
+async function getCatalog(search: string) {
+  const query = search ? `&q=${encodeURIComponent(search)}` : "";
   try {
-    return await apiRequest<ProductCatalogResponse>("/products?limit=12&page=1");
+    return await apiRequest<ProductCatalogResponse>(`/products?limit=12&page=1${query}`);
   } catch {
     return { products: [], pagination: { page: 1, limit: 12, total: 0, totalPages: 1 } };
   }
 }
 
-export default async function ProductsPage() {
-  const catalog = await getCatalog();
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const params = await searchParams;
+  const q = params.q?.trim() || "";
+  const catalog = await getCatalog(q);
 
   return (
     <main className="page-rise mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
@@ -21,6 +28,7 @@ export default async function ProductsPage() {
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Catalog</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900 sm:text-4xl">Fragrance line-up</h1>
+          {q ? <p className="mt-2 text-sm text-neutral-600">Filtered by: {q}</p> : null}
         </div>
         <div className="flex items-center gap-4">
           <Link href="/" className="text-sm font-medium text-neutral-700 underline decoration-2 underline-offset-4">

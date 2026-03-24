@@ -10,7 +10,7 @@
 @theme inline {
   --color-background: var(--bg);
   --color-foreground: var(--fg);
-  --font-sans: var(--font-space-grotesk);
+  --font-sans: var(--font-manrope);
 }
 
 body {
@@ -20,8 +20,12 @@ body {
     radial-gradient(circle at 50% -20%, #f8f7f4 0%, transparent 42%),
     var(--bg);
   color: var(--fg);
-  font-family: var(--font-space-grotesk), sans-serif;
+  font-family: var(--font-manrope), sans-serif;
   min-height: 100vh;
+}
+
+.font-display {
+  font-family: var(--font-cormorant), serif;
 }
 
 * {
