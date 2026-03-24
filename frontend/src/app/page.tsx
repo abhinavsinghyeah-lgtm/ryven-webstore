@@ -34,8 +34,8 @@ export default async function Home() {
   const scarcityPick = catalog.products[2] ?? primary;
 
   return (
-    <main className="-mt-[64px] bg-[#050608]">
-      <PremiumHero product={primary} storeName={settings?.storeName} />
+    <main className="-mt-[64px] bg-white">
+      <PremiumHero product={primary} />
 
       <RevealOnScroll>
         <OccasionScroller />
