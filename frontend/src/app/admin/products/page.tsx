@@ -54,7 +54,7 @@ export default function AdminProductsPage() {
       return;
     }
 
-    apiRequest<ProductCatalogResponse>("/products?page=1&limit=100", { token })
+    apiRequest<ProductCatalogResponse>("/products?page=1&limit=40", { token })
       .then((res) => setProducts(res.products))
       .catch((err) => setError(err instanceof Error ? err.message : "Could not load products"))
       .finally(() => setLoading(false));

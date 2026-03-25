@@ -26,7 +26,7 @@ export default async function Home() {
 
   return (
     <main className="-mt-[64px] bg-white">
-      <HeroBannerSection settings={settings} spotlight={catalog.products[0] ?? null} />
+      <HeroBannerSection settings={settings} />
       <ProductCollectionSection products={catalog.products} />
     </main>
   );

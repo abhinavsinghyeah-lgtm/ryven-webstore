@@ -38,25 +38,30 @@ export function SiteHeader() {
 
   const headerClass = transparent
     ? "fixed top-0 z-50 w-full border-transparent bg-transparent text-white"
-    : "sticky top-0 z-50 border-b border-neutral-200 bg-white/92 text-neutral-800 backdrop-blur-lg";
+    : "sticky top-0 z-50 border-b border-neutral-800 bg-[#0b0d12]/94 text-white backdrop-blur-lg";
 
   const subtleLinkClass = transparent
     ? "text-sm text-white/90 hover:text-white transition-colors"
-    : "text-sm text-neutral-600 hover:text-neutral-800 transition-colors";
+    : "text-sm text-white/80 hover:text-white transition-colors";
 
   const ghostBtnClass = transparent
     ? "rounded-full border border-white/50 bg-white/20 px-3 py-1.5 text-xs font-medium text-white sm:text-sm hover:bg-white/30 transition-all"
-    : "rounded-full border border-neutral-300 bg-white/60 px-3 py-1.5 text-xs font-medium text-neutral-700 sm:text-sm hover:bg-white transition-all";
+    : "rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white sm:text-sm hover:bg-white/20 transition-all";
 
   const solidBtnClass = transparent
     ? "rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-neutral-900 sm:text-sm hover:shadow-lg transition-all"
-    : "rounded-full bg-gradient-to-r from-pink-400 to-purple-400 px-3 py-1.5 text-xs font-semibold text-white sm:text-sm hover:shadow-md transition-all";
+    : "rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-neutral-900 sm:text-sm hover:shadow-md transition-all";
+
+  const shellClass = transparent
+    ? "rounded-2xl border border-white/30 bg-black/35 px-3 py-2 shadow-[0_12px_28px_rgba(0,0,0,0.35)] backdrop-blur-md"
+    : "px-0 py-0";
 
   return (
     <header className={headerClass}>
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-5 py-3 sm:px-8">
+      <div className="mx-auto w-full max-w-6xl px-5 py-3 sm:px-8">
+        <div className={`flex items-center justify-between gap-3 ${shellClass}`}>
         <div className="flex items-center gap-6">
-          <Link href="/" className="text-base font-bold tracking-[0.22em] uppercase">
+          <Link href="/" className="text-base font-bold tracking-[0.22em] uppercase drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)]">
             RYVEN
           </Link>
           <nav className="hidden items-center gap-4 md:flex">
@@ -110,6 +115,7 @@ export function SiteHeader() {
               </Link>
             </>
           )}
+        </div>
         </div>
       </div>
     </header>

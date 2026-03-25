@@ -31,7 +31,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
         <div className="rounded-3xl border border-neutral-300 bg-white/80 p-6 sm:p-8">
           <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">{product.category}</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-neutral-900 sm:text-4xl">{product.name}</h1>
-          <p className="mt-4 text-base leading-7 text-neutral-700">{product.description}</p>
+          <p className="mt-4 break-words text-base leading-7 text-neutral-700">{product.description}</p>
 
           <p className="mt-6 text-2xl font-semibold text-neutral-900">
             {formatPricePaise(product.pricePaise, product.currency)}
@@ -39,7 +39,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
 
           <ul className="mt-6 flex flex-wrap gap-2">
             {product.notes.map((note) => (
-              <li key={note} className="rounded-full border border-neutral-300 bg-neutral-50 px-3 py-1 text-sm text-neutral-700">
+              <li key={note} className="max-w-full break-words rounded-full border border-neutral-300 bg-neutral-50 px-3 py-1 text-sm text-neutral-700">
                 {note}
               </li>
             ))}

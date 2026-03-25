@@ -27,7 +27,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="space-y-3 p-4">
           <div>
             <h3 className="text-lg font-semibold tracking-tight text-neutral-900">{product.name}</h3>
-            <p className="mt-1 text-sm text-neutral-600">{product.shortDescription}</p>
+            <p className="mt-1 line-clamp-2 break-words text-sm text-neutral-600">{product.shortDescription}</p>
           </div>
           <div className="flex items-center justify-between">
             <p className="text-base font-semibold text-neutral-900">
