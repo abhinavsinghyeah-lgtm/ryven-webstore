@@ -26,12 +26,11 @@ export default function CheckoutSuccessPage() {
       return null;
     }
 
-    const raw = sessionStorage.getItem("ryven_last_order");
-    if (!raw) {
-      return null;
-    }
-
     try {
+      const raw = sessionStorage.getItem("ryven_last_order");
+      if (!raw) {
+        return null;
+      }
       return JSON.parse(raw) as StoredData;
     } catch {
       return null;
@@ -51,7 +50,11 @@ export default function CheckoutSuccessPage() {
       return;
     }
 
-    sessionStorage.removeItem("ryven_last_order");
+    try {
+      sessionStorage.removeItem("ryven_last_order");
+    } catch {
+      // Ignore storage errors.
+    }
   }, [data, router]);
 
   useEffect(() => {
@@ -59,10 +62,26 @@ export default function CheckoutSuccessPage() {
     setIdentifier((prev) => prev || data.customerInfo?.email || data.order.shippingPhone || "");
   }, [data]);
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <main className="min-h-screen bg-[#f1f1ee] flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md rounded-2xl border border-[#e8e8e4] bg-white p-8 text-center shadow-sm">
+          <h1 className="text-xl font-semibold text-[#111]">Order status unavailable</h1>
+          <p className="mt-2 text-sm text-[#555]">We couldn&apos;t find the latest order details. Please return home and try again.</p>
+          <Link
+            href="/"
+            className="mt-5 inline-flex items-center justify-center rounded-xl bg-[#111] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#333]"
+          >
+            Back to home
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   const { order, isNew, customerInfo } = data;
   const currency = order.currency;
+  const orderItems = Array.isArray(order.items) ? order.items : [];
 
   const sendOtp = async () => {
     if (!identifier.trim()) {
@@ -85,7 +104,13 @@ export default function CheckoutSuccessPage() {
       setOtpStep("verify");
       setOtpSuccess("OTP sent. Enter the code to access your dashboard.");
     } catch (err) {
-      setOtpError(err instanceof Error ? err.message : "Could not send OTP");
+      const status = (err as Error & { status?: number }).status;
+      if (status === 503 && customerInfo?.email) {
+        setIdentifier(customerInfo.email);
+        setOtpError("SMS OTP is unavailable right now. We switched to email.");
+      } else {
+        setOtpError(err instanceof Error ? err.message : "Could not send OTP");
+      }
     } finally {
       setOtpLoading(false);
     }
@@ -152,19 +177,23 @@ export default function CheckoutSuccessPage() {
         {/* Order summary */}
         <div className="bg-white rounded-2xl shadow-sm border border-[#e8e8e4] p-6 space-y-4">
           <h2 className="text-sm font-semibold text-[#111] uppercase tracking-wider">Your Items</h2>
-          <ul className="space-y-3">
-            {order.items.map((item) => (
-              <li key={item.id} className="flex items-center justify-between text-sm">
-                <span className="text-[#333]">
-                  {item.productName}{" "}
-                  <span className="text-[#aaa] font-normal">× {item.quantity}</span>
-                </span>
-                <span className="font-semibold text-[#111]">
-                  {formatPricePaise(item.lineTotalPaise, item.currency)}
-                </span>
-              </li>
-            ))}
-          </ul>
+          {orderItems.length === 0 ? (
+            <p className="text-sm text-[#555]">No items found on this order.</p>
+          ) : (
+            <ul className="space-y-3">
+              {orderItems.map((item, index) => (
+                <li key={`${item.productId ?? "item"}-${index}`} className="flex items-center justify-between text-sm">
+                  <span className="text-[#333]">
+                    {item.productName}{" "}
+                    <span className="text-[#aaa] font-normal">× {item.quantity}</span>
+                  </span>
+                  <span className="font-semibold text-[#111]">
+                    {formatPricePaise(item.lineTotalPaise, item.currency)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
 
           <div className="border-t border-[#eee] pt-3 space-y-1.5 text-sm">
             <div className="flex justify-between text-[#555]">

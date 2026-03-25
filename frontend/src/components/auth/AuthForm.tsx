@@ -63,8 +63,13 @@ export function AuthForm({ mode }: AuthFormProps) {
         router.push(response.user.role === "admin" ? "/admin" : "/account");
       }
     } catch (requestError) {
-      const message = requestError instanceof Error ? requestError.message : "Something went wrong";
-      setError(message);
+      const err = requestError as Error & { status?: number };
+      if (err.status === 503 && !isSignup) {
+        setError("SMS OTP is unavailable. Please use your email address to log in.");
+      } else {
+        const message = requestError instanceof Error ? requestError.message : "Something went wrong";
+        setError(message);
+      }
     } finally {
       setIsSubmitting(false);
     }
