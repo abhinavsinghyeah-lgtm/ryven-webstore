@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { apiRequest } from "@/lib/api";
 import { authStorage } from "@/lib/auth";
+import { AdminCard, AdminShell, StatusBanner, adminButtonClasses, adminInputClasses, adminTextareaClasses } from "@/components/admin/AdminShell";
 import { ContentSkeleton } from "@/components/ui/ContentSkeleton";
 import type { Product, ProductCatalogResponse } from "@/types/product";
 
@@ -56,6 +57,7 @@ export default function AdminProductsPage() {
       return;
     }
 
+    setError(null);
     apiRequest<ProductCatalogResponse>("/products?page=1&limit=40", { token })
       .then((res) => setProducts(res.products))
       .catch((err) => setError(err instanceof Error ? err.message : "Could not load products"))
@@ -146,52 +148,47 @@ export default function AdminProductsPage() {
   };
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-10 space-y-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Admin</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900">Product Management</h1>
-        </div>
-        <Link href="/admin" className="rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800">
+    <AdminShell
+      title="Product Studio"
+      subtitle="Build, edit, and spotlight catalog items without leaving the dashboard."
+      actions={
+        <Link href="/admin" className={adminButtonClasses.ghost}>
           Back to dashboard
         </Link>
-      </header>
-
-      {error ? <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
+      }
+    >
+      {error ? <StatusBanner tone="error" title="Product update error" description={error} /> : null}
 
       <section className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-        <form onSubmit={onSubmit} className="rounded-2xl border border-neutral-300 bg-white/90 p-5 space-y-3">
-          <h2 className="text-lg font-semibold text-neutral-900">{editingProductId ? "Edit Product" : "Add Product"}</h2>
-          <Input label="Name" value={form.name} onChange={(v) => setForm((f) => ({ ...f, name: v }))} required />
-          <Input label="Short Description" value={form.shortDescription} onChange={(v) => setForm((f) => ({ ...f, shortDescription: v }))} required />
-          <Textarea label="Description" value={form.description} onChange={(v) => setForm((f) => ({ ...f, description: v }))} required />
-          <Input label="Price (INR)" type="number" value={form.priceRupees} onChange={(v) => setForm((f) => ({ ...f, priceRupees: v }))} required min={1} step="0.01" />
-          <Input label="Image URL" value={form.imageUrl} onChange={(v) => setForm((f) => ({ ...f, imageUrl: v }))} required />
-          <Input label="Notes (comma separated, optional)" value={form.notes} onChange={(v) => setForm((f) => ({ ...f, notes: v }))} />
-          <Input label="Category" value={form.category} onChange={(v) => setForm((f) => ({ ...f, category: v }))} required />
-
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="h-11 rounded-xl bg-neutral-900 px-5 text-sm font-semibold text-white disabled:opacity-60"
-            >
-              {isSaving ? "Saving..." : editingProductId ? "Update Product" : "Create Product"}
-            </button>
-
-            {editingProductId ? (
-              <button
-                type="button"
-                onClick={onCancelEdit}
-                className="h-11 rounded-xl border border-neutral-300 px-5 text-sm font-semibold text-neutral-800"
-              >
-                Cancel
-              </button>
-            ) : null}
+        <AdminCard className="fade-up" style={{ animationDelay: "60ms" }}>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-neutral-900">{editingProductId ? "Edit Product" : "Add Product"}</h2>
+            {editingProductId ? <span className="text-xs uppercase tracking-[0.24em] text-neutral-500">Editing</span> : null}
           </div>
-        </form>
+          <form onSubmit={onSubmit} className="mt-4 space-y-3">
+            <Input label="Name" value={form.name} onChange={(v) => setForm((f) => ({ ...f, name: v }))} required />
+            <Input label="Short Description" value={form.shortDescription} onChange={(v) => setForm((f) => ({ ...f, shortDescription: v }))} required />
+            <Textarea label="Description" value={form.description} onChange={(v) => setForm((f) => ({ ...f, description: v }))} required />
+            <Input label="Price (INR)" type="number" value={form.priceRupees} onChange={(v) => setForm((f) => ({ ...f, priceRupees: v }))} required min={1} step="0.01" />
+            <Input label="Image URL" value={form.imageUrl} onChange={(v) => setForm((f) => ({ ...f, imageUrl: v }))} required />
+            <Input label="Notes (comma separated, optional)" value={form.notes} onChange={(v) => setForm((f) => ({ ...f, notes: v }))} />
+            <Input label="Category" value={form.category} onChange={(v) => setForm((f) => ({ ...f, category: v }))} required />
 
-        <section className="rounded-2xl border border-neutral-300 bg-white/90 p-5">
+            <div className="flex flex-wrap gap-2 pt-2">
+              <button type="submit" disabled={isSaving} className={adminButtonClasses.primary}>
+                {isSaving ? "Saving..." : editingProductId ? "Update Product" : "Create Product"}
+              </button>
+
+              {editingProductId ? (
+                <button type="button" onClick={onCancelEdit} className={adminButtonClasses.ghost}>
+                  Cancel
+                </button>
+              ) : null}
+            </div>
+          </form>
+        </AdminCard>
+
+        <AdminCard className="fade-up" style={{ animationDelay: "140ms" }}>
           <h2 className="text-lg font-semibold text-neutral-900">Live Products</h2>
           {loading ? (
             <div className="mt-4 space-y-3">
@@ -204,14 +201,14 @@ export default function AdminProductsPage() {
           ) : (
             <ul className="mt-4 space-y-3">
               {products.map((product) => (
-                <li key={product.id} className="rounded-xl border border-neutral-200 p-3">
+                <li key={product.id} className="rounded-2xl border border-black/5 bg-white/70 p-4 shadow-sm">
                   <p className="font-semibold text-neutral-900">{product.name}</p>
-                  <p className="text-xs text-neutral-600 mt-1">/{product.slug} · {product.category}</p>
-                  <p className="text-sm text-neutral-800 mt-2">INR {(product.pricePaise / 100).toFixed(2)}</p>
+                  <p className="mt-1 text-xs text-neutral-500">/{product.slug} · {product.category}</p>
+                  <p className="mt-2 text-sm text-neutral-800">INR {(product.pricePaise / 100).toFixed(2)}</p>
                   <button
                     type="button"
                     onClick={() => onStartEdit(product)}
-                    className="mt-3 rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-100"
+                    className="mt-3 inline-flex items-center rounded-full border border-black/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-700 transition hover:bg-white"
                   >
                     Edit
                   </button>
@@ -219,9 +216,9 @@ export default function AdminProductsPage() {
               ))}
             </ul>
           )}
-        </section>
+        </AdminCard>
       </section>
-    </main>
+    </AdminShell>
   );
 }
 
@@ -252,7 +249,7 @@ function Input({
         step={step}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm outline-none focus:border-neutral-900"
+        className={adminInputClasses}
       />
     </label>
   );
@@ -277,7 +274,7 @@ function Textarea({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         rows={4}
-        className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900"
+        className={adminTextareaClasses}
       />
     </label>
   );

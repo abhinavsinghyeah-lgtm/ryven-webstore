@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { apiRequest } from "@/lib/api";
 import { authStorage } from "@/lib/auth";
+import { AdminCard, AdminShell, StatusBanner, adminButtonClasses, adminInputClasses } from "@/components/admin/AdminShell";
 import { ContentSkeleton } from "@/components/ui/ContentSkeleton";
 import type { StoreSettingsResponse } from "@/types/dashboard";
 
@@ -31,6 +32,7 @@ export default function AdminSettingsPage() {
       return;
     }
 
+    setError(null);
     apiRequest<StoreSettingsResponse>("/store-settings", { token })
       .then((data) => {
         setForm({
@@ -69,45 +71,41 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-5 py-8 sm:px-8 sm:py-10 space-y-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Admin</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900">Store Settings</h1>
-        </div>
-        <Link href="/admin" className="rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800">
+    <AdminShell
+      title="Store Settings"
+      subtitle="Refine the storefront identity and keep the hero visuals on point."
+      actions={
+        <Link href="/admin" className={adminButtonClasses.ghost}>
           Back to dashboard
         </Link>
-      </header>
+      }
+    >
+      {error ? <StatusBanner tone="error" title="Settings error" description={error} /> : null}
+      {success ? <StatusBanner tone="success" title="Settings updated" description={success} /> : null}
 
-      {error ? <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
-      {success ? <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{success}</p> : null}
+      <AdminCard className="fade-up" style={{ animationDelay: "80ms" }}>
+        <form onSubmit={onSubmit} className="space-y-4">
+          {loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <ContentSkeleton key={index} rows={3} showAvatar={false} className="min-h-[112px]" />
+              ))}
+            </div>
+          ) : (
+            <>
+              <Field label="Store name" value={form.storeName} onChange={(value) => setForm((f) => ({ ...f, storeName: value }))} />
+              <Field label="Logo image URL" value={form.logoUrl} onChange={(value) => setForm((f) => ({ ...f, logoUrl: value }))} />
+              <Field label="Homepage hero image URL" value={form.heroImageUrl} onChange={(value) => setForm((f) => ({ ...f, heroImageUrl: value }))} />
+              <Field label="Tagline" value={form.tagline} onChange={(value) => setForm((f) => ({ ...f, tagline: value }))} />
 
-      <form onSubmit={onSubmit} className="rounded-2xl border border-neutral-300 bg-white/90 p-5 space-y-4">
-        {loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <ContentSkeleton key={index} rows={3} showAvatar={false} className="min-h-[112px]" />
-            ))}
-          </div>
-        ) : (
-          <>
-            <Field label="Store name" value={form.storeName} onChange={(value) => setForm((f) => ({ ...f, storeName: value }))} />
-            <Field label="Logo image URL" value={form.logoUrl} onChange={(value) => setForm((f) => ({ ...f, logoUrl: value }))} />
-            <Field label="Homepage hero image URL" value={form.heroImageUrl} onChange={(value) => setForm((f) => ({ ...f, heroImageUrl: value }))} />
-            <Field label="Tagline" value={form.tagline} onChange={(value) => setForm((f) => ({ ...f, tagline: value }))} />
-
-            <button
-              type="submit"
-              disabled={saving}
-              className="h-11 rounded-xl bg-neutral-900 px-5 text-sm font-semibold text-white disabled:opacity-60"
-            >
-              {saving ? "Saving..." : "Save settings"}
-            </button>
-          </>
-        )}
-      </form>
-    </main>
+              <button type="submit" disabled={saving} className={adminButtonClasses.primary}>
+                {saving ? "Saving..." : "Save settings"}
+              </button>
+            </>
+          )}
+        </form>
+      </AdminCard>
+    </AdminShell>
   );
 }
 
@@ -126,7 +124,7 @@ function Field({
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm outline-none focus:border-neutral-900"
+        className={adminInputClasses}
       />
     </label>
   );

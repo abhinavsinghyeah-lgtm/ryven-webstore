@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { AdminCard, AdminShell, StatusBanner, adminButtonClasses } from "@/components/admin/AdminShell";
 import { apiRequest } from "@/lib/api";
 import { authStorage } from "@/lib/auth";
 import { formatPricePaise } from "@/lib/format";
@@ -23,6 +24,8 @@ export default function AdminOrdersPage() {
   const loadOrders = useCallback(async (status = "") => {
     const token = authStorage.getToken();
     if (!token) return;
+    setLoading(true);
+    setError(null);
     try {
       const data = await apiRequest<OrdersListResponse>(`/admin/orders?page=1&limit=50&status=${status}`, { token });
       setOrders(data);
@@ -66,46 +69,50 @@ export default function AdminOrdersPage() {
   };
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-10 space-y-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Admin</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900">Order Management</h1>
-        </div>
-        <Link href="/admin" className="rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800">
+    <AdminShell
+      title="Order Operations"
+      subtitle="Track fulfillment, update statuses, and keep customers informed."
+      actions={
+        <Link href="/admin" className={adminButtonClasses.ghost}>
           Back to dashboard
         </Link>
-      </header>
+      }
+    >
+      {error ? <StatusBanner tone="error" title="Order feed error" description={error} /> : null}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          onClick={() => {
+      <AdminCard className="fade-up" style={{ animationDelay: "80ms" }}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.28em] text-neutral-500">Filters</p>
+            <p className="mt-2 text-sm text-neutral-600">
+              {orders ? `${orders.orders.length} orders loaded` : "Choose a view to load orders."}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <FilterChip active={filter === ""} onClick={() => {
             setFilter("");
             void loadOrders("");
-          }}
-          className={`rounded-full px-3 py-1.5 text-sm ${filter === "" ? "bg-neutral-900 text-white" : "border border-neutral-300 text-neutral-800"}`}
-        >
-          All
-        </button>
-        {statuses.map((status) => (
-          <button
-            key={status}
-            onClick={() => {
-              setFilter(status);
-              void loadOrders(status);
-            }}
-            className={`rounded-full px-3 py-1.5 text-sm capitalize ${
-              filter === status ? "bg-neutral-900 text-white" : "border border-neutral-300 text-neutral-800"
-            }`}
-          >
-            {status}
-          </button>
-        ))}
-      </div>
+          }}>
+            All
+          </FilterChip>
+          {statuses.map((status) => (
+            <FilterChip
+              key={status}
+              active={filter === status}
+              onClick={() => {
+                setFilter(status);
+                void loadOrders(status);
+              }}
+            >
+              {status}
+            </FilterChip>
+          ))}
+        </div>
+      </AdminCard>
 
-      {error ? <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
-
-      <section className="rounded-2xl border border-neutral-300 bg-white/90 p-5">
+      <AdminCard className="fade-up" style={{ animationDelay: "140ms" }}>
         {loading ? (
           <p className="text-sm text-neutral-600">Loading orders...</p>
         ) : !orders || orders.orders.length === 0 ? (
@@ -114,30 +121,34 @@ export default function AdminOrdersPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-sm">
               <thead>
-                <tr className="border-b border-neutral-200 text-left text-neutral-500">
-                  <th className="py-2 pr-3 font-medium">Order</th>
-                  <th className="py-2 pr-3 font-medium">Customer</th>
-                  <th className="py-2 pr-3 font-medium">Location</th>
-                  <th className="py-2 pr-3 font-medium">Date</th>
-                  <th className="py-2 pr-3 font-medium">Total</th>
-                  <th className="py-2 pr-3 font-medium">Status</th>
-                  <th className="py-2 pr-3 font-medium">Update</th>
+                <tr className="border-b border-black/10 text-left text-xs uppercase tracking-[0.24em] text-neutral-500">
+                  <th className="py-3 pr-4 font-medium">Order</th>
+                  <th className="py-3 pr-4 font-medium">Customer</th>
+                  <th className="py-3 pr-4 font-medium">Location</th>
+                  <th className="py-3 pr-4 font-medium">Date</th>
+                  <th className="py-3 pr-4 font-medium">Total</th>
+                  <th className="py-3 pr-4 font-medium">Status</th>
+                  <th className="py-3 pr-4 font-medium">Update</th>
                 </tr>
               </thead>
               <tbody>
                 {orders.orders.map((order) => (
-                  <tr key={order.id} className="border-b border-neutral-100 text-neutral-800">
-                    <td className="py-3 pr-3 font-semibold">#{String(order.id).padStart(6, "0")}</td>
-                    <td className="py-3 pr-3">{order.customerEmail}</td>
-                    <td className="py-3 pr-3">{order.shippingCity}, {order.shippingState}</td>
-                    <td className="py-3 pr-3">{new Date(order.createdAt).toLocaleString()}</td>
-                    <td className="py-3 pr-3 font-semibold">{formatPricePaise(order.totalPaise, order.currency)}</td>
-                    <td className="py-3 pr-3 capitalize">{order.status}</td>
-                    <td className="py-3 pr-3">
+                  <tr key={order.id} className="border-b border-black/5 text-neutral-800">
+                    <td className="py-4 pr-4 font-semibold">#{String(order.id).padStart(6, "0")}</td>
+                    <td className="py-4 pr-4">{order.customerEmail}</td>
+                    <td className="py-4 pr-4">
+                      {order.shippingCity}, {order.shippingState}
+                    </td>
+                    <td className="py-4 pr-4">{new Date(order.createdAt).toLocaleString()}</td>
+                    <td className="py-4 pr-4 font-semibold">{formatPricePaise(order.totalPaise, order.currency)}</td>
+                    <td className="py-4 pr-4">
+                      <StatusPill status={order.status as StatusValue} />
+                    </td>
+                    <td className="py-4 pr-4">
                       <select
                         value={order.status}
                         onChange={(event) => void changeStatus(order.id, event.target.value as StatusValue)}
-                        className="h-9 rounded-lg border border-neutral-300 px-2 text-sm"
+                        className="h-10 rounded-xl border border-black/10 bg-white/90 px-3 text-sm text-neutral-900 shadow-sm outline-none focus:border-black/30"
                       >
                         {statuses.map((status) => (
                           <option key={status} value={status}>
@@ -152,7 +163,40 @@ export default function AdminOrdersPage() {
             </table>
           </div>
         )}
-      </section>
-    </main>
+      </AdminCard>
+    </AdminShell>
+  );
+}
+
+function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        active
+          ? "rounded-full bg-[#0f1115] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-[0_12px_20px_rgba(15,17,21,0.22)]"
+          : "rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-neutral-700 transition hover:bg-white"
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+function StatusPill({ status }: { status: StatusValue }) {
+  const toneMap: Record<StatusValue, string> = {
+    pending: "bg-amber-100 text-amber-700",
+    paid: "bg-emerald-100 text-emerald-700",
+    processing: "bg-sky-100 text-sky-700",
+    shipped: "bg-indigo-100 text-indigo-700",
+    delivered: "bg-lime-100 text-lime-700",
+    cancelled: "bg-rose-100 text-rose-700",
+  };
+
+  return (
+    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${toneMap[status]}`}>
+      {status}
+    </span>
   );
 }
