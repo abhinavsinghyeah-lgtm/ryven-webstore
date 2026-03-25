@@ -40,6 +40,7 @@ export default function AdminProductsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState(initialForm);
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
 
   useEffect(() => {
     const token = authStorage.getToken();
@@ -101,19 +102,46 @@ export default function AdminProductsPage() {
     setIsSaving(true);
 
     try {
-      const response = await apiRequest<{ product: Product }>("/admin/products", {
-        method: "POST",
+      const isEditing = editingProductId !== null;
+      const response = await apiRequest<{ product: Product }>(isEditing ? `/admin/products/${editingProductId}` : "/admin/products", {
+        method: isEditing ? "PUT" : "POST",
         token,
         body: payload,
       });
 
-      setProducts((prev) => [response.product, ...prev]);
+      if (isEditing) {
+        setProducts((prev) => prev.map((item) => (item.id === response.product.id ? response.product : item)));
+      } else {
+        setProducts((prev) => [response.product, ...prev]);
+      }
+
       setForm(initialForm);
+      setEditingProductId(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not create product");
+      setError(err instanceof Error ? err.message : editingProductId ? "Could not update product" : "Could not create product");
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const onStartEdit = (product: Product) => {
+    setError(null);
+    setEditingProductId(product.id);
+    setForm({
+      name: product.name,
+      shortDescription: product.shortDescription,
+      description: product.description,
+      priceRupees: String((product.pricePaise / 100).toFixed(2)),
+      imageUrl: product.imageUrl,
+      notes: product.notes.join(", "),
+      category: product.category,
+    });
+  };
+
+  const onCancelEdit = () => {
+    setEditingProductId(null);
+    setForm(initialForm);
+    setError(null);
   };
 
   return (
@@ -132,7 +160,7 @@ export default function AdminProductsPage() {
 
       <section className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
         <form onSubmit={onSubmit} className="rounded-2xl border border-neutral-300 bg-white/90 p-5 space-y-3">
-          <h2 className="text-lg font-semibold text-neutral-900">Add Product</h2>
+          <h2 className="text-lg font-semibold text-neutral-900">{editingProductId ? "Edit Product" : "Add Product"}</h2>
           <Input label="Name" value={form.name} onChange={(v) => setForm((f) => ({ ...f, name: v }))} required />
           <Input label="Short Description" value={form.shortDescription} onChange={(v) => setForm((f) => ({ ...f, shortDescription: v }))} required />
           <Textarea label="Description" value={form.description} onChange={(v) => setForm((f) => ({ ...f, description: v }))} required />
@@ -141,13 +169,25 @@ export default function AdminProductsPage() {
           <Input label="Notes (comma separated, optional)" value={form.notes} onChange={(v) => setForm((f) => ({ ...f, notes: v }))} />
           <Input label="Category" value={form.category} onChange={(v) => setForm((f) => ({ ...f, category: v }))} required />
 
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="h-11 rounded-xl bg-neutral-900 px-5 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            {isSaving ? "Saving..." : "Create Product"}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="h-11 rounded-xl bg-neutral-900 px-5 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              {isSaving ? "Saving..." : editingProductId ? "Update Product" : "Create Product"}
+            </button>
+
+            {editingProductId ? (
+              <button
+                type="button"
+                onClick={onCancelEdit}
+                className="h-11 rounded-xl border border-neutral-300 px-5 text-sm font-semibold text-neutral-800"
+              >
+                Cancel
+              </button>
+            ) : null}
+          </div>
         </form>
 
         <section className="rounded-2xl border border-neutral-300 bg-white/90 p-5">
@@ -163,6 +203,13 @@ export default function AdminProductsPage() {
                   <p className="font-semibold text-neutral-900">{product.name}</p>
                   <p className="text-xs text-neutral-600 mt-1">/{product.slug} · {product.category}</p>
                   <p className="text-sm text-neutral-800 mt-2">INR {(product.pricePaise / 100).toFixed(2)}</p>
+                  <button
+                    type="button"
+                    onClick={() => onStartEdit(product)}
+                    className="mt-3 rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-100"
+                  >
+                    Edit
+                  </button>
                 </li>
               ))}
             </ul>
