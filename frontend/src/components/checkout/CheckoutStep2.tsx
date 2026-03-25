@@ -14,15 +14,27 @@ interface AddressData {
 
 interface Props {
   cartItems: CartItem[];
-  shippingPaise: number;
+  shippingOption: "basic" | "express";
+  onShippingChange: (option: "basic" | "express") => void;
   onBack: () => void;
   onPay: (address: AddressData) => void;
   paying: boolean;
 }
 
-const SHIPPING_PAISE = Number(process.env.NEXT_PUBLIC_SHIPPING_PAISE ?? 0);
+const SHIPPING_OPTIONS = {
+  basic: {
+    label: "Basic",
+    description: "Delivery in 4-5 days",
+    pricePaise: 6000,
+  },
+  express: {
+    label: "Express AIR",
+    description: "Delivers in 1-2 days",
+    pricePaise: 12000,
+  },
+} as const;
 
-export default function CheckoutStep2({ cartItems, shippingPaise, onBack, onPay, paying }: Props) {
+export default function CheckoutStep2({ cartItems, shippingOption, onShippingChange, onBack, onPay, paying }: Props) {
   const [address, setAddress] = useState<AddressData>({
     line: "",
     city: "",
@@ -33,7 +45,8 @@ export default function CheckoutStep2({ cartItems, shippingPaise, onBack, onPay,
   const [errors, setErrors] = useState<Partial<AddressData>>({});
 
   const subtotalPaise = cartItems.reduce((s, i) => s + i.lineTotalPaise, 0);
-  const totalPaise = subtotalPaise + (shippingPaise ?? SHIPPING_PAISE);
+  const shippingPaise = SHIPPING_OPTIONS[shippingOption].pricePaise;
+  const totalPaise = subtotalPaise + shippingPaise;
 
   const validate = (): boolean => {
     const errs: Partial<AddressData> = {};
@@ -83,6 +96,55 @@ export default function CheckoutStep2({ cartItems, shippingPaise, onBack, onPay,
         <p className="text-xs uppercase tracking-[0.24em] text-neutral-500">Step 2 of 2</p>
         <h2 className="mt-3 text-3xl font-semibold text-[#111]">Shipping Details</h2>
 
+        <div className="mt-6 rounded-[1.5rem] border border-neutral-200 bg-white p-5 sm:p-6">
+          <p className="text-sm font-semibold text-[#111]">Choose a delivery service</p>
+          <p className="mt-2 text-sm text-neutral-600">Select the speed that works best for you.</p>
+
+          <div className="mt-4 radio-inputs">
+            <label>
+              <input
+                className="radio-input"
+                type="radio"
+                name="shipping"
+                value="basic"
+                checked={shippingOption === "basic"}
+                onChange={() => onShippingChange("basic")}
+              />
+              <div className="radio-tile">
+                <span className="radio-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M3 7h11v10H3V7zm12 1h3l3 4v5h-6V8zm-8 9a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
+                  </svg>
+                </span>
+                <span className="radio-label">Basic</span>
+                <span className="radio-subtext">Delivery in 4-5 days</span>
+                <span className="radio-price">₹60 flat</span>
+              </div>
+            </label>
+
+            <label>
+              <input
+                className="radio-input"
+                type="radio"
+                name="shipping"
+                value="express"
+                checked={shippingOption === "express"}
+                onChange={() => onShippingChange("express")}
+              />
+              <div className="radio-tile">
+                <span className="radio-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M2 12l19-8-5 18-4-6-10-4z" />
+                  </svg>
+                </span>
+                <span className="radio-label">Express AIR</span>
+                <span className="radio-subtext">Delivers in 1-2 days</span>
+                <span className="radio-price">₹120 flat</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <div className="mt-8 space-y-4 rounded-[1.5rem] border border-neutral-200 bg-[#fafaf8] p-5 sm:p-6">
           {field("line", "Street Address", "123, Rose Lane, MG Road")}
 
@@ -109,7 +171,13 @@ export default function CheckoutStep2({ cartItems, shippingPaise, onBack, onPay,
           <p className="mt-3 text-xs leading-5 text-neutral-500">By placing your order, you agree to our company privacy policy and conditions of use.</p>
 
           <div className="mt-6">
-            <OrderSummary items={cartItems} subtotalPaise={subtotalPaise} shippingPaise={shippingPaise ?? SHIPPING_PAISE} totalPaise={totalPaise} />
+            <OrderSummary
+              items={cartItems}
+              subtotalPaise={subtotalPaise}
+              shippingPaise={shippingPaise}
+              shippingLabel={`${SHIPPING_OPTIONS[shippingOption].label} · ${SHIPPING_OPTIONS[shippingOption].description}`}
+              totalPaise={totalPaise}
+            />
           </div>
         </div>
 

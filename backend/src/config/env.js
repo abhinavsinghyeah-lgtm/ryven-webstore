@@ -24,7 +24,11 @@ const envSchema = z.object({
   SMTP_USER: z.string().min(1),
   SMTP_PASS: z.string().min(1),
   SMTP_FROM: z.string().min(1),
-  SHIPPING_PAISE: z.coerce.number().int().min(0).default(0),
+  SHIPPING_BASIC_PAISE: z.coerce.number().int().min(0).default(6000),
+  SHIPPING_EXPRESS_PAISE: z.coerce.number().int().min(0).default(12000),
+  TWILIO_ACCOUNT_SID: z.string().optional().default(""),
+  TWILIO_AUTH_TOKEN: z.string().optional().default(""),
+  TWILIO_FROM_NUMBER: z.string().optional().default(""),
 });
 
 const parsed = envSchema.safeParse(process.env);

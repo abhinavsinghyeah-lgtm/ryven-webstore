@@ -39,7 +39,7 @@ export function SiteHeader() {
     ? "fixed top-0 z-50 w-full border-transparent bg-transparent text-white"
     : isAdmin
       ? "sticky top-0 z-50 w-full border-b border-black/5 bg-[#f7f5f2] text-neutral-900"
-      : "sticky top-0 z-50 w-full border-b border-black/5 bg-white/90 text-neutral-900 backdrop-blur-lg";
+      : "sticky top-0 z-50 w-full border-b border-black/5 bg-[#f4f4f2] text-neutral-900";
 
   const subtleLinkClass = transparent
     ? "text-sm font-medium text-white/90 hover:text-white transition-colors"

@@ -7,6 +7,7 @@ const initiateCheckoutSchema = z.object({
       email: z.string().trim().email().max(120),
       phone: z.string().trim().regex(/^\+?[0-9\s\-]{7,15}$/, "Invalid phone number"),
     }),
+    shippingOption: z.enum(["basic", "express"]).default("basic"),
     address: z.object({
       line: z.string().trim().min(5).max(200),
       city: z.string().trim().min(2).max(60),
@@ -39,6 +40,15 @@ const verifyCheckoutSchema = z.object({
   query: z.object({}).optional(),
 });
 
+const confirmCheckoutSchema = z.object({
+  body: z.object({
+    razorpayOrderId: z.string().trim().min(1),
+    checkoutToken: z.string().trim().min(1),
+  }),
+  params: z.object({}).optional(),
+  query: z.object({}).optional(),
+});
+
 const getOrderSchema = z.object({
   body: z.object({}).optional(),
   query: z.object({}).optional(),
@@ -47,4 +57,4 @@ const getOrderSchema = z.object({
   }),
 });
 
-module.exports = { initiateCheckoutSchema, verifyCheckoutSchema, getOrderSchema };
+module.exports = { initiateCheckoutSchema, verifyCheckoutSchema, confirmCheckoutSchema, getOrderSchema };

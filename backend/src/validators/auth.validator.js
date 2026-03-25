@@ -1,31 +1,23 @@
 const { z } = require("zod");
 
-const signupSchema = z.object({
+const requestOtpSchema = z.object({
   body: z.object({
-    fullName: z.string().trim().min(2).max(80),
-    email: z.string().trim().email().max(120),
-    password: z.string().min(8).max(100),
+    identifier: z.string().trim().min(3).max(160),
+    fullName: z.string().trim().min(2).max(80).optional(),
+    email: z.string().trim().email().max(120).optional(),
+    phone: z.string().trim().regex(/^\+?[0-9\s\-]{7,15}$/).optional(),
   }),
   params: z.object({}).optional(),
   query: z.object({}).optional(),
 });
 
-const loginSchema = z.object({
+const verifyOtpSchema = z.object({
   body: z.object({
-    email: z.string().trim().email().max(120),
-    password: z.string().min(8).max(100),
+    identifier: z.string().trim().min(3).max(160),
+    code: z.string().trim().regex(/^\d{4,8}$/, "Invalid OTP"),
   }),
   params: z.object({}).optional(),
   query: z.object({}).optional(),
 });
 
-const setPasswordSchema = z.object({
-  body: z.object({
-    token: z.string().min(1),
-    password: z.string().min(8).max(100),
-  }),
-  params: z.object({}).optional(),
-  query: z.object({}).optional(),
-});
-
-module.exports = { signupSchema, loginSchema, setPasswordSchema };
+module.exports = { requestOtpSchema, verifyOtpSchema };

@@ -11,6 +11,7 @@ const createOrder = async ({
   shippingCountry,
   subtotalPaise,
   shippingPaise,
+  shippingService,
   totalPaise,
   currency,
   razorpayOrderId,
@@ -22,15 +23,16 @@ const createOrder = async ({
       user_id, status,
       shipping_name, shipping_phone, shipping_address, shipping_city,
       shipping_state, shipping_pincode, shipping_country,
-      subtotal_paise, shipping_paise, total_paise, currency,
+      subtotal_paise, shipping_paise, shipping_service, total_paise, currency,
       razorpay_order_id, razorpay_payment_id
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
     RETURNING
       id,
       status,
       subtotal_paise AS "subtotalPaise",
       shipping_paise AS "shippingPaise",
+      shipping_service AS "shippingService",
       total_paise AS "totalPaise",
       currency,
       razorpay_order_id AS "razorpayOrderId",
@@ -42,7 +44,7 @@ const createOrder = async ({
     userId, "paid",
     shippingName, shippingPhone, shippingAddress, shippingCity,
     shippingState, shippingPincode, shippingCountry,
-    subtotalPaise, shippingPaise, totalPaise, currency,
+    subtotalPaise, shippingPaise, shippingService, totalPaise, currency,
     razorpayOrderId, razorpayPaymentId,
   ];
 
@@ -83,6 +85,7 @@ const findOrderById = async (id) => {
       o.shipping_country AS "shippingCountry",
       o.subtotal_paise AS "subtotalPaise",
       o.shipping_paise AS "shippingPaise",
+      o.shipping_service AS "shippingService",
       o.total_paise AS "totalPaise",
       o.currency,
       o.razorpay_order_id AS "razorpayOrderId",
@@ -110,6 +113,57 @@ const findOrderById = async (id) => {
   const [orderResult, itemsResult] = await Promise.all([
     query(orderSql, [id]),
     query(itemsSql, [id]),
+  ]);
+
+  if (!orderResult.rows[0]) {
+    return null;
+  }
+
+  return { ...orderResult.rows[0], items: itemsResult.rows };
+};
+
+const findOrderByRazorpayOrderId = async (razorpayOrderId) => {
+  const orderSql = `
+    SELECT
+      o.id,
+      o.status,
+      o.shipping_name AS "shippingName",
+      o.shipping_phone AS "shippingPhone",
+      o.shipping_address AS "shippingAddress",
+      o.shipping_city AS "shippingCity",
+      o.shipping_state AS "shippingState",
+      o.shipping_pincode AS "shippingPincode",
+      o.shipping_country AS "shippingCountry",
+      o.subtotal_paise AS "subtotalPaise",
+      o.shipping_paise AS "shippingPaise",
+      o.shipping_service AS "shippingService",
+      o.total_paise AS "totalPaise",
+      o.currency,
+      o.razorpay_order_id AS "razorpayOrderId",
+      o.razorpay_payment_id AS "razorpayPaymentId",
+      o.user_id AS "userId",
+      o.created_at AS "createdAt"
+    FROM orders o
+    WHERE o.razorpay_order_id = $1
+    LIMIT 1
+  `;
+
+  const itemsSql = `
+    SELECT
+      product_id AS "productId",
+      product_name AS "productName",
+      product_image_url AS "productImageUrl",
+      unit_price_paise AS "unitPricePaise",
+      quantity,
+      line_total_paise AS "lineTotalPaise"
+    FROM order_items
+    WHERE order_id = (SELECT id FROM orders WHERE razorpay_order_id = $1 LIMIT 1)
+    ORDER BY id
+  `;
+
+  const [orderResult, itemsResult] = await Promise.all([
+    query(orderSql, [razorpayOrderId]),
+    query(itemsSql, [razorpayOrderId]),
   ]);
 
   if (!orderResult.rows[0]) {
@@ -222,6 +276,7 @@ const getAdminOrderStats = async () => {
 module.exports = {
   createOrder,
   findOrderById,
+  findOrderByRazorpayOrderId,
   updateOrderStatus,
   listOrdersByUser,
   countOrdersByUser,

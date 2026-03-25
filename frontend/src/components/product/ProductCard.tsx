@@ -13,6 +13,8 @@ const fallbackImage =
   "https://images.unsplash.com/photo-1563170351-be82bc888aa4?q=80&w=1200&auto=format&fit=crop";
 
 export function ProductCard({ product }: ProductCardProps) {
+  const notes = Array.isArray(product.notes) ? product.notes.filter((note) => note.trim().length > 1).slice(0, 3) : [];
+
   return (
     <article className="group overflow-hidden rounded-[24px] border border-black/5 bg-white shadow-sm transition hover:-translate-y-1 hover:border-black/10 hover:shadow-md">
       <Link href={`/products/${product.slug}`} className="block">
@@ -24,7 +26,7 @@ export function ProductCard({ product }: ProductCardProps) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover transition duration-500 group-hover:scale-[1.04]"
           />
-          <span className="absolute left-4 top-4 rounded-full border border-black/5 bg-white/90 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-neutral-700">
+          <span className="absolute left-4 top-4 rounded-full border border-black/5 bg-white/90 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-neutral-700">
             {product.category}
           </span>
         </div>
@@ -36,11 +38,21 @@ export function ProductCard({ product }: ProductCardProps) {
           <p className="mt-2 line-clamp-2 break-words text-sm text-neutral-600">{product.shortDescription}</p>
         </Link>
 
+        {notes.length ? (
+          <div className="flex flex-wrap gap-2">
+            {notes.map((note) => (
+              <span key={note} className="rounded-full border border-black/5 bg-neutral-100 px-3 py-1 text-[0.7rem] font-medium text-neutral-600">
+                {note}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
         <div className="flex items-center justify-between gap-3">
           <p className="text-lg font-semibold text-neutral-900">
             {formatPricePaise(product.pricePaise, product.currency)}
           </p>
-          <Link href={`/products/${product.slug}`} className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-500 hover:text-neutral-900">
+          <Link href={`/products/${product.slug}`} className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 hover:text-neutral-900">
             View
           </Link>
         </div>

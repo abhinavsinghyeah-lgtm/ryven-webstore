@@ -5,10 +5,18 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Order } from "@/types/order";
 import { formatPricePaise } from "@/lib/format";
+import { apiRequest } from "@/lib/api";
+import { authStorage } from "@/lib/auth";
+import type { AuthResponse } from "@/types/auth";
 
 interface StoredData {
   order: Order;
   isNew: boolean;
+  customerInfo?: {
+    fullName: string;
+    email: string;
+    phone: string;
+  };
 }
 
 export default function CheckoutSuccessPage() {
@@ -30,6 +38,13 @@ export default function CheckoutSuccessPage() {
     }
   });
 
+  const [otpStep, setOtpStep] = useState<"request" | "verify" | "done">("request");
+  const [identifier, setIdentifier] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [otpSuccess, setOtpSuccess] = useState<string | null>(null);
+  const [otpLoading, setOtpLoading] = useState(false);
+
   useEffect(() => {
     if (!data) {
       router.replace("/");
@@ -39,10 +54,65 @@ export default function CheckoutSuccessPage() {
     sessionStorage.removeItem("ryven_last_order");
   }, [data, router]);
 
+  useEffect(() => {
+    if (!data) return;
+    setIdentifier((prev) => prev || data.customerInfo?.email || data.order.shippingPhone || "");
+  }, [data]);
+
   if (!data) return null;
 
-  const { order, isNew } = data;
+  const { order, isNew, customerInfo } = data;
   const currency = order.currency;
+
+  const sendOtp = async () => {
+    if (!identifier.trim()) {
+      setOtpError("Enter your email or phone number.");
+      return;
+    }
+    setOtpLoading(true);
+    setOtpError(null);
+    setOtpSuccess(null);
+    try {
+      await apiRequest("/auth/request-otp", {
+        method: "POST",
+        body: {
+          identifier,
+          fullName: customerInfo?.fullName || order.shippingName,
+          email: customerInfo?.email || undefined,
+          phone: customerInfo?.phone || undefined,
+        },
+      });
+      setOtpStep("verify");
+      setOtpSuccess("OTP sent. Enter the code to access your dashboard.");
+    } catch (err) {
+      setOtpError(err instanceof Error ? err.message : "Could not send OTP");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const verifyOtp = async () => {
+    if (!otp.trim()) {
+      setOtpError("Enter the OTP code.");
+      return;
+    }
+    setOtpLoading(true);
+    setOtpError(null);
+    setOtpSuccess(null);
+    try {
+      const response = await apiRequest<AuthResponse>("/auth/verify-otp", {
+        method: "POST",
+        body: { identifier, code: otp.trim() },
+      });
+      authStorage.saveAuth(response);
+      setOtpStep("done");
+      setOtpSuccess("Logged in. You can now view your dashboard.");
+    } catch (err) {
+      setOtpError(err instanceof Error ? err.message : "OTP verification failed");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#f1f1ee] flex items-start justify-center px-4 py-12">
@@ -72,10 +142,9 @@ export default function CheckoutSuccessPage() {
         {/* New user banner */}
         {isNew && (
           <div className="bg-[#111] text-white rounded-2xl p-5 space-y-2">
-            <p className="font-semibold text-sm">🔑 Set a password to access your account</p>
+            <p className="font-semibold text-sm">✅ Account created</p>
             <p className="text-xs text-white/70 leading-relaxed">
-              We&apos;ve sent an activation link to your email. Click it to create a password and track your orders
-              anytime.
+              We created an account for you using your email and phone. Verify OTP below to access your dashboard.
             </p>
           </div>
         )}
@@ -106,11 +175,80 @@ export default function CheckoutSuccessPage() {
               <span>Shipping</span>
               <span>{order.shippingPaise === 0 ? "Free" : formatPricePaise(order.shippingPaise, currency)}</span>
             </div>
+            {order.shippingService ? (
+              <p className="text-xs text-[#888]">Service: {order.shippingService}</p>
+            ) : null}
             <div className="flex justify-between font-bold text-[#111] text-base pt-1">
               <span>Total Paid</span>
               <span>{formatPricePaise(order.totalPaise, currency)}</span>
             </div>
           </div>
+        </div>
+
+        {/* OTP access card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-[#e8e8e4] p-6 space-y-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#888]">Access Your Dashboard</p>
+            <h3 className="mt-2 text-lg font-semibold text-[#111]">Track orders with OTP</h3>
+            <p className="mt-2 text-sm text-[#555]">
+              {isNew
+                ? "We created an account for you. Verify OTP to access your dashboard."
+                : "Verify OTP to view your orders and manage your account."}
+            </p>
+          </div>
+
+          {otpStep === "request" ? (
+            <div className="space-y-3">
+              <input
+                value={identifier}
+                onChange={(event) => setIdentifier(event.target.value)}
+                placeholder="Email or mobile number"
+                className="w-full rounded-xl border border-[#ddd] px-4 py-3 text-sm outline-none focus:border-[#111]"
+              />
+              <button
+                type="button"
+                onClick={sendOtp}
+                disabled={otpLoading}
+                className="w-full rounded-xl bg-[#111] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#333] disabled:opacity-60"
+              >
+                {otpLoading ? "Sending..." : "Send OTP"}
+              </button>
+            </div>
+          ) : otpStep === "verify" ? (
+            <div className="space-y-3">
+              <input
+                value={otp}
+                onChange={(event) => setOtp(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="Enter OTP"
+                className="w-full rounded-xl border border-[#ddd] px-4 py-3 text-sm outline-none focus:border-[#111]"
+              />
+              <button
+                type="button"
+                onClick={verifyOtp}
+                disabled={otpLoading}
+                className="w-full rounded-xl bg-[#111] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#333] disabled:opacity-60"
+              >
+                {otpLoading ? "Verifying..." : "Verify & Continue"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setOtpStep("request")}
+                className="text-xs font-semibold text-[#555] underline decoration-2 underline-offset-4"
+              >
+                Change details
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/account"
+              className="inline-flex w-full items-center justify-center rounded-xl bg-[#111] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#333]"
+            >
+              View Dashboard
+            </Link>
+          )}
+
+          {otpError ? <p className="text-xs text-red-600">{otpError}</p> : null}
+          {otpSuccess ? <p className="text-xs text-emerald-600">{otpSuccess}</p> : null}
         </div>
 
         {/* Shipping address */}

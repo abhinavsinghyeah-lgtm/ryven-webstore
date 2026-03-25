@@ -1,17 +1,15 @@
 const { asyncHandler } = require("../utils/asyncHandler");
 const authService = require("../services/auth.service");
 
-const signup = asyncHandler(async (req, res) => {
-  const { fullName, email, password } = req.validated.body;
-  const result = await authService.signup({ fullName, email, password });
-
-  res.status(201).json(result);
+const requestOtp = asyncHandler(async (req, res) => {
+  const { identifier, fullName, email, phone } = req.validated.body;
+  const result = await authService.requestOtp({ identifier, fullName, email, phone });
+  res.status(200).json(result);
 });
 
-const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.validated.body;
-  const result = await authService.login({ email, password });
-
+const verifyOtp = asyncHandler(async (req, res) => {
+  const { identifier, code } = req.validated.body;
+  const result = await authService.verifyOtp({ identifier, code });
   res.status(200).json(result);
 });
 
@@ -21,10 +19,4 @@ const me = asyncHandler(async (req, res) => {
   res.status(200).json({ user });
 });
 
-const setPassword = asyncHandler(async (req, res) => {
-  const { token, password } = req.validated.body;
-  await authService.setPassword({ token, password });
-  res.status(200).json({ message: "Password set successfully. You can now log in." });
-});
-
-module.exports = { signup, login, me, setPassword };
+module.exports = { requestOtp, verifyOtp, me };

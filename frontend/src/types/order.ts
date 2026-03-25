@@ -22,6 +22,7 @@ export interface Order {
   shippingCountry: string;
   subtotalPaise: number;
   shippingPaise: number;
+  shippingService?: string | null;
   totalPaise: number;
   currency: string;
   razorpayOrderId: string;
@@ -42,6 +43,10 @@ export interface InitiateCheckoutResponse {
 
 export interface VerifyCheckoutResponse {
   order: Order;
-  authToken: string;
   isNew: boolean;
+  customerInfo: {
+    fullName: string;
+    email: string;
+    phone: string;
+  };
 }

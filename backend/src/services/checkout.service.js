@@ -5,19 +5,19 @@ const { razorpay } = require("../config/razorpay");
 const { env } = require("../config/env");
 const { findProductById } = require("../models/product.model");
 const { findOrCreateGuestUser } = require("../models/user.model");
-const { createOrder, findOrderById } = require("../models/order.model");
+const { createOrder, findOrderById, findOrderByRazorpayOrderId } = require("../models/order.model");
 const { clearCartByUserId } = require("../models/cart.model");
 const { sendOrderConfirmation } = require("./email.service");
-const { signAccessToken } = require("../utils/jwt");
 const { ApiError } = require("../utils/apiError");
 
 const CHECKOUT_TOKEN_EXPIRY = "30m";
 
-const initiateCheckout = async ({ customerInfo, address, cartItems }) => {
+const initiateCheckout = async ({ customerInfo, address, cartItems, shippingOption = "basic" }) => {
+  const normalizedPhone = customerInfo.phone.replace(/\D/g, "");
   const { user, isNew } = await findOrCreateGuestUser({
     fullName: customerInfo.fullName,
     email: customerInfo.email,
-    phone: customerInfo.phone,
+    phone: normalizedPhone,
   });
 
   // Verify all products and compute total server-side — never trust frontend price
@@ -42,7 +42,7 @@ const initiateCheckout = async ({ customerInfo, address, cartItems }) => {
   );
 
   const subtotalPaise = verifiedItems.reduce((sum, item) => sum + item.lineTotalPaise, 0);
-  const shippingPaise = env.SHIPPING_PAISE;
+  const shippingPaise = shippingOption === "express" ? env.SHIPPING_EXPRESS_PAISE : env.SHIPPING_BASIC_PAISE;
   const totalPaise = subtotalPaise + shippingPaise;
   const currency = verifiedItems[0]?.currency || "INR";
 
@@ -59,11 +59,12 @@ const initiateCheckout = async ({ customerInfo, address, cartItems }) => {
       iss: "ryven-checkout",
       userId: user.id,
       isNew,
-      customerInfo: { fullName: user.fullName, email: user.email, phone: customerInfo.phone },
+      customerInfo: { fullName: user.fullName, email: user.email, phone: normalizedPhone },
       address,
       items: verifiedItems,
       subtotalPaise,
       shippingPaise,
+      shippingService: shippingOption,
       totalPaise,
       currency,
       razorpayOrderId: rpOrder.id,
@@ -115,7 +116,16 @@ const verifyAndPersistOrder = async ({
     throw new ApiError(400, "Payment verification failed");
   }
 
-  const { userId, isNew, customerInfo, address, items, subtotalPaise, shippingPaise, totalPaise, currency } = payload;
+  const { userId, isNew, customerInfo, address, items, subtotalPaise, shippingPaise, shippingService, totalPaise, currency } = payload;
+
+  const existingOrder = await findOrderByRazorpayOrderId(razorpayOrderId);
+  if (existingOrder) {
+    return {
+      order: existingOrder,
+      isNew,
+      customerInfo,
+    };
+  }
 
   // Persist order in DB
   const order = await createOrder({
@@ -129,6 +139,7 @@ const verifyAndPersistOrder = async ({
     shippingCountry: address.country || "India",
     subtotalPaise,
     shippingPaise,
+    shippingService,
     totalPaise,
     currency,
     razorpayOrderId,
@@ -139,19 +150,6 @@ const verifyAndPersistOrder = async ({
   // Clear server cart
   await clearCartByUserId(userId);
 
-  // Issue auth JWT for auto-login
-  const authToken = signAccessToken({ id: userId, role: "customer", email: customerInfo.email });
-
-  // Generate activation token for new users who need to set a password
-  let activationToken = null;
-  if (isNew) {
-    activationToken = jwt.sign(
-      { iss: "ryven-activate", userId },
-      env.JWT_SECRET,
-      { expiresIn: "7d" },
-    );
-  }
-
   const fullOrder = await findOrderById(order.id);
 
   // Send confirmation email (non-blocking)
@@ -159,14 +157,55 @@ const verifyAndPersistOrder = async ({
     to: customerInfo.email,
     order: fullOrder,
     user: { fullName: customerInfo.fullName },
-    activationToken,
   }).catch((err) => console.error("Email send failed:", err));
 
   return {
     order: fullOrder,
-    authToken,
     isNew,
+    customerInfo,
   };
+};
+
+const confirmAndPersistOrder = async ({ checkoutToken, razorpayOrderId }) => {
+  // Validate token and order id
+  let payload;
+  try {
+    payload = jwt.verify(checkoutToken, env.JWT_SECRET);
+  } catch {
+    throw new ApiError(400, "Checkout session expired or invalid");
+  }
+
+  if (payload.iss !== "ryven-checkout") {
+    throw new ApiError(400, "Invalid checkout token");
+  }
+
+  if (payload.razorpayOrderId !== razorpayOrderId) {
+    throw new ApiError(400, "Order ID mismatch");
+  }
+
+  const existingOrder = await findOrderByRazorpayOrderId(razorpayOrderId);
+  if (existingOrder) {
+    return { order: existingOrder, isNew: payload.isNew, customerInfo: payload.customerInfo };
+  }
+
+  const payments = await razorpay.orders.fetchPayments(razorpayOrderId);
+  const paidPayment = payments.items.find((item) => ["captured", "authorized"].includes(item.status));
+
+  if (!paidPayment) {
+    throw new ApiError(409, "Payment is still pending");
+  }
+
+  const signature = crypto
+    .createHmac("sha256", env.RAZORPAY_KEY_SECRET)
+    .update(`${razorpayOrderId}|${paidPayment.id}`)
+    .digest("hex");
+
+  return verifyAndPersistOrder({
+    razorpayPaymentId: paidPayment.id,
+    razorpayOrderId,
+    razorpaySignature: signature,
+    checkoutToken,
+  });
 };
 
 const getOrder = async ({ orderId, userId }) => {
@@ -183,4 +222,4 @@ const getOrder = async ({ orderId, userId }) => {
   return order;
 };
 
-module.exports = { initiateCheckout, verifyAndPersistOrder, getOrder };
+module.exports = { initiateCheckout, verifyAndPersistOrder, confirmAndPersistOrder, getOrder };

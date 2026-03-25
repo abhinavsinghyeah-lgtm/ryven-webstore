@@ -5,12 +5,23 @@ import { formatPricePaise } from "@/lib/format";
 interface Props {
   items: CartItem[];
   subtotalPaise: number;
-  shippingPaise: number;
+  shippingPaise?: number | null;
   totalPaise: number;
+  shippingLabel?: string;
+  shippingState?: "pending" | "selected";
 }
 
-export default function OrderSummary({ items, subtotalPaise, shippingPaise, totalPaise }: Props) {
+export default function OrderSummary({
+  items,
+  subtotalPaise,
+  shippingPaise,
+  totalPaise,
+  shippingLabel,
+  shippingState = "selected",
+}: Props) {
   const currency = items[0]?.product?.currency ?? "INR";
+  const isPending = shippingState === "pending" || shippingPaise == null;
+  const displayedTotalPaise = isPending ? subtotalPaise : totalPaise;
 
   return (
     <div className="rounded-[1.5rem] border border-neutral-200 bg-[#fafaf8] p-5 space-y-4">
@@ -50,12 +61,24 @@ export default function OrderSummary({ items, subtotalPaise, shippingPaise, tota
         </div>
         <div className="flex justify-between text-sm text-[#555]">
           <span>Shipping</span>
-          <span>{shippingPaise === 0 ? "Free" : formatPricePaise(shippingPaise, currency)}</span>
+          <span>
+            {isPending
+              ? "Calculating..."
+              : shippingPaise === 0
+                ? "Free"
+                : formatPricePaise(shippingPaise, currency)}
+          </span>
         </div>
+        {shippingLabel && !isPending ? (
+          <p className="text-xs text-[#888]">{shippingLabel}</p>
+        ) : null}
         <div className="flex justify-between text-base font-bold text-[#111] pt-1">
           <span>Total</span>
-          <span>{formatPricePaise(totalPaise, currency)}</span>
+          <span>{formatPricePaise(displayedTotalPaise, currency)}</span>
         </div>
+        {isPending ? (
+          <p className="text-xs text-[#888]">Total excludes shipping cost until you select a delivery option.</p>
+        ) : null}
       </div>
     </div>
   );

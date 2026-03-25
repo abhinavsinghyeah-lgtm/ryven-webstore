@@ -15,7 +15,7 @@ interface Props {
   initialData?: Partial<FormData>;
   onNext: (data: FormData) => void;
   cartItems: CartItem[];
-  shippingPaise: number;
+  shippingPaise?: number | null;
 }
 
 export default function CheckoutStep1({ initialData, onNext, cartItems, shippingPaise }: Props) {
@@ -26,7 +26,7 @@ export default function CheckoutStep1({ initialData, onNext, cartItems, shipping
   });
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const subtotalPaise = cartItems.reduce((sum, item) => sum + item.lineTotalPaise, 0);
-  const totalPaise = subtotalPaise + shippingPaise;
+  const totalPaise = subtotalPaise;
 
   const validate = (): boolean => {
     const errs: Partial<FormData> = {};
@@ -92,7 +92,13 @@ export default function CheckoutStep1({ initialData, onNext, cartItems, shipping
           </div>
         </div>
 
-        <OrderSummary items={cartItems} subtotalPaise={subtotalPaise} shippingPaise={shippingPaise} totalPaise={totalPaise} />
+        <OrderSummary
+          items={cartItems}
+          subtotalPaise={subtotalPaise}
+          shippingPaise={shippingPaise}
+          shippingState="pending"
+          totalPaise={totalPaise}
+        />
       </section>
     </form>
   );

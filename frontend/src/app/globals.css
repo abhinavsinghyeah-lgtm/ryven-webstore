@@ -150,14 +150,13 @@ body {
   border-radius: 999px;
   background: #111318;
   color: #f8fafc;
-  box-shadow: 0 0.8rem 1.6rem rgba(17, 19, 24, 0.18);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  box-shadow: none;
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
 .cart-pearl-btn:hover {
   transform: translateY(-1px);
-  background: #1a1f2a;
-  box-shadow: 0 1rem 2rem rgba(17, 19, 24, 0.22);
+  background: #1b1f27;
 }
 
 .cart-pearl-btn:active {
@@ -170,11 +169,7 @@ body {
 }
 
 .cart-pearl-btn__shine {
-  pointer-events: none;
-  position: absolute;
-  inset: 1px;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 50%, rgba(0,0,0,0.12) 100%);
+  display: none;
 }
 
 .cart-pearl-btn__inner {
@@ -187,15 +182,14 @@ body {
   min-height: 3rem;
   width: 100%;
   padding: 0.85rem 1.2rem;
-  font-size: 0.86rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-transform: none;
 }
 
 .cart-pearl-btn--done {
   background: #0b0d12;
-  box-shadow: 0 0.8rem 1.6rem rgba(11, 13, 18, 0.22);
 }
 
 .product-card-btn {
@@ -204,7 +198,134 @@ body {
 }
 
 .product-card-btn:hover {
-  box-shadow: 0 0.8rem 1.6rem rgba(17, 19, 24, 0.18);
+  box-shadow: none;
+}
+
+/* Radio tile styles (shipping selector) */
+.radio-inputs {
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 12px;
+  flex-wrap: wrap;
+  max-width: 100%;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.radio-inputs > * {
+  margin: 0;
+}
+
+.radio-input:checked + .radio-tile {
+  border-color: #2260ff;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  color: #2260ff;
+}
+
+.radio-input:checked + .radio-tile:before {
+  transform: scale(1);
+  opacity: 1;
+  background-color: #2260ff;
+  border-color: #2260ff;
+}
+
+.radio-input:checked + .radio-tile .radio-icon svg {
+  fill: #2260ff;
+}
+
+.radio-input:checked + .radio-tile .radio-label {
+  color: #2260ff;
+}
+
+.radio-input:focus + .radio-tile {
+  border-color: #2260ff;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1), 0 0 0 4px #b5c9fc;
+}
+
+.radio-input:focus + .radio-tile:before {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.radio-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  width: 220px;
+  min-height: 130px;
+  border-radius: 0.75rem;
+  border: 2px solid #b5bfd9;
+  background-color: #fff;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  transition: 0.15s ease;
+  cursor: pointer;
+  position: relative;
+  padding: 16px;
+  gap: 8px;
+}
+
+.radio-tile:before {
+  content: "";
+  position: absolute;
+  display: block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid #b5bfd9;
+  background-color: #fff;
+  border-radius: 50%;
+  top: 0.5rem;
+  right: 0.5rem;
+  opacity: 0;
+  transform: scale(0);
+  transition: 0.25s ease;
+}
+
+.radio-tile:hover {
+  border-color: #2260ff;
+}
+
+.radio-tile:hover:before {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.radio-icon svg {
+  width: 2rem;
+  height: 2rem;
+  fill: #494949;
+}
+
+.radio-label {
+  color: #111;
+  transition: 0.375s ease;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.radio-subtext {
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+.radio-price {
+  color: #111;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.radio-input {
+  clip: rect(0 0 0 0);
+  -webkit-clip-path: inset(100%);
+  clip-path: inset(100%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
 
 .ui-skeleton {

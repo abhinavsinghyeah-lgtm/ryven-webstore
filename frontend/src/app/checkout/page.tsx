@@ -7,14 +7,12 @@ import CheckoutStep1 from "@/components/checkout/CheckoutStep1";
 import CheckoutStep2 from "@/components/checkout/CheckoutStep2";
 import { useCart } from "@/contexts/CartContext";
 import { apiRequest } from "@/lib/api";
-import { authStorage } from "@/lib/auth";
 import { openRazorpay } from "@/lib/razorpay";
 import { clearGuestCartItems } from "@/lib/cart-storage";
 import { ContentSkeleton } from "@/components/ui/ContentSkeleton";
 import { StatusBanner } from "@/components/ui/StatusBanner";
 import type { InitiateCheckoutResponse, VerifyCheckoutResponse } from "@/types/order";
 import type { CartItem } from "@/types/cart";
-import type { AuthResponse } from "@/types/auth";
 
 interface CustomerInfo {
   fullName: string;
@@ -30,7 +28,7 @@ interface AddressData {
   country: string;
 }
 
-const SHIPPING_PAISE = 0; // free shipping
+type ShippingOption = "basic" | "express";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -42,6 +40,7 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
   const [paymentNotice, setPaymentNotice] = useState<"idle" | "completed" | "proceeding">("idle");
+  const [shippingOption, setShippingOption] = useState<ShippingOption>("basic");
 
   const cartItems: CartItem[] = cart.items;
 
@@ -98,10 +97,13 @@ export default function CheckoutPage() {
         method: "POST",
         body: {
           customerInfo,
+          shippingOption,
           address,
           cartItems: cartPayload,
         },
       });
+
+      let confirmed = false;
 
       await openRazorpay({
         key: initData.razorpayKeyId,
@@ -128,24 +130,14 @@ export default function CheckoutPage() {
               },
             });
 
-            // Auto-login with the issued JWT
-            authStorage.saveAuth({
-              token: verifyData.authToken,
-              user: {
-                id: verifyData.order.userId,
-                fullName: customerInfo.fullName,
-                email: customerInfo.email,
-                role: "customer",
-              },
-            } as AuthResponse);
-
+            confirmed = true;
             clearGuestCartItems();
             await refreshCart();
 
             // Persist order data for success page
             sessionStorage.setItem(
               "ryven_last_order",
-              JSON.stringify({ order: verifyData.order, isNew: verifyData.isNew }),
+              JSON.stringify({ order: verifyData.order, isNew: verifyData.isNew, customerInfo }),
             );
 
             router.push("/checkout/success");
@@ -156,9 +148,30 @@ export default function CheckoutPage() {
           }
         },
         modal: {
-          ondismiss: () => {
-            setPaymentNotice("idle");
-            setPaying(false);
+          ondismiss: async () => {
+            if (confirmed) return;
+            try {
+              const confirmData = await apiRequest<VerifyCheckoutResponse>("/checkout/confirm", {
+                method: "POST",
+                body: {
+                  razorpayOrderId: initData.razorpayOrderId,
+                  checkoutToken: initData.checkoutToken,
+                },
+              });
+
+              confirmed = true;
+              clearGuestCartItems();
+              await refreshCart();
+              sessionStorage.setItem(
+                "ryven_last_order",
+                JSON.stringify({ order: confirmData.order, isNew: confirmData.isNew, customerInfo }),
+              );
+              router.push("/checkout/success");
+            } catch (err) {
+              setError(err instanceof Error ? err.message : "Payment is still pending. We will email you once confirmed.");
+              setPaymentNotice("idle");
+              setPaying(false);
+            }
           },
         },
       });
@@ -203,9 +216,16 @@ export default function CheckoutPage() {
 
         <div className="rounded-[2rem] bg-white p-6 shadow-[0_16px_40px_rgba(0,0,0,0.08)] sm:p-8">
           {step === 1 ? (
-            <CheckoutStep1 initialData={customerInfo ?? undefined} onNext={handleStep1Next} cartItems={cartItems} shippingPaise={SHIPPING_PAISE} />
+            <CheckoutStep1 initialData={customerInfo ?? undefined} onNext={handleStep1Next} cartItems={cartItems} />
           ) : (
-            <CheckoutStep2 cartItems={cartItems} shippingPaise={SHIPPING_PAISE} onBack={() => setStep(1)} onPay={handlePay} paying={paying} />
+            <CheckoutStep2
+              cartItems={cartItems}
+              shippingOption={shippingOption}
+              onShippingChange={setShippingOption}
+              onBack={() => setStep(1)}
+              onPay={handlePay}
+              paying={paying}
+            />
           )}
         </div>
 

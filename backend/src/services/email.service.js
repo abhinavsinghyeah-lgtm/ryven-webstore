@@ -2,7 +2,7 @@ const { transporter } = require("../config/email");
 const { env } = require("../config/env");
 const { formatPricePaise } = require("../utils/format");
 
-const sendOrderConfirmation = async ({ to, order, user, activationToken }) => {
+const sendOrderConfirmation = async ({ to, order, user }) => {
   const itemRows = order.items
     .map(
       (item) =>
@@ -13,10 +13,10 @@ const sendOrderConfirmation = async ({ to, order, user, activationToken }) => {
     )
     .join("");
 
-  const setPasswordSection = activationToken
-    ? `<p style="margin-top:24px;font-size:14px;color:#555;">We created a RYVEN account for you. Set your password to manage orders:</p>
-       <a href="${env.FRONTEND_URL}/account/set-password?token=${activationToken}" style="display:inline-block;margin-top:8px;background:#111;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">Activate account →</a>`
-    : "";
+  const loginSection = `
+    <p style="margin-top:24px;font-size:14px;color:#555;">Track orders anytime by logging in with OTP:</p>
+    <a href="${env.FRONTEND_URL}/login" style="display:inline-block;margin-top:8px;background:#111;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">Log in with OTP →</a>
+  `;
 
   const html = `
     <div style="font-family:system-ui,sans-serif;max-width:500px;margin:0 auto;padding:32px 24px;color:#111;">
@@ -46,7 +46,7 @@ const sendOrderConfirmation = async ({ to, order, user, activationToken }) => {
         <p style="margin:0;">${order.shippingAddress}, ${order.shippingCity}, ${order.shippingState} – ${order.shippingPincode}</p>
       </div>
 
-      ${setPasswordSection}
+      ${loginSection}
 
       <p style="margin-top:32px;font-size:12px;color:#aaa;">RYVEN · Questions? Reply to this email.</p>
     </div>
@@ -60,4 +60,25 @@ const sendOrderConfirmation = async ({ to, order, user, activationToken }) => {
   });
 };
 
-module.exports = { sendOrderConfirmation };
+const sendOtpEmail = async ({ to, code }) => {
+  const html = `
+    <div style="font-family:system-ui,sans-serif;max-width:420px;margin:0 auto;padding:32px 24px;color:#111;">
+      <p style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#888;margin:0 0 8px;">LOGIN CODE</p>
+      <h1 style="font-size:22px;font-weight:700;margin:0 0 12px;">Your RYVEN OTP</h1>
+      <p style="font-size:14px;color:#555;margin:0 0 18px;">Use this one-time code to sign in. It expires in 10 minutes.</p>
+      <div style="display:inline-block;background:#111;color:#fff;padding:12px 18px;border-radius:10px;font-size:18px;letter-spacing:0.2em;font-weight:700;">
+        ${code}
+      </div>
+      <p style="margin-top:20px;font-size:12px;color:#aaa;">If you didn’t request this, you can ignore this email.</p>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    from: env.SMTP_FROM,
+    to,
+    subject: "Your RYVEN login code",
+    html,
+  });
+};
+
+module.exports = { sendOrderConfirmation, sendOtpEmail };
