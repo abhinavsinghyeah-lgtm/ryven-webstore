@@ -160,7 +160,7 @@ export default function AdminProductsPage() {
       {error ? <StatusBanner tone="error" title="Product update error" description={error} /> : null}
 
       <section className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-        <AdminCard className="fade-up" style={{ animationDelay: "60ms" }}>
+        <AdminCard>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-neutral-900">{editingProductId ? "Edit Product" : "Add Product"}</h2>
             {editingProductId ? <span className="text-xs uppercase tracking-[0.24em] text-neutral-500">Editing</span> : null}
@@ -188,7 +188,7 @@ export default function AdminProductsPage() {
           </form>
         </AdminCard>
 
-        <AdminCard className="fade-up" style={{ animationDelay: "140ms" }}>
+        <AdminCard>
           <h2 className="text-lg font-semibold text-neutral-900">Live Products</h2>
           {loading ? (
             <div className="mt-4 space-y-3">

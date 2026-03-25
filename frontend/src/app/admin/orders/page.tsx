@@ -80,7 +80,7 @@ export default function AdminOrdersPage() {
     >
       {error ? <StatusBanner tone="error" title="Order feed error" description={error} /> : null}
 
-      <AdminCard className="fade-up" style={{ animationDelay: "80ms" }}>
+      <AdminCard>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-[0.28em] text-neutral-500">Filters</p>
@@ -112,7 +112,7 @@ export default function AdminOrdersPage() {
         </div>
       </AdminCard>
 
-      <AdminCard className="fade-up" style={{ animationDelay: "140ms" }}>
+      <AdminCard>
         {loading ? (
           <p className="text-sm text-neutral-600">Loading orders...</p>
         ) : !orders || orders.orders.length === 0 ? (

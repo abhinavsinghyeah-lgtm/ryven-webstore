@@ -27,11 +27,11 @@ const isActiveRoute = (pathname: string | null, href: string) => {
 
 export const adminButtonClasses = {
   primary:
-    "inline-flex items-center justify-center rounded-full bg-[#0f1115] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(15,17,21,0.25)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_32px_rgba(15,17,21,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f1115]/40 disabled:cursor-not-allowed disabled:opacity-60",
+    "inline-flex items-center justify-center rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/30 disabled:cursor-not-allowed disabled:opacity-60",
   ghost:
-    "inline-flex items-center justify-center rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10",
+    "inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-neutral-900 shadow-sm transition hover:-translate-y-0.5 hover:border-black/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10",
   soft:
-    "inline-flex items-center justify-center rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-semibold text-neutral-800 transition hover:bg-white/90",
+    "inline-flex items-center justify-center rounded-full border border-black/10 bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-200",
 };
 
 export const adminInputClasses =
@@ -44,14 +44,14 @@ export function AdminShell({ title, subtitle, eyebrow = "Admin", actions, childr
   const pathname = usePathname();
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_12%_12%,rgba(255,226,202,0.7),transparent_50%),radial-gradient(circle_at_88%_10%,rgba(198,222,255,0.65),transparent_55%),linear-gradient(180deg,#f7f2eb_0%,#efe8df_100%)] text-[#0f1115]">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#f7f5f2_0%,#f0eee9_100%)] text-[#0f1115]">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-5 py-8 sm:px-8 lg:flex-row lg:gap-8 lg:py-12">
         <aside className="lg:w-72">
           <div className="space-y-5 lg:sticky lg:top-8">
-            <div className="rounded-[30px] bg-[linear-gradient(160deg,#0f1115_0%,#161f33_55%,#0b0e17_100%)] p-6 text-white shadow-[0_26px_70px_rgba(10,14,22,0.45)]">
+            <div className="rounded-[26px] bg-[#111318] p-6 text-white shadow-[0_18px_48px_rgba(15,17,21,0.28)]">
               <p className="text-xs uppercase tracking-[0.4em] text-white/60">Ryven</p>
               <p className="mt-3 text-2xl font-semibold tracking-tight">Admin Studio</p>
-              <p className="mt-2 text-sm text-white/70">Everything your store needs.</p>
+              <p className="mt-2 text-sm text-white/70">Operations and control.</p>
 
               <nav className="mt-6 space-y-2">
                 {navItems.map((item) => {
@@ -66,21 +66,21 @@ export function AdminShell({ title, subtitle, eyebrow = "Admin", actions, childr
                           : "block rounded-2xl px-4 py-3 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
                       }
                     >
-                      <span className="block text-[0.7rem] uppercase tracking-[0.32em] text-white/40">{item.description}</span>
+                      <span className="block text-[0.68rem] uppercase tracking-[0.3em] text-white/40">{item.description}</span>
                       <span className="mt-1 block text-base">{item.label}</span>
                     </Link>
                   );
                 })}
               </nav>
 
-              <div className="mt-6 rounded-2xl bg-white/10 p-4">
-                <p className="text-[0.68rem] uppercase tracking-[0.36em] text-white/50">Status</p>
+              <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-[0.68rem] uppercase tracking-[0.32em] text-white/50">Status</p>
                 <p className="mt-2 text-sm text-white/90">All systems ready for action.</p>
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-black/5 bg-white/80 p-4 shadow-[0_12px_36px_rgba(15,23,42,0.08)]">
-              <p className="text-[0.68rem] uppercase tracking-[0.36em] text-neutral-500">Tip</p>
+            <div className="rounded-[22px] border border-black/5 bg-white p-4 shadow-sm">
+              <p className="text-[0.68rem] uppercase tracking-[0.32em] text-neutral-500">Tip</p>
               <p className="mt-2 text-sm text-neutral-700">Keep hero image, products, and settings aligned so the storefront always feels premium.</p>
               <Link href="/" className="mt-4 inline-flex items-center text-sm font-semibold text-neutral-900">
                 View storefront
@@ -90,8 +90,8 @@ export function AdminShell({ title, subtitle, eyebrow = "Admin", actions, childr
         </aside>
 
         <section className="flex-1 space-y-6">
-          <header className="page-rise rounded-[32px] border border-black/5 bg-white/80 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur">
-            <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">{eyebrow}</p>
+          <header className="rounded-[28px] border border-black/5 bg-white p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.28em] text-neutral-500">{eyebrow}</p>
             <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 sm:text-4xl">{title}</h1>
@@ -119,7 +119,7 @@ export function AdminCard({
 }) {
   return (
     <section
-      className={`rounded-[28px] border border-black/5 bg-white/80 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur ${className}`}
+      className={`rounded-[24px] border border-black/5 bg-white p-6 shadow-sm ${className}`}
       style={style}
     >
       {children}

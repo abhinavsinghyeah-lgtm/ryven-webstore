@@ -83,7 +83,7 @@ export default function AdminSettingsPage() {
       {error ? <StatusBanner tone="error" title="Settings error" description={error} /> : null}
       {success ? <StatusBanner tone="success" title="Settings updated" description={success} /> : null}
 
-      <AdminCard className="fade-up" style={{ animationDelay: "80ms" }}>
+      <AdminCard>
         <form onSubmit={onSubmit} className="space-y-4">
           {loading ? (
             <div className="space-y-3">
