@@ -18,6 +18,21 @@ const initialForm = {
   category: "",
 };
 
+function validateForm(form: typeof initialForm): string | null {
+  if (form.name.trim().length < 2) return "Name must be at least 2 characters.";
+  if (form.shortDescription.trim().length < 8) return "Short description must be at least 8 characters.";
+  if (form.description.trim().length < 20) return "Description must be at least 20 characters.";
+  if (!Number.isFinite(Number(form.priceRupees)) || Number(form.priceRupees) <= 0) return "Price must be greater than 0.";
+  try {
+    // URL constructor throws when input is not a valid absolute URL.
+    new URL(form.imageUrl.trim());
+  } catch {
+    return "Image URL must be a valid URL.";
+  }
+  if (form.category.trim().length < 2) return "Category must be at least 2 characters.";
+  return null;
+}
+
 export default function AdminProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
@@ -50,12 +65,24 @@ export default function AdminProductsPage() {
     const token = authStorage.getToken();
     if (!token) return;
 
+    const validationError = validateForm(form);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     const slug = form.name
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9\s-]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
+
+    const notes = form.notes
+      .split(",")
+      .map((item) => item.trim())
+      .filter((item) => item.length >= 2)
+      .slice(0, 8);
 
     const payload = {
       name: form.name,
@@ -64,12 +91,9 @@ export default function AdminProductsPage() {
       description: form.description,
       pricePaise: Math.round(Number(form.priceRupees) * 100),
       currency: "INR",
-      imageUrl: form.imageUrl,
-      notes: form.notes
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean),
-      category: form.category,
+      imageUrl: form.imageUrl.trim(),
+      notes,
+      category: form.category.trim(),
       isActive: true,
     };
 
@@ -112,9 +136,9 @@ export default function AdminProductsPage() {
           <Input label="Name" value={form.name} onChange={(v) => setForm((f) => ({ ...f, name: v }))} required />
           <Input label="Short Description" value={form.shortDescription} onChange={(v) => setForm((f) => ({ ...f, shortDescription: v }))} required />
           <Textarea label="Description" value={form.description} onChange={(v) => setForm((f) => ({ ...f, description: v }))} required />
-          <Input label="Price (INR)" type="number" value={form.priceRupees} onChange={(v) => setForm((f) => ({ ...f, priceRupees: v }))} required />
+          <Input label="Price (INR)" type="number" value={form.priceRupees} onChange={(v) => setForm((f) => ({ ...f, priceRupees: v }))} required min={1} step="0.01" />
           <Input label="Image URL" value={form.imageUrl} onChange={(v) => setForm((f) => ({ ...f, imageUrl: v }))} required />
-          <Input label="Notes (comma separated)" value={form.notes} onChange={(v) => setForm((f) => ({ ...f, notes: v }))} required />
+          <Input label="Notes (comma separated, optional)" value={form.notes} onChange={(v) => setForm((f) => ({ ...f, notes: v }))} />
           <Input label="Category" value={form.category} onChange={(v) => setForm((f) => ({ ...f, category: v }))} required />
 
           <button
@@ -155,12 +179,16 @@ function Input({
   onChange,
   required,
   type = "text",
+  min,
+  step,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   required?: boolean;
   type?: string;
+  min?: number;
+  step?: string;
 }) {
   return (
     <label className="block space-y-1.5">
@@ -168,6 +196,8 @@ function Input({
       <input
         type={type}
         required={required}
+        min={min}
+        step={step}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm outline-none focus:border-neutral-900"

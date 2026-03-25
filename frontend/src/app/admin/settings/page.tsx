@@ -11,7 +11,7 @@ import type { StoreSettingsResponse } from "@/types/dashboard";
 export default function AdminSettingsPage() {
   const router = useRouter();
 
-  const [form, setForm] = useState({ storeName: "", logoUrl: "", tagline: "" });
+  const [form, setForm] = useState({ storeName: "", logoUrl: "", heroImageUrl: "", tagline: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +35,7 @@ export default function AdminSettingsPage() {
         setForm({
           storeName: data.settings.storeName,
           logoUrl: data.settings.logoUrl,
+          heroImageUrl: data.settings.heroImageUrl || data.settings.logoUrl,
           tagline: data.settings.tagline,
         });
       })
@@ -88,6 +89,7 @@ export default function AdminSettingsPage() {
           <>
             <Field label="Store name" value={form.storeName} onChange={(value) => setForm((f) => ({ ...f, storeName: value }))} />
             <Field label="Logo image URL" value={form.logoUrl} onChange={(value) => setForm((f) => ({ ...f, logoUrl: value }))} />
+            <Field label="Homepage hero image URL" value={form.heroImageUrl} onChange={(value) => setForm((f) => ({ ...f, heroImageUrl: value }))} />
             <Field label="Tagline" value={form.tagline} onChange={(value) => setForm((f) => ({ ...f, tagline: value }))} />
 
             <button

@@ -17,6 +17,7 @@ export interface StoreSettings {
   id: number;
   storeName: string;
   logoUrl: string;
+  heroImageUrl: string;
   tagline: string;
   updatedAt: string;
 }

@@ -24,7 +24,18 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data?.message || "Request failed");
+    const fieldErrors = data?.details?.fieldErrors
+      ? Object.entries(data.details.fieldErrors)
+          .flatMap(([field, messages]) =>
+            Array.isArray(messages)
+              ? messages.filter(Boolean).map((message) => `${field}: ${String(message)}`)
+              : [],
+          )
+          .join(" | ")
+      : "";
+
+    const message = [data?.message || "Request failed", fieldErrors].filter(Boolean).join(" - ");
+    throw new Error(message);
   }
 
   return data as T;

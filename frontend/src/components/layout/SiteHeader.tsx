@@ -37,19 +37,19 @@ export function SiteHeader() {
   const transparent = isHome && !isPastHero;
 
   const headerClass = transparent
-    ? "fixed top-0 z-50 w-full border-transparent bg-transparent text-neutral-700"
-    : "sticky top-0 z-50 border-b border-neutral-200 bg-white/80 text-neutral-800 backdrop-blur-lg";
+    ? "fixed top-0 z-50 w-full border-transparent bg-transparent text-white"
+    : "sticky top-0 z-50 border-b border-neutral-200 bg-white/92 text-neutral-800 backdrop-blur-lg";
 
   const subtleLinkClass = transparent
-    ? "text-sm text-neutral-600/90 hover:text-neutral-700 transition-colors"
+    ? "text-sm text-white/90 hover:text-white transition-colors"
     : "text-sm text-neutral-600 hover:text-neutral-800 transition-colors";
 
   const ghostBtnClass = transparent
-    ? "rounded-full border border-neutral-400/50 bg-white/20 px-3 py-1.5 text-xs font-medium text-neutral-700 sm:text-sm hover:bg-white/30 transition-all"
+    ? "rounded-full border border-white/50 bg-white/20 px-3 py-1.5 text-xs font-medium text-white sm:text-sm hover:bg-white/30 transition-all"
     : "rounded-full border border-neutral-300 bg-white/60 px-3 py-1.5 text-xs font-medium text-neutral-700 sm:text-sm hover:bg-white transition-all";
 
   const solidBtnClass = transparent
-    ? "rounded-full bg-gradient-to-r from-pink-300 to-purple-300 px-3 py-1.5 text-xs font-semibold text-white sm:text-sm hover:shadow-lg transition-all"
+    ? "rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-neutral-900 sm:text-sm hover:shadow-lg transition-all"
     : "rounded-full bg-gradient-to-r from-pink-400 to-purple-400 px-3 py-1.5 text-xs font-semibold text-white sm:text-sm hover:shadow-md transition-all";
 
   return (
