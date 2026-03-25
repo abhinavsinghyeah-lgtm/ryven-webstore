@@ -1,20 +1,14 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Inter } from "next/font/google";
 
 import { CartProvider } from "@/contexts/CartContext";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-});
-
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -28,11 +22,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${manrope.variable} ${cormorant.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <CartProvider>
           <SiteHeader />
-          <div className="pt-[64px]">{children}</div>
+          <div className="flex-1">{children}</div>
           <SiteFooter />
         </CartProvider>
       </body>

@@ -10,18 +10,18 @@
 @theme inline {
   --color-background: var(--bg);
   --color-foreground: var(--fg);
-  --font-sans: var(--font-manrope);
+  --font-sans: var(--font-inter);
 }
 
 body {
   background: linear-gradient(135deg, var(--bg) 0%, var(--bg-soft) 100%);
   color: var(--fg);
-  font-family: var(--font-manrope), sans-serif;
+  font-family: var(--font-inter), sans-serif;
   min-height: 100vh;
 }
 
 .font-display {
-  font-family: var(--font-cormorant), serif;
+  font-family: var(--font-inter), sans-serif;
 }
 
 * {

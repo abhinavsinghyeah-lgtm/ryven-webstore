@@ -42,28 +42,28 @@ export function SiteHeader() {
       : "sticky top-0 z-50 w-full border-b border-black/5 bg-white/90 text-neutral-900 backdrop-blur-lg";
 
   const subtleLinkClass = transparent
-    ? "text-[0.8rem] uppercase tracking-[0.22em] text-white/85 hover:text-white transition-colors"
-    : "text-[0.8rem] uppercase tracking-[0.22em] text-neutral-600 hover:text-neutral-900 transition-colors";
+    ? "text-sm font-medium text-white/90 hover:text-white transition-colors"
+    : "text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors";
 
   const ghostBtnClass = transparent
-    ? "rounded-full border border-white/40 bg-white/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/20"
-    : "rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-800 transition hover:border-black/20";
+    ? "rounded-full border border-white/40 bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20"
+    : "rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-xs font-semibold text-neutral-800 transition hover:border-black/20";
 
   const solidBtnClass = transparent
-    ? "rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-900 shadow-sm transition hover:shadow-md"
-    : "rounded-full bg-neutral-900 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition hover:bg-neutral-800";
+    ? "rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold text-neutral-900 shadow-sm transition hover:shadow-md"
+    : "rounded-full bg-neutral-900 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-neutral-800";
 
   const iconLinkClass = transparent
-    ? "inline-flex h-10 items-center gap-2 rounded-full border border-white/40 bg-white/10 px-3 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/20"
-    : "inline-flex h-10 items-center gap-2 rounded-full border border-black/10 bg-white px-3 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-900 transition hover:border-black/20";
+    ? "inline-flex h-10 items-center gap-2 rounded-full border border-white/40 bg-white/10 px-3 text-xs font-semibold text-white transition hover:bg-white/20"
+    : "inline-flex h-10 items-center gap-2 rounded-full border border-black/10 bg-white px-3 text-xs font-semibold text-neutral-900 transition hover:border-black/20";
 
   const cartLinkClass = transparent
     ? "inline-flex h-10 min-w-10 items-center justify-center rounded-full border border-white/40 bg-white/10 px-3 text-white transition hover:bg-white/20"
     : "inline-flex h-10 min-w-10 items-center justify-center rounded-full border border-black/10 bg-white px-3 text-neutral-900 transition hover:border-black/20";
 
   const logoClass = transparent
-    ? "font-display text-lg font-semibold uppercase tracking-[0.32em] drop-shadow-[0_1px_3px_rgba(0,0,0,0.25)]"
-    : "font-display text-lg font-semibold uppercase tracking-[0.32em]";
+    ? "text-lg font-semibold tracking-[0.18em] drop-shadow-[0_1px_3px_rgba(0,0,0,0.25)]"
+    : "text-lg font-semibold tracking-[0.18em]";
 
   return (
     <header className={headerClass}>
