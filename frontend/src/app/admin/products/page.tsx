@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { apiRequest } from "@/lib/api";
 import { authStorage } from "@/lib/auth";
+import { ContentSkeleton } from "@/components/ui/ContentSkeleton";
 import type { Product, ProductCatalogResponse } from "@/types/product";
 
 const initialForm = {
@@ -193,7 +194,11 @@ export default function AdminProductsPage() {
         <section className="rounded-2xl border border-neutral-300 bg-white/90 p-5">
           <h2 className="text-lg font-semibold text-neutral-900">Live Products</h2>
           {loading ? (
-            <p className="mt-3 text-sm text-neutral-600">Loading products...</p>
+            <div className="mt-4 space-y-3">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <ContentSkeleton key={index} rows={3} className="min-h-[120px]" />
+              ))}
+            </div>
           ) : products.length === 0 ? (
             <p className="mt-3 text-sm text-neutral-600">No products yet.</p>
           ) : (

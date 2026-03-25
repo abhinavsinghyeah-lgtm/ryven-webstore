@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { ContentSkeleton } from "@/components/ui/ContentSkeleton";
 import { useCart } from "@/contexts/CartContext";
 import { formatPricePaise } from "@/lib/format";
 
@@ -10,8 +11,13 @@ export function CartPanel() {
 
   if (!isReady) {
     return (
-      <section className="rounded-2xl border border-neutral-300 bg-white/80 p-6">
-        <p className="text-sm text-neutral-600">Loading cart...</p>
+      <section className="grid gap-5 lg:grid-cols-[1fr_320px]">
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <ContentSkeleton key={index} rows={4} className="min-h-[160px]" />
+          ))}
+        </div>
+        <ContentSkeleton rows={4} showAvatar={false} className="min-h-[260px]" />
       </section>
     );
   }

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { AnimatedAddToCartButton } from "@/components/ui/AnimatedAddToCartButton";
 import { formatPricePaise } from "@/lib/format";
 import type { Product } from "@/types/product";
 
@@ -52,9 +53,27 @@ export function ProductCollectionSection({ products }: ProductCollectionSectionP
                   <p className="text-xs uppercase tracking-[0.16em] text-neutral-500">{product.category}</p>
                   <h3 className="mt-1 text-lg font-semibold text-neutral-900">{product.name}</h3>
                   <p className="mt-1 line-clamp-2 text-sm text-neutral-600">{product.shortDescription}</p>
-                  <p className="mt-3 text-base font-semibold text-neutral-900">
-                    {formatPricePaise(product.pricePaise, product.currency)}
-                  </p>
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <p className="text-base font-semibold text-neutral-900">
+                      {formatPricePaise(product.pricePaise, product.currency)}
+                    </p>
+                    <Link href={`/products/${product.slug}`} className="text-sm font-medium text-neutral-700 underline decoration-2 underline-offset-4">
+                      View
+                    </Link>
+                  </div>
+
+                  <div className="mt-4">
+                    <AnimatedAddToCartButton
+                      product={{
+                        id: product.id,
+                        name: product.name,
+                        slug: product.slug,
+                        imageUrl: product.imageUrl,
+                        pricePaise: product.pricePaise,
+                        currency: product.currency,
+                      }}
+                    />
+                  </div>
                 </div>
               </article>
             ))}

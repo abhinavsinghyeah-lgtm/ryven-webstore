@@ -13,13 +13,13 @@ export default function OrderSummary({ items, subtotalPaise, shippingPaise, tota
   const currency = items[0]?.product?.currency ?? "INR";
 
   return (
-    <div className="rounded-2xl border border-[#e8e8e4] bg-[#fafaf8] p-5 space-y-4">
+    <div className="rounded-[1.5rem] border border-neutral-200 bg-[#fafaf8] p-5 space-y-4">
       <h3 className="text-sm font-semibold text-[#111] uppercase tracking-wider">Order Summary</h3>
 
       <ul className="space-y-3">
         {items.map((item) => (
-          <li key={item.productId} className="flex items-center gap-3">
-            <div className="relative h-14 w-14 rounded-lg overflow-hidden bg-[#f0f0ec] shrink-0">
+          <li key={item.productId} className="flex items-center gap-3 rounded-2xl bg-white p-3">
+            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-[#f0f0ec]">
               {item.product.imageUrl ? (
                 <Image
                   src={item.product.imageUrl}

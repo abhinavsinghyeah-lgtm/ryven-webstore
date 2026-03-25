@@ -10,6 +10,8 @@ import { apiRequest } from "@/lib/api";
 import { authStorage } from "@/lib/auth";
 import { openRazorpay } from "@/lib/razorpay";
 import { clearGuestCartItems } from "@/lib/cart-storage";
+import { ContentSkeleton } from "@/components/ui/ContentSkeleton";
+import { StatusBanner } from "@/components/ui/StatusBanner";
 import type { InitiateCheckoutResponse, VerifyCheckoutResponse } from "@/types/order";
 import type { CartItem } from "@/types/cart";
 import type { AuthResponse } from "@/types/auth";
@@ -30,6 +32,8 @@ interface AddressData {
 
 const SHIPPING_PAISE = 0; // free shipping
 
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, refreshCart } = useCart();
@@ -37,8 +41,17 @@ export default function CheckoutPage() {
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
+  const [paymentNotice, setPaymentNotice] = useState<"idle" | "completed" | "proceeding">("idle");
 
   const cartItems: CartItem[] = cart.items;
+
+  if (!cart || !Array.isArray(cart.items)) {
+    return (
+      <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
+        <ContentSkeleton rows={4} showAvatar={false} className="min-h-[440px]" />
+      </main>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (
@@ -68,8 +81,13 @@ export default function CheckoutPage() {
     if (!customerInfo) return;
     setError(null);
     setPaying(true);
+    setPaymentNotice("completed");
 
     try {
+      await wait(550);
+      setPaymentNotice("proceeding");
+      await wait(700);
+
       // Map cart items to the payload format backend expects
       const cartPayload = cartItems.map((item) => ({
         productId: item.productId,
@@ -133,69 +151,79 @@ export default function CheckoutPage() {
             router.push("/checkout/success");
           } catch (err) {
             setError(err instanceof Error ? err.message : "Order could not be confirmed. Contact support.");
+            setPaymentNotice("idle");
             setPaying(false);
           }
         },
         modal: {
           ondismiss: () => {
+            setPaymentNotice("idle");
             setPaying(false);
           },
         },
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setPaymentNotice("idle");
       setPaying(false);
     }
   };
 
-  return (
-    <main className="min-h-screen bg-[#f1f1ee]">
-      {/* Progress bar */}
-      <div className="h-1 bg-[#e0e0da]">
-        <div
-          className="h-full bg-[#111] transition-all duration-500"
-          style={{ width: step === 1 ? "50%" : "100%" }}
-        />
-      </div>
+  const banner =
+    paymentNotice === "completed"
+      ? { variant: "success" as const, title: "2/2 steps completed!", description: "Address confirmed. Finalizing your secure checkout handoff." }
+      : paymentNotice === "proceeding"
+        ? { variant: "info" as const, title: "Proceeding to payment.", description: "Opening Razorpay with your order details now." }
+        : step === 1
+          ? { variant: "success" as const, title: "You are 1/2 step away", description: "Fill your contact details to continue to delivery and payment." }
+          : { variant: "success" as const, title: "You are 2/2 step away", description: "Confirm the delivery address and continue to payment." };
 
-      <div className="max-w-lg mx-auto px-4 py-10 sm:py-16">
-        {/* Logo */}
-        <div className="mb-10 text-center">
+  return (
+    <main className="min-h-screen bg-[#f4f4f2] px-4 py-8 sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 flex items-center justify-between">
           <Link href="/" className="text-xl font-bold tracking-[0.2em] text-[#111] uppercase">
             RYVEN
           </Link>
+          <div className="flex items-center gap-6 text-sm text-neutral-500">
+            <StepDot active={step >= 1} label="cart" />
+            <StepDot active={step >= 2 || paymentNotice !== "idle"} label="checkout" />
+          </div>
         </div>
 
-        {/* Error banner */}
+        <div className="mb-6">
+          <StatusBanner variant={banner.variant} title={banner.title} description={banner.description} />
+        </div>
+
         {error && (
-          <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-            {error}
+          <div className="mb-6">
+            <StatusBanner variant="error" title={error} />
           </div>
         )}
 
-        {/* Steps */}
-        <div className="bg-white rounded-2xl shadow-sm border border-[#e8e8e4] p-6 sm:p-8">
-          {step === 1 && (
-            <CheckoutStep1
-              initialData={customerInfo ?? undefined}
-              onNext={handleStep1Next}
-            />
-          )}
-          {step === 2 && (
-            <CheckoutStep2
-              cartItems={cartItems}
-              shippingPaise={SHIPPING_PAISE}
-              onBack={() => setStep(1)}
-              onPay={handlePay}
-              paying={paying}
-            />
+        <div className="rounded-[2rem] bg-white p-6 shadow-[0_16px_40px_rgba(0,0,0,0.08)] sm:p-8">
+          {step === 1 ? (
+            <CheckoutStep1 initialData={customerInfo ?? undefined} onNext={handleStep1Next} cartItems={cartItems} shippingPaise={SHIPPING_PAISE} />
+          ) : (
+            <CheckoutStep2 cartItems={cartItems} shippingPaise={SHIPPING_PAISE} onBack={() => setStep(1)} onPay={handlePay} paying={paying} />
           )}
         </div>
 
-        <p className="mt-6 text-center text-xs text-[#aaa]">
+        <p className="mt-6 text-center text-xs text-[#888]">
           &copy; {new Date().getFullYear()} RYVEN · All rights reserved
         </p>
       </div>
     </main>
+  );
+}
+
+function StepDot({ active, label }: { active: boolean; label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className={active ? "grid h-6 w-6 place-items-center rounded-full bg-neutral-900 text-[11px] font-semibold text-white" : "grid h-6 w-6 place-items-center rounded-full border border-neutral-300 text-[11px] font-semibold text-neutral-500"}>
+        {active ? "●" : "○"}
+      </div>
+      <span className="text-xs uppercase tracking-[0.16em]">{label}</span>
+    </div>
   );
 }

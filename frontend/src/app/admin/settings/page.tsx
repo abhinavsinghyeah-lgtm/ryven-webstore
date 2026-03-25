@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { apiRequest } from "@/lib/api";
 import { authStorage } from "@/lib/auth";
+import { ContentSkeleton } from "@/components/ui/ContentSkeleton";
 import type { StoreSettingsResponse } from "@/types/dashboard";
 
 export default function AdminSettingsPage() {
@@ -84,7 +85,11 @@ export default function AdminSettingsPage() {
 
       <form onSubmit={onSubmit} className="rounded-2xl border border-neutral-300 bg-white/90 p-5 space-y-4">
         {loading ? (
-          <p className="text-sm text-neutral-600">Loading settings...</p>
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <ContentSkeleton key={index} rows={3} showAvatar={false} className="min-h-[112px]" />
+            ))}
+          </div>
         ) : (
           <>
             <Field label="Store name" value={form.storeName} onChange={(value) => setForm((f) => ({ ...f, storeName: value }))} />

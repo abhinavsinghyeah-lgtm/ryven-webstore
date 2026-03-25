@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { CartItem } from "@/types/cart";
-import { formatPricePaise } from "@/lib/format";
 import OrderSummary from "./OrderSummary";
 
 interface AddressData {
@@ -76,67 +75,46 @@ export default function CheckoutStep2({ cartItems, shippingPaise, onBack, onPay,
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-      <div>
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex items-center gap-1.5 text-sm text-[#666] hover:text-[#111] transition-colors mb-5"
-        >
+    <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]" noValidate>
+      <section>
+        <button type="button" onClick={onBack} className="mb-5 flex items-center gap-1.5 text-sm text-[#666] transition-colors hover:text-[#111]">
           ← Back
         </button>
-        <p className="text-xs uppercase tracking-widest text-[#888] mb-2 font-medium">Step 2 of 2 — Delivery Address</p>
-        <h2 className="text-2xl font-semibold text-[#111]">Where should we deliver?</h2>
-      </div>
+        <p className="text-xs uppercase tracking-[0.24em] text-neutral-500">Step 2 of 2</p>
+        <h2 className="mt-3 text-3xl font-semibold text-[#111]">Shipping Details</h2>
 
-      <div className="space-y-4">
-        {field("line", "Street Address", "123, Rose Lane, MG Road")}
+        <div className="mt-8 space-y-4 rounded-[1.5rem] border border-neutral-200 bg-[#fafaf8] p-5 sm:p-6">
+          {field("line", "Street Address", "123, Rose Lane, MG Road")}
 
-        <div className="grid grid-cols-2 gap-4">
-          {field("city", "City", "Mumbai")}
-          {field("state", "State", "Maharashtra")}
-        </div>
+          <div className="grid grid-cols-2 gap-4">
+            {field("city", "City", "Mumbai")}
+            {field("state", "State", "Maharashtra")}
+          </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          {field("pincode", "PIN Code", "400001", { maxLength: 6 })}
-          <div>
-            <label htmlFor="country" className="block text-sm font-medium text-[#333] mb-1.5">
-              Country
-            </label>
-            <input
-              id="country"
-              value={address.country}
-              readOnly
-              className="w-full px-4 py-3 rounded-xl border border-[#ddd] bg-[#f8f8f6] text-[#555] outline-none"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            {field("pincode", "PIN Code", "400001", { maxLength: 6 })}
+            <div>
+              <label htmlFor="country" className="mb-1.5 block text-sm font-medium text-[#333]">Country</label>
+              <input id="country" value={address.country} readOnly className="w-full rounded-xl border border-[#ddd] bg-[#f8f8f6] px-4 py-3 text-[#555] outline-none" />
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Order Summary */}
-      <OrderSummary items={cartItems} subtotalPaise={subtotalPaise} shippingPaise={shippingPaise ?? SHIPPING_PAISE} totalPaise={totalPaise} />
+      <section className="space-y-5">
+        <div className="rounded-[1.5rem] border border-neutral-200 bg-white p-5 shadow-[0_10px_24px_rgba(0,0,0,0.06)] sm:p-6">
+          <button type="submit" disabled={paying} className="h-12 w-full rounded-xl bg-[#5b43f4] text-sm font-semibold text-white transition hover:bg-[#4e37df] disabled:cursor-not-allowed disabled:opacity-60">
+            {paying ? "Processing..." : "Place Order"}
+          </button>
+          <p className="mt-3 text-xs leading-5 text-neutral-500">By placing your order, you agree to our company privacy policy and conditions of use.</p>
 
-      <button
-        type="submit"
-        disabled={paying}
-        className="w-full py-3.5 px-6 bg-[#111] text-white font-semibold rounded-xl hover:bg-[#333] active:bg-[#000] transition-colors text-sm tracking-wide disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {paying ? (
-          <span className="flex items-center justify-center gap-2">
-            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
-            Processing…
-          </span>
-        ) : (
-          `Pay ${formatPricePaise(totalPaise, "INR")} →`
-        )}
-      </button>
+          <div className="mt-6">
+            <OrderSummary items={cartItems} subtotalPaise={subtotalPaise} shippingPaise={shippingPaise ?? SHIPPING_PAISE} totalPaise={totalPaise} />
+          </div>
+        </div>
 
-      <p className="text-center text-xs text-[#aaa]">
-        Secured by Razorpay · 256-bit SSL encryption
-      </p>
+        <p className="text-center text-xs text-[#888]">Secured by Razorpay · 256-bit SSL encryption</p>
+      </section>
     </form>
   );
 }
