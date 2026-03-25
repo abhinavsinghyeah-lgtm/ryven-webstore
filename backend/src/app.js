@@ -15,6 +15,8 @@ const { errorHandler } = require("./middlewares/error.middleware");
 const app = express();
 
 app.disable("x-powered-by");
+// Trust first proxy (nginx) so rate-limit can read X-Forwarded-For safely.
+app.set("trust proxy", 1);
 
 app.use(
   cors({
