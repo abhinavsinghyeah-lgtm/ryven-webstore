@@ -35,7 +35,10 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       : "";
 
     const message = [data?.message || "Request failed", fieldErrors].filter(Boolean).join(" - ");
-    throw new Error(message);
+    const error = new Error(message) as Error & { status?: number; data?: unknown };
+    error.status = response.status;
+    error.data = data;
+    throw error;
   }
 
   return data as T;

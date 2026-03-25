@@ -39,6 +39,7 @@ export interface InitiateCheckoutResponse {
   userName: string;
   userEmail: string;
   checkoutToken: string;
+  skipRazorpay?: boolean;
 }
 
 export interface VerifyCheckoutResponse {

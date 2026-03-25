@@ -14,10 +14,15 @@ const CHECKOUT_TOKEN_EXPIRY = "30m";
 
 const initiateCheckout = async ({ customerInfo, address, cartItems, shippingOption = "basic" }) => {
   const normalizedPhone = customerInfo.phone.replace(/\D/g, "");
-  const { user, isNew } = await findOrCreateGuestUser({
+  const checkoutCustomer = {
     fullName: customerInfo.fullName,
     email: customerInfo.email,
     phone: normalizedPhone,
+  };
+  const { user, isNew } = await findOrCreateGuestUser({
+    fullName: checkoutCustomer.fullName,
+    email: checkoutCustomer.email,
+    phone: checkoutCustomer.phone,
   });
 
   // Verify all products and compute total server-side — never trust frontend price
@@ -46,12 +51,14 @@ const initiateCheckout = async ({ customerInfo, address, cartItems, shippingOpti
   const totalPaise = subtotalPaise + shippingPaise;
   const currency = verifiedItems[0]?.currency || "INR";
 
-  // Create Razorpay order with server-computed amount
-  const rpOrder = await razorpay.orders.create({
-    amount: totalPaise,
-    currency,
-    receipt: `ryven_${Date.now()}`,
-  });
+  // Create Razorpay order with server-computed amount (skip in dev mode)
+  const razorpayOrderId = env.SKIP_RAZORPAY
+    ? `manual_${Date.now()}`
+    : (await razorpay.orders.create({
+        amount: totalPaise,
+        currency,
+        receipt: `ryven_${Date.now()}`,
+      })).id;
 
   // Embed verified cart and address in a short-lived checkout token
   const checkoutToken = jwt.sign(
@@ -59,7 +66,7 @@ const initiateCheckout = async ({ customerInfo, address, cartItems, shippingOpti
       iss: "ryven-checkout",
       userId: user.id,
       isNew,
-      customerInfo: { fullName: user.fullName, email: user.email, phone: normalizedPhone },
+      customerInfo: checkoutCustomer,
       address,
       items: verifiedItems,
       subtotalPaise,
@@ -67,20 +74,75 @@ const initiateCheckout = async ({ customerInfo, address, cartItems, shippingOpti
       shippingService: shippingOption,
       totalPaise,
       currency,
-      razorpayOrderId: rpOrder.id,
+      razorpayOrderId,
     },
     env.JWT_SECRET,
     { expiresIn: CHECKOUT_TOKEN_EXPIRY },
   );
 
   return {
-    razorpayOrderId: rpOrder.id,
-    razorpayKeyId: env.RAZORPAY_KEY_ID,
+    razorpayOrderId,
+    razorpayKeyId: env.RAZORPAY_KEY_ID || "",
     amount: totalPaise,
     currency,
     userName: user.fullName,
     userEmail: user.email,
     checkoutToken,
+    skipRazorpay: env.SKIP_RAZORPAY,
+  };
+};
+
+const completeCheckoutWithoutPayment = async ({ checkoutToken }) => {
+  let payload;
+  try {
+    payload = jwt.verify(checkoutToken, env.JWT_SECRET);
+  } catch {
+    throw new ApiError(400, "Checkout session expired or invalid");
+  }
+
+  if (payload.iss !== "ryven-checkout") {
+    throw new ApiError(400, "Invalid checkout token");
+  }
+
+  const existingOrder = await findOrderByRazorpayOrderId(payload.razorpayOrderId);
+  if (existingOrder) {
+    return { order: existingOrder, isNew: payload.isNew, customerInfo: payload.customerInfo };
+  }
+
+  const { userId, isNew, customerInfo, address, items, subtotalPaise, shippingPaise, shippingService, totalPaise, currency, razorpayOrderId } = payload;
+
+  const order = await createOrder({
+    userId,
+    shippingName: customerInfo.fullName,
+    shippingPhone: customerInfo.phone,
+    shippingAddress: address.line,
+    shippingCity: address.city,
+    shippingState: address.state,
+    shippingPincode: address.pincode,
+    shippingCountry: address.country || "India",
+    subtotalPaise,
+    shippingPaise,
+    shippingService,
+    totalPaise,
+    currency,
+    razorpayOrderId,
+    razorpayPaymentId: null,
+    items,
+  });
+
+  await clearCartByUserId(userId);
+  const fullOrder = await findOrderById(order.id);
+
+  sendOrderConfirmation({
+    to: customerInfo.email,
+    order: fullOrder,
+    user: { fullName: customerInfo.fullName },
+  }).catch((err) => console.error("Email send failed:", err));
+
+  return {
+    order: fullOrder,
+    isNew,
+    customerInfo,
   };
 };
 
@@ -222,4 +284,10 @@ const getOrder = async ({ orderId, userId }) => {
   return order;
 };
 
-module.exports = { initiateCheckout, verifyAndPersistOrder, confirmAndPersistOrder, getOrder };
+module.exports = {
+  initiateCheckout,
+  verifyAndPersistOrder,
+  confirmAndPersistOrder,
+  completeCheckoutWithoutPayment,
+  getOrder,
+};

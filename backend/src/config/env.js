@@ -16,9 +16,10 @@ const envSchema = z.object({
   DB_SSL: z.string().default("false"),
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default("1d"),
-  RAZORPAY_KEY_ID: z.string().min(1),
-  RAZORPAY_KEY_SECRET: z.string().min(1),
-  RAZORPAY_WEBHOOK_SECRET: z.string().min(1),
+  SKIP_RAZORPAY: z.string().default("false"),
+  RAZORPAY_KEY_ID: z.string().optional().default(""),
+  RAZORPAY_KEY_SECRET: z.string().optional().default(""),
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional().default(""),
   SMTP_HOST: z.string().min(1),
   SMTP_PORT: z.coerce.number().int().positive().default(587),
   SMTP_USER: z.string().min(1),
@@ -42,6 +43,19 @@ if (!parsed.success) {
 const env = {
   ...parsed.data,
   DB_SSL: parsed.data.DB_SSL === "true",
+  SKIP_RAZORPAY: parsed.data.SKIP_RAZORPAY === "true",
 };
+
+if (!env.SKIP_RAZORPAY) {
+  const missing = [];
+  if (!env.RAZORPAY_KEY_ID) missing.push("RAZORPAY_KEY_ID");
+  if (!env.RAZORPAY_KEY_SECRET) missing.push("RAZORPAY_KEY_SECRET");
+  if (!env.RAZORPAY_WEBHOOK_SECRET) missing.push("RAZORPAY_WEBHOOK_SECRET");
+  if (missing.length > 0) {
+    console.error("Invalid environment configuration: Razorpay keys are required.");
+    console.error(missing);
+    process.exit(1);
+  }
+}
 
 module.exports = { env };

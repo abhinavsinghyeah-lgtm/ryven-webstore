@@ -49,6 +49,14 @@ const confirmCheckoutSchema = z.object({
   query: z.object({}).optional(),
 });
 
+const completeCheckoutSchema = z.object({
+  body: z.object({
+    checkoutToken: z.string().trim().min(1),
+  }),
+  params: z.object({}).optional(),
+  query: z.object({}).optional(),
+});
+
 const getOrderSchema = z.object({
   body: z.object({}).optional(),
   query: z.object({}).optional(),
@@ -57,4 +65,10 @@ const getOrderSchema = z.object({
   }),
 });
 
-module.exports = { initiateCheckoutSchema, verifyCheckoutSchema, confirmCheckoutSchema, getOrderSchema };
+module.exports = {
+  initiateCheckoutSchema,
+  verifyCheckoutSchema,
+  confirmCheckoutSchema,
+  completeCheckoutSchema,
+  getOrderSchema,
+};

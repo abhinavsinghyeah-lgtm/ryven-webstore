@@ -39,7 +39,7 @@ export default function CheckoutPage() {
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
-  const [paymentNotice, setPaymentNotice] = useState<"idle" | "completed" | "proceeding">("idle");
+  const [paymentNotice, setPaymentNotice] = useState<"idle" | "completed" | "proceeding" | "confirming">("idle");
   const [shippingOption, setShippingOption] = useState<ShippingOption>("basic");
 
   const cartItems: CartItem[] = cart.items;
@@ -105,6 +105,54 @@ export default function CheckoutPage() {
 
       let confirmed = false;
 
+      const handleConfirmed = async (verifyData: VerifyCheckoutResponse) => {
+        confirmed = true;
+        clearGuestCartItems();
+        await refreshCart();
+        sessionStorage.setItem(
+          "ryven_last_order",
+          JSON.stringify({ order: verifyData.order, isNew: verifyData.isNew, customerInfo }),
+        );
+        router.push("/checkout/success");
+      };
+
+      const confirmOnce = async () =>
+        apiRequest<VerifyCheckoutResponse>("/checkout/confirm", {
+          method: "POST",
+          body: {
+            razorpayOrderId: initData.razorpayOrderId,
+            checkoutToken: initData.checkoutToken,
+          },
+        });
+
+      const pollForConfirmation = async () => {
+        const deadline = Date.now() + 120000;
+        while (Date.now() < deadline) {
+          await wait(6000);
+          try {
+            const confirmData = await confirmOnce();
+            await handleConfirmed(confirmData);
+            return;
+          } catch (err) {
+            const status = (err as Error & { status?: number }).status;
+            if (status !== 409) {
+              throw err;
+            }
+          }
+        }
+        throw new Error("Payment is still pending. Please check again in a few minutes.");
+      };
+
+      if (initData.skipRazorpay) {
+        setPaymentNotice("confirming");
+        const completeData = await apiRequest<VerifyCheckoutResponse>("/checkout/complete", {
+          method: "POST",
+          body: { checkoutToken: initData.checkoutToken },
+        });
+        await handleConfirmed(completeData);
+        return;
+      }
+
       await openRazorpay({
         key: initData.razorpayKeyId,
         amount: initData.amount,
@@ -130,17 +178,7 @@ export default function CheckoutPage() {
               },
             });
 
-            confirmed = true;
-            clearGuestCartItems();
-            await refreshCart();
-
-            // Persist order data for success page
-            sessionStorage.setItem(
-              "ryven_last_order",
-              JSON.stringify({ order: verifyData.order, isNew: verifyData.isNew, customerInfo }),
-            );
-
-            router.push("/checkout/success");
+            await handleConfirmed(verifyData);
           } catch (err) {
             setError(err instanceof Error ? err.message : "Order could not be confirmed. Contact support.");
             setPaymentNotice("idle");
@@ -151,24 +189,21 @@ export default function CheckoutPage() {
           ondismiss: async () => {
             if (confirmed) return;
             try {
-              const confirmData = await apiRequest<VerifyCheckoutResponse>("/checkout/confirm", {
-                method: "POST",
-                body: {
-                  razorpayOrderId: initData.razorpayOrderId,
-                  checkoutToken: initData.checkoutToken,
-                },
-              });
-
-              confirmed = true;
-              clearGuestCartItems();
-              await refreshCart();
-              sessionStorage.setItem(
-                "ryven_last_order",
-                JSON.stringify({ order: confirmData.order, isNew: confirmData.isNew, customerInfo }),
-              );
-              router.push("/checkout/success");
+              const confirmData = await confirmOnce();
+              await handleConfirmed(confirmData);
             } catch (err) {
-              setError(err instanceof Error ? err.message : "Payment is still pending. We will email you once confirmed.");
+              const status = (err as Error & { status?: number }).status;
+              if (status === 409) {
+                setPaymentNotice("confirming");
+                try {
+                  await pollForConfirmation();
+                  return;
+                } catch (pollErr) {
+                  setError(pollErr instanceof Error ? pollErr.message : "Payment is still pending. Please check again soon.");
+                }
+              } else {
+                setError(err instanceof Error ? err.message : "Payment is still pending. We will email you once confirmed.");
+              }
               setPaymentNotice("idle");
               setPaying(false);
             }
@@ -187,6 +222,8 @@ export default function CheckoutPage() {
       ? { variant: "success" as const, title: "2/2 steps completed!", description: "Address confirmed. Finalizing your secure checkout handoff." }
       : paymentNotice === "proceeding"
         ? { variant: "info" as const, title: "Proceeding to payment.", description: "Opening Razorpay with your order details now." }
+        : paymentNotice === "confirming"
+          ? { variant: "info" as const, title: "Confirming payment...", description: "UPI can take a minute. We are checking your payment status." }
         : step === 1
           ? { variant: "success" as const, title: "You are 1/2 step away", description: "Fill your contact details to continue to delivery and payment." }
           : { variant: "success" as const, title: "You are 2/2 step away", description: "Confirm the delivery address and continue to payment." };

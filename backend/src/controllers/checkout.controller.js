@@ -24,6 +24,12 @@ const confirmCheckout = asyncHandler(async (req, res) => {
   res.status(200).json(result);
 });
 
+const completeCheckout = asyncHandler(async (req, res) => {
+  const { checkoutToken } = req.validated.body;
+  const result = await checkoutService.completeCheckoutWithoutPayment({ checkoutToken });
+  res.status(200).json(result);
+});
+
 const getOrder = asyncHandler(async (req, res) => {
   const order = await checkoutService.getOrder({
     orderId: req.validated.params.id,
@@ -32,4 +38,4 @@ const getOrder = asyncHandler(async (req, res) => {
   res.status(200).json({ order });
 });
 
-module.exports = { initiateCheckout, verifyCheckout, confirmCheckout, getOrder };
+module.exports = { initiateCheckout, verifyCheckout, confirmCheckout, completeCheckout, getOrder };

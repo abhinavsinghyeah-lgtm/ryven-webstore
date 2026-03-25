@@ -49,12 +49,22 @@ const findUserByPhone = async (phone) => {
 };
 
 const findOrCreateGuestUser = async ({ fullName, email, phone }) => {
-  const existing = await findUserByEmail(email);
-  if (existing) {
-    if (!existing.phone && phone) {
-      await updateUserPhone({ userId: existing.id, phone });
+  const normalizedEmail = email.toLowerCase();
+
+  // Prefer phone as primary identity when available
+  if (phone) {
+    const existingByPhone = await findUserByPhone(phone);
+    if (existingByPhone) {
+      return { user: existingByPhone, isNew: false };
     }
-    return { user: existing, isNew: false };
+  }
+
+  const existingByEmail = await findUserByEmail(normalizedEmail);
+  if (existingByEmail) {
+    if (!existingByEmail.phone && phone) {
+      await updateUserPhone({ userId: existingByEmail.id, phone });
+    }
+    return { user: existingByEmail, isNew: false };
   }
 
   const sql = `
@@ -63,7 +73,7 @@ const findOrCreateGuestUser = async ({ fullName, email, phone }) => {
     RETURNING id, full_name AS "fullName", email, phone, role, is_password_set AS "isPasswordSet", is_verified AS "isVerified", created_at AS "createdAt"
   `;
 
-  const result = await query(sql, [fullName, email.toLowerCase(), phone]);
+  const result = await query(sql, [fullName, normalizedEmail, phone]);
   return { user: result.rows[0], isNew: true };
 };
 
