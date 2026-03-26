@@ -88,11 +88,17 @@ const requestOtp = async ({ identifier, fullName, email, phone }) => {
   });
 
   if (channel === "email") {
-    await sendOtpEmail({ to: value, code });
+    try {
+      await sendOtpEmail({ to: value, code });
+    } catch (err) {
+      console.error("OTP email failed:", err);
+      throw new ApiError(503, "Email OTP is temporarily unavailable. Please try again later.");
+    }
   } else {
     try {
       await sendOtpSms({ to: value, code });
     } catch (err) {
+      console.error("OTP SMS failed:", err);
       throw new ApiError(503, "SMS OTP is temporarily unavailable. Please use email.");
     }
   }
