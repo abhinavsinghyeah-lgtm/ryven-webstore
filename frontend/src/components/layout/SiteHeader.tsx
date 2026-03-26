@@ -80,8 +80,8 @@ export function SiteHeader() {
 
   return (
     <header className={headerClass}>
-      <div className="mx-auto w-full max-w-6xl px-5 py-4 sm:px-8">
-        <div className="relative grid min-h-[64px] grid-cols-[auto_1fr_auto] items-center gap-6">
+      <div className="mx-auto w-full max-w-6xl px-5 py-2 sm:px-8">
+        <div className="relative grid min-h-[56px] grid-cols-[auto_1fr_auto] items-center gap-5">
           <Link href="/" className="flex items-center gap-3">
             {settings?.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -95,7 +95,7 @@ export function SiteHeader() {
             )}
           </Link>
 
-          <nav className="hidden items-center justify-center gap-7 md:flex">
+          <nav className="hidden items-center justify-center gap-6 md:flex">
             <Link href="/" className={subtleLinkClass}>
               Home
             </Link>
@@ -113,7 +113,7 @@ export function SiteHeader() {
             </Link>
           </nav>
 
-          <div className="flex items-center justify-end gap-5">
+          <div className="flex items-center justify-end gap-4">
             <button
               type="button"
               onClick={() => setSearchOpen((prev) => !prev)}
@@ -156,7 +156,7 @@ export function SiteHeader() {
           {searchOpen ? (
             <form
               onSubmit={submitSearch}
-              className={`absolute right-0 top-full mt-4 w-72 rounded-full border px-4 py-2 text-sm shadow-lg ${
+              className={`absolute right-0 top-full mt-3 w-64 rounded-full border px-4 py-2 text-sm shadow-lg ${
                 transparent ? "border-white/20 bg-black/70 text-white" : "border-black/10 bg-white text-neutral-900"
               }`}
             >
