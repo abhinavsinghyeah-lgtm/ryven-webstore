@@ -6,7 +6,9 @@ import { useEffect, useState } from "react";
 
 import { useCart } from "@/contexts/CartContext";
 import { authStorage } from "@/lib/auth";
+import { apiRequest } from "@/lib/api";
 import type { AuthUser } from "@/types/auth";
+import type { StoreSettings } from "@/types/auth";
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -17,6 +19,7 @@ export function SiteHeader() {
   const [isPastHero, setIsPastHero] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [settings, setSettings] = useState<StoreSettings | null>(null);
   const [user] = useState<AuthUser | null>(() => {
     if (typeof window === "undefined") {
       return null;
@@ -32,6 +35,20 @@ export function SiteHeader() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    apiRequest<{ settings: StoreSettings }>("/store-settings")
+      .then((data) => {
+        if (alive) {
+          setSettings(data.settings);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const submitSearch = (event?: React.FormEvent) => {
@@ -63,13 +80,22 @@ export function SiteHeader() {
 
   return (
     <header className={headerClass}>
-      <div className="mx-auto w-full max-w-6xl px-5 py-3 sm:px-8">
-        <div className="relative grid grid-cols-[auto_1fr_auto] items-center gap-4">
-          <Link href="/" className={logoClass}>
-            RYVEN
+      <div className="mx-auto w-full max-w-6xl px-5 py-4 sm:px-8">
+        <div className="relative grid min-h-[64px] grid-cols-[auto_1fr_auto] items-center gap-6">
+          <Link href="/" className="flex items-center gap-3">
+            {settings?.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={settings.logoUrl}
+                alt={settings.storeName || "RYVEN"}
+                className="h-7 w-auto object-contain"
+              />
+            ) : (
+              <span className={logoClass}>RYVEN</span>
+            )}
           </Link>
 
-          <nav className="hidden items-center justify-center gap-6 md:flex">
+          <nav className="hidden items-center justify-center gap-7 md:flex">
             <Link href="/" className={subtleLinkClass}>
               Home
             </Link>
@@ -87,7 +113,7 @@ export function SiteHeader() {
             </Link>
           </nav>
 
-          <div className="flex items-center justify-end gap-4">
+          <div className="flex items-center justify-end gap-5">
             <button
               type="button"
               onClick={() => setSearchOpen((prev) => !prev)}
@@ -130,7 +156,7 @@ export function SiteHeader() {
           {searchOpen ? (
             <form
               onSubmit={submitSearch}
-              className={`absolute right-0 top-full mt-3 w-64 rounded-full border px-4 py-2 text-sm shadow-lg ${
+              className={`absolute right-0 top-full mt-4 w-72 rounded-full border px-4 py-2 text-sm shadow-lg ${
                 transparent ? "border-white/20 bg-black/70 text-white" : "border-black/10 bg-white text-neutral-900"
               }`}
             >
