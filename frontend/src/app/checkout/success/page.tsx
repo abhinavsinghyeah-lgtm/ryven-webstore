@@ -80,7 +80,9 @@ export default function CheckoutSuccessPage() {
   }
 
   const { order, isNew, customerInfo } = data;
-  const currency = order.currency;
+  const currency = order.currency || "INR";
+  const formatSafe = (value: number, itemCurrency?: string | null) =>
+    formatPricePaise(value, itemCurrency || currency || "INR");
   const orderItems = Array.isArray(order.items) ? order.items : [];
 
   const sendOtp = async () => {
@@ -188,7 +190,7 @@ export default function CheckoutSuccessPage() {
                     <span className="text-[#aaa] font-normal">× {item.quantity}</span>
                   </span>
                   <span className="font-semibold text-[#111]">
-                    {formatPricePaise(item.lineTotalPaise, item.currency)}
+                    {formatSafe(item.lineTotalPaise, item.currency)}
                   </span>
                 </li>
               ))}
@@ -198,18 +200,18 @@ export default function CheckoutSuccessPage() {
           <div className="border-t border-[#eee] pt-3 space-y-1.5 text-sm">
             <div className="flex justify-between text-[#555]">
               <span>Subtotal</span>
-              <span>{formatPricePaise(order.subtotalPaise, currency)}</span>
+              <span>{formatSafe(order.subtotalPaise)}</span>
             </div>
             <div className="flex justify-between text-[#555]">
               <span>Shipping</span>
-              <span>{order.shippingPaise === 0 ? "Free" : formatPricePaise(order.shippingPaise, currency)}</span>
+              <span>{order.shippingPaise === 0 ? "Free" : formatSafe(order.shippingPaise)}</span>
             </div>
             {order.shippingService ? (
               <p className="text-xs text-[#888]">Service: {order.shippingService}</p>
             ) : null}
             <div className="flex justify-between font-bold text-[#111] text-base pt-1">
               <span>Total Paid</span>
-              <span>{formatPricePaise(order.totalPaise, currency)}</span>
+              <span>{formatSafe(order.totalPaise)}</span>
             </div>
           </div>
         </div>

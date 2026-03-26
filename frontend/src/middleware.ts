@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 const ALLOWED_PREFIXES = [
   "/coming-soon",
-  "/api/access",
+  "/access",
   "/_next",
   "/favicon.ico",
   "/robots.txt",

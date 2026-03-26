@@ -99,15 +99,18 @@ const findOrderById = async (id) => {
 
   const itemsSql = `
     SELECT
-      product_id AS "productId",
-      product_name AS "productName",
-      product_image_url AS "productImageUrl",
-      unit_price_paise AS "unitPricePaise",
-      quantity,
-      line_total_paise AS "lineTotalPaise"
-    FROM order_items
-    WHERE order_id = $1
-    ORDER BY id
+      oi.id AS "id",
+      oi.product_id AS "productId",
+      oi.product_name AS "productName",
+      oi.product_image_url AS "productImageUrl",
+      oi.unit_price_paise AS "unitPricePaise",
+      oi.quantity,
+      oi.line_total_paise AS "lineTotalPaise",
+      o.currency AS "currency"
+    FROM order_items oi
+    INNER JOIN orders o ON o.id = oi.order_id
+    WHERE oi.order_id = $1
+    ORDER BY oi.id
   `;
 
   const [orderResult, itemsResult] = await Promise.all([
@@ -150,15 +153,18 @@ const findOrderByRazorpayOrderId = async (razorpayOrderId) => {
 
   const itemsSql = `
     SELECT
-      product_id AS "productId",
-      product_name AS "productName",
-      product_image_url AS "productImageUrl",
-      unit_price_paise AS "unitPricePaise",
-      quantity,
-      line_total_paise AS "lineTotalPaise"
-    FROM order_items
-    WHERE order_id = (SELECT id FROM orders WHERE razorpay_order_id = $1 LIMIT 1)
-    ORDER BY id
+      oi.id AS "id",
+      oi.product_id AS "productId",
+      oi.product_name AS "productName",
+      oi.product_image_url AS "productImageUrl",
+      oi.unit_price_paise AS "unitPricePaise",
+      oi.quantity,
+      oi.line_total_paise AS "lineTotalPaise",
+      o.currency AS "currency"
+    FROM order_items oi
+    INNER JOIN orders o ON o.id = oi.order_id
+    WHERE oi.order_id = (SELECT id FROM orders WHERE razorpay_order_id = $1 LIMIT 1)
+    ORDER BY oi.id
   `;
 
   const [orderResult, itemsResult] = await Promise.all([
