@@ -6,6 +6,8 @@ const PASSWORD = process.env.COMING_SOON_PASSWORD || "RYVEN8411";
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const password = typeof body?.password === "string" ? body.password.trim() : "";
+  const proto = request.headers.get("x-forwarded-proto");
+  const secureCookie = proto === "https";
 
   if (!password || password !== PASSWORD) {
     return NextResponse.json({ message: "Incorrect password" }, { status: 401 });
@@ -15,7 +17,7 @@ export async function POST(request: Request) {
   cookieStore.set("ryven_access", "true", {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: secureCookie,
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
   });
