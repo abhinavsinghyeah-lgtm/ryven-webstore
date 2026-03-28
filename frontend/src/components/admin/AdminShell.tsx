@@ -14,6 +14,9 @@ type AdminShellProps = {
 
 const navItems = [
   { href: "/admin", label: "Dashboard", description: "Overview & KPIs" },
+  { href: "/admin/control", label: "Control", description: "Systems & logs" },
+  { href: "/admin/engagement", label: "Engagement", description: "Live activity" },
+  { href: "/admin/users", label: "Users", description: "Accounts & access" },
   { href: "/admin/products", label: "Products", description: "Catalog & pricing" },
   { href: "/admin/orders", label: "Orders", description: "Fulfillment flow" },
   { href: "/admin/settings", label: "Settings", description: "Brand + hero" },
@@ -27,31 +30,31 @@ const isActiveRoute = (pathname: string | null, href: string) => {
 
 export const adminButtonClasses = {
   primary:
-    "inline-flex items-center justify-center rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/30 disabled:cursor-not-allowed disabled:opacity-60",
+    "inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 disabled:cursor-not-allowed disabled:opacity-60",
   ghost:
-    "inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-neutral-900 shadow-sm transition hover:-translate-y-0.5 hover:border-black/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10",
+    "inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20",
   soft:
-    "inline-flex items-center justify-center rounded-full border border-black/10 bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-200",
+    "inline-flex items-center justify-center rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15",
 };
 
 export const adminInputClasses =
-  "h-11 w-full rounded-xl border border-black/10 bg-white/90 px-3 text-sm text-neutral-900 shadow-sm outline-none transition focus:border-black/30 focus:bg-white";
+  "h-11 w-full rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white shadow-sm outline-none transition focus:border-white/30 focus:bg-white/10";
 
 export const adminTextareaClasses =
-  "w-full rounded-xl border border-black/10 bg-white/90 px-3 py-2 text-sm text-neutral-900 shadow-sm outline-none transition focus:border-black/30 focus:bg-white";
+  "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white shadow-sm outline-none transition focus:border-white/30 focus:bg-white/10";
 
 export function AdminShell({ title, subtitle, eyebrow = "Admin", actions, children }: AdminShellProps) {
   const pathname = usePathname();
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#f7f5f2_0%,#f0eee9_100%)] text-[#0f1115]">
+    <main className="min-h-screen bg-[#0b1118] text-slate-100">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-5 py-8 sm:px-8 lg:flex-row lg:gap-8 lg:py-12">
         <aside className="lg:w-72">
           <div className="space-y-5 lg:sticky lg:top-8">
-            <div className="rounded-[26px] bg-[#111318] p-6 text-white shadow-[0_18px_48px_rgba(15,17,21,0.28)]">
+            <div className="rounded-[24px] border border-white/5 bg-[#111821] p-6 shadow-[0_18px_48px_rgba(5,9,15,0.6)]">
               <p className="text-xs uppercase tracking-[0.4em] text-white/60">Ryven</p>
-              <p className="mt-3 text-2xl font-semibold tracking-tight">Admin Studio</p>
-              <p className="mt-2 text-sm text-white/70">Operations and control.</p>
+              <p className="mt-3 text-2xl font-semibold tracking-tight text-white">Admin Studio</p>
+              <p className="mt-2 text-sm text-white/60">Operations and control.</p>
 
               <nav className="mt-6 space-y-2">
                 {navItems.map((item) => {
@@ -62,7 +65,7 @@ export function AdminShell({ title, subtitle, eyebrow = "Admin", actions, childr
                       href={item.href}
                       className={
                         isActive
-                          ? "block rounded-2xl bg-white/12 px-4 py-3 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]"
+                          ? "block rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]"
                           : "block rounded-2xl px-4 py-3 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
                       }
                     >
@@ -79,10 +82,10 @@ export function AdminShell({ title, subtitle, eyebrow = "Admin", actions, childr
               </div>
             </div>
 
-            <div className="rounded-[22px] border border-black/5 bg-white p-4 shadow-sm">
-              <p className="text-[0.68rem] uppercase tracking-[0.32em] text-neutral-500">Tip</p>
-              <p className="mt-2 text-sm text-neutral-700">Keep hero image, products, and settings aligned so the storefront always feels premium.</p>
-              <Link href="/" className="mt-4 inline-flex items-center text-sm font-semibold text-neutral-900">
+            <div className="rounded-[22px] border border-white/5 bg-[#111821] p-4 text-white/80 shadow-sm">
+              <p className="text-[0.68rem] uppercase tracking-[0.32em] text-white/50">Tip</p>
+              <p className="mt-2 text-sm text-white/70">Keep hero image, products, and settings aligned so the storefront always feels premium.</p>
+              <Link href="/" className="mt-4 inline-flex items-center text-sm font-semibold text-white">
                 View storefront
               </Link>
             </div>
@@ -90,12 +93,12 @@ export function AdminShell({ title, subtitle, eyebrow = "Admin", actions, childr
         </aside>
 
         <section className="flex-1 space-y-6">
-          <header className="rounded-[28px] border border-black/5 bg-white p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.28em] text-neutral-500">{eyebrow}</p>
+          <header className="rounded-[26px] border border-white/5 bg-[#151c26] p-6 shadow-[0_16px_40px_rgba(5,9,15,0.5)]">
+            <p className="text-xs uppercase tracking-[0.28em] text-white/50">{eyebrow}</p>
             <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 sm:text-4xl">{title}</h1>
-                {subtitle ? <p className="mt-2 text-sm text-neutral-600 sm:text-base">{subtitle}</p> : null}
+                <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">{title}</h1>
+                {subtitle ? <p className="mt-2 text-sm text-white/65 sm:text-base">{subtitle}</p> : null}
               </div>
               {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
             </div>
@@ -119,7 +122,7 @@ export function AdminCard({
 }) {
   return (
     <section
-      className={`rounded-[24px] border border-black/5 bg-white p-6 shadow-sm ${className}`}
+      className={`rounded-[24px] border border-white/5 bg-[#151c26] p-6 text-white shadow-[0_14px_32px_rgba(5,9,15,0.45)] ${className}`}
       style={style}
     >
       {children}
@@ -136,20 +139,17 @@ export function StatusBanner({
   title: string;
   description?: string;
 }) {
-  const iconMap = {
-    success: "ok",
-    info: "i",
-    warning: "!",
-    error: "!",
-  } as const;
+  const toneMap: Record<typeof tone, string> = {
+    success: "border-emerald-500/30 bg-emerald-500/10 text-emerald-100",
+    info: "border-sky-500/30 bg-sky-500/10 text-sky-100",
+    warning: "border-amber-500/30 bg-amber-500/10 text-amber-100",
+    error: "border-rose-500/30 bg-rose-500/10 text-rose-100",
+  };
 
   return (
-    <div className={`status-banner status-banner--${tone}`}>
-      <div className="status-banner__icon">{iconMap[tone]}</div>
-      <div>
-        <p className="status-banner__title">{title}</p>
-        {description ? <p className="status-banner__description">{description}</p> : null}
-      </div>
+    <div className={`rounded-2xl border px-4 py-3 text-sm ${toneMap[tone]}`}>
+      <p className="font-semibold">{title}</p>
+      {description ? <p className="mt-1 text-sm opacity-80">{description}</p> : null}
     </div>
   );
 }

@@ -162,8 +162,8 @@ export default function AdminProductsPage() {
       <section className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
         <AdminCard>
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-neutral-900">{editingProductId ? "Edit Product" : "Add Product"}</h2>
-            {editingProductId ? <span className="text-xs uppercase tracking-[0.24em] text-neutral-500">Editing</span> : null}
+            <h2 className="text-lg font-semibold text-white">{editingProductId ? "Edit Product" : "Add Product"}</h2>
+            {editingProductId ? <span className="text-xs uppercase tracking-[0.24em] text-white/50">Editing</span> : null}
           </div>
           <form onSubmit={onSubmit} className="mt-4 space-y-3">
             <Input label="Name" value={form.name} onChange={(v) => setForm((f) => ({ ...f, name: v }))} required />
@@ -189,7 +189,7 @@ export default function AdminProductsPage() {
         </AdminCard>
 
         <AdminCard>
-          <h2 className="text-lg font-semibold text-neutral-900">Live Products</h2>
+          <h2 className="text-lg font-semibold text-white">Live Products</h2>
           {loading ? (
             <div className="mt-4 space-y-3">
               {Array.from({ length: 3 }).map((_, index) => (
@@ -197,18 +197,18 @@ export default function AdminProductsPage() {
               ))}
             </div>
           ) : products.length === 0 ? (
-            <p className="mt-3 text-sm text-neutral-600">No products yet.</p>
+            <p className="mt-3 text-sm text-white/60">No products yet.</p>
           ) : (
             <ul className="mt-4 space-y-3">
               {products.map((product) => (
-                <li key={product.id} className="rounded-2xl border border-black/5 bg-white/70 p-4 shadow-sm">
-                  <p className="font-semibold text-neutral-900">{product.name}</p>
-                  <p className="mt-1 text-xs text-neutral-500">/{product.slug} · {product.category}</p>
-                  <p className="mt-2 text-sm text-neutral-800">INR {(product.pricePaise / 100).toFixed(2)}</p>
+                <li key={product.id} className="rounded-2xl border border-white/5 bg-white/5 p-4 shadow-sm">
+                  <p className="font-semibold text-white">{product.name}</p>
+                  <p className="mt-1 text-xs text-white/50">/{product.slug} · {product.category}</p>
+                  <p className="mt-2 text-sm text-white/80">INR {(product.pricePaise / 100).toFixed(2)}</p>
                   <button
                     type="button"
                     onClick={() => onStartEdit(product)}
-                    className="mt-3 inline-flex items-center rounded-full border border-black/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-700 transition hover:bg-white"
+                    className="mt-3 inline-flex items-center rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-white/70 transition hover:bg-white/10"
                   >
                     Edit
                   </button>
@@ -241,7 +241,7 @@ function Input({
 }) {
   return (
     <label className="block space-y-1.5">
-      <span className="text-sm text-neutral-700">{label}</span>
+      <span className="text-sm text-white/70">{label}</span>
       <input
         type={type}
         required={required}
@@ -268,7 +268,7 @@ function Textarea({
 }) {
   return (
     <label className="block space-y-1.5">
-      <span className="text-sm text-neutral-700">{label}</span>
+      <span className="text-sm text-white/70">{label}</span>
       <textarea
         required={required}
         value={value}

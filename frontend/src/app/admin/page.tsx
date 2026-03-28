@@ -100,33 +100,33 @@ export default function AdminDashboardPage() {
         <AdminCard>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-neutral-900">Revenue snapshot</p>
-              <p className="mt-1 text-sm text-neutral-500">Track store health at a glance.</p>
+              <p className="text-sm font-semibold text-white">Revenue snapshot</p>
+              <p className="mt-1 text-sm text-white/60">Track store health at a glance.</p>
             </div>
-            <div className="rounded-full border border-black/10 bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-600">Live</div>
+            <div className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">Live</div>
           </div>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-black/5 bg-neutral-50 p-5">
-              <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Total Revenue</p>
-              <p className="mt-3 text-3xl font-semibold text-neutral-900">
+            <div className="rounded-2xl border border-white/5 bg-white/5 p-5">
+              <p className="text-xs uppercase tracking-[0.2em] text-white/50">Total Revenue</p>
+              <p className="mt-3 text-3xl font-semibold text-white">
                 {formatPricePaise(data.stats.totalRevenuePaise, "INR")}
               </p>
             </div>
-            <div className="rounded-2xl border border-black/5 bg-neutral-50 p-5">
-              <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Paid Revenue</p>
-              <p className="mt-3 text-3xl font-semibold text-neutral-900">
+            <div className="rounded-2xl border border-white/5 bg-white/5 p-5">
+              <p className="text-xs uppercase tracking-[0.2em] text-white/50">Paid Revenue</p>
+              <p className="mt-3 text-3xl font-semibold text-white">
                 {formatPricePaise(data.stats.paidRevenuePaise, "INR")}
               </p>
             </div>
           </div>
 
-          <div className="mt-8 h-56 rounded-[1.4rem] border border-black/5 bg-neutral-50 p-6">
+          <div className="mt-8 h-56 rounded-[1.4rem] border border-white/5 bg-white/5 p-6">
             <div className="flex h-full items-end gap-3">
               {[28, 42, 35, 68, 47, 60, 55, 72, 64, 76, 58, 81].map((height, index) => (
                 <div
                   key={index}
-                  className="flex-1 rounded-t-2xl bg-neutral-900 opacity-90"
+                  className="flex-1 rounded-t-2xl bg-emerald-400/80"
                   style={{ height: `${height}%` }}
                 />
               ))}
@@ -136,7 +136,7 @@ export default function AdminDashboardPage() {
 
         <div className="space-y-6">
           <AdminCard>
-            <p className="text-sm font-semibold text-neutral-900">Quick actions</p>
+            <p className="text-sm font-semibold text-white">Quick actions</p>
             <div className="mt-4 grid gap-3">
               <QuickCard href="/admin/products" title="Add or edit products" description="Keep the catalog and hero visuals in sync." />
               <QuickCard href="/admin/orders" title="Review incoming orders" description="Track pending, paid, and processed orders." />
@@ -144,7 +144,7 @@ export default function AdminDashboardPage() {
             </div>
           </AdminCard>
 
-          <AdminCard className="border border-black/10 bg-neutral-900 text-white">
+          <AdminCard className="border border-white/10 bg-[#0f1620] text-white">
             <p className="text-sm font-semibold text-white/90">Operations pulse</p>
             <p className="mt-3 text-4xl font-semibold">{data.stats.pendingOrders}</p>
             <p className="mt-2 text-sm text-white/70">orders waiting for action right now</p>
@@ -157,13 +157,13 @@ export default function AdminDashboardPage() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-[22px] border border-black/5 bg-white p-5 shadow-sm">
+    <article className="rounded-[22px] border border-white/5 bg-[#151c26] p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <p className="text-xs uppercase tracking-[0.24em] text-neutral-500">{label}</p>
-        <span className="h-2.5 w-2.5 rounded-full bg-neutral-900" />
+        <p className="text-xs uppercase tracking-[0.24em] text-white/50">{label}</p>
+        <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
       </div>
-      <p className="mt-3 text-3xl font-semibold text-neutral-900">{value}</p>
-      <p className="mt-2 text-xs text-neutral-500">Updated just now</p>
+      <p className="mt-3 text-3xl font-semibold text-white">{value}</p>
+      <p className="mt-2 text-xs text-white/40">Updated just now</p>
     </article>
   );
 }
@@ -172,11 +172,11 @@ function QuickCard({ href, title, description }: { href: string; title: string; 
   return (
     <Link
       href={href}
-      className="group rounded-2xl border border-black/5 bg-white p-4 transition hover:-translate-y-0.5 hover:border-black/15"
+      className="group rounded-2xl border border-white/5 bg-white/5 p-4 transition hover:-translate-y-0.5 hover:border-white/20"
     >
-      <p className="text-sm font-semibold text-neutral-900">{title}</p>
-      <p className="mt-1 text-sm leading-6 text-neutral-600">{description}</p>
-      <p className="mt-3 text-xs font-semibold uppercase tracking-[0.22em] text-neutral-400 group-hover:text-neutral-600">Open</p>
+      <p className="text-sm font-semibold text-white">{title}</p>
+      <p className="mt-1 text-sm leading-6 text-white/65">{description}</p>
+      <p className="mt-3 text-xs font-semibold uppercase tracking-[0.22em] text-white/40 group-hover:text-white/70">Open</p>
     </Link>
   );
 }

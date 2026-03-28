@@ -83,8 +83,8 @@ export default function AdminOrdersPage() {
       <AdminCard>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-neutral-500">Filters</p>
-            <p className="mt-2 text-sm text-neutral-600">
+            <p className="text-xs uppercase tracking-[0.28em] text-white/50">Filters</p>
+            <p className="mt-2 text-sm text-white/60">
               {orders ? `${orders.orders.length} orders loaded` : "Choose a view to load orders."}
             </p>
           </div>
@@ -114,14 +114,14 @@ export default function AdminOrdersPage() {
 
       <AdminCard>
         {loading ? (
-          <p className="text-sm text-neutral-600">Loading orders...</p>
+          <p className="text-sm text-white/60">Loading orders...</p>
         ) : !orders || orders.orders.length === 0 ? (
-          <p className="text-sm text-neutral-600">No orders found for this filter.</p>
+          <p className="text-sm text-white/60">No orders found for this filter.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-sm">
               <thead>
-                <tr className="border-b border-black/10 text-left text-xs uppercase tracking-[0.24em] text-neutral-500">
+                <tr className="border-b border-white/10 text-left text-xs uppercase tracking-[0.24em] text-white/50">
                   <th className="py-3 pr-4 font-medium">Order</th>
                   <th className="py-3 pr-4 font-medium">Customer</th>
                   <th className="py-3 pr-4 font-medium">Location</th>
@@ -133,14 +133,14 @@ export default function AdminOrdersPage() {
               </thead>
               <tbody>
                 {orders.orders.map((order) => (
-                  <tr key={order.id} className="border-b border-black/5 text-neutral-800">
+                  <tr key={order.id} className="border-b border-white/5 text-white/85">
                     <td className="py-4 pr-4 font-semibold">#{String(order.id).padStart(6, "0")}</td>
                     <td className="py-4 pr-4">{order.customerEmail}</td>
                     <td className="py-4 pr-4">
                       {order.shippingCity}, {order.shippingState}
                     </td>
                     <td className="py-4 pr-4">{new Date(order.createdAt).toLocaleString()}</td>
-                    <td className="py-4 pr-4 font-semibold">{formatPricePaise(order.totalPaise, order.currency)}</td>
+                    <td className="py-4 pr-4 font-semibold text-white">{formatPricePaise(order.totalPaise, order.currency)}</td>
                     <td className="py-4 pr-4">
                       <StatusPill status={order.status as StatusValue} />
                     </td>
@@ -148,7 +148,7 @@ export default function AdminOrdersPage() {
                       <select
                         value={order.status}
                         onChange={(event) => void changeStatus(order.id, event.target.value as StatusValue)}
-                        className="h-10 rounded-xl border border-black/10 bg-white/90 px-3 text-sm text-neutral-900 shadow-sm outline-none focus:border-black/30"
+                        className="h-10 rounded-xl border border-white/10 bg-white/10 px-3 text-sm text-white shadow-sm outline-none focus:border-white/30"
                       >
                         {statuses.map((status) => (
                           <option key={status} value={status}>
@@ -175,8 +175,8 @@ function FilterChip({ active, onClick, children }: { active: boolean; onClick: (
       onClick={onClick}
       className={
         active
-          ? "rounded-full bg-[#0f1115] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-[0_12px_20px_rgba(15,17,21,0.22)]"
-          : "rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-neutral-700 transition hover:bg-white"
+          ? "rounded-full bg-emerald-500/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-[0_12px_20px_rgba(16,185,129,0.25)]"
+          : "rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-white/70 transition hover:bg-white/10"
       }
     >
       {children}

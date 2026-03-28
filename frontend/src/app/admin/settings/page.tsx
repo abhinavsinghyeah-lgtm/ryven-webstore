@@ -120,7 +120,7 @@ function Field({
 }) {
   return (
     <label className="block space-y-1.5">
-      <span className="text-sm text-neutral-700">{label}</span>
+      <span className="text-sm text-white/70">{label}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}

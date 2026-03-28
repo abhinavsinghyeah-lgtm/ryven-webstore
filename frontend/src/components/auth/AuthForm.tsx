@@ -62,7 +62,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     } catch (requestError) {
       const err = requestError as Error & { status?: number };
       if (err.status === 503 && !isSignup) {
-        setError("SMS OTP is unavailable. Please use your email address to log in.");
+        setError("SMS OTP is unavailable right now. Please use your email address.");
       } else {
         const message = requestError instanceof Error ? requestError.message : "Something went wrong";
         setError(message);
@@ -110,13 +110,22 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   return (
     <div className="w-full">
-      <form onSubmit={handleRequestOtp} className="space-y-5 rounded-2xl border border-neutral-200 bg-white p-6 shadow-[0_14px_40px_-30px_rgba(15,23,42,0.6)]">
-        <div>
+      <form
+        onSubmit={handleRequestOtp}
+        className="space-y-5 rounded-[28px] border border-white/60 bg-white/80 p-6 shadow-[0_30px_80px_rgba(15,23,42,0.18)] backdrop-blur"
+      >
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-neutral-800 shadow-[0_10px_30px_rgba(15,23,42,0.12)]">
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M12 5v14" />
+              <path d="M6 11l6 6 6-6" />
+            </svg>
+          </div>
           <p className="text-xs uppercase tracking-[0.24em] text-neutral-500">{isSignup ? "Create account" : "Welcome back"}</p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
             {isSignup ? "Sign up with OTP" : "Sign in with OTP"}
           </h1>
-          <p className="mt-1 text-sm text-neutral-600">
+          <p className="text-sm text-neutral-600">
             {isSignup ? "Start your scent journey with secure OTP access." : "Access your account and orders securely."}
           </p>
         </div>
@@ -169,7 +178,11 @@ export function AuthForm({ mode }: AuthFormProps) {
 
         {error ? <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          className="w-full rounded-xl bg-neutral-900 text-white shadow-[0_10px_20px_rgba(15,23,42,0.2)] hover:bg-neutral-800"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? "Sending..." : "Continue"}
         </Button>
 

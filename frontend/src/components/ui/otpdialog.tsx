@@ -142,13 +142,17 @@ export default function OTPDialog({
         )}
 
         <div className="flex flex-col gap-2">
-          <Button className="w-full" onClick={handleVerify} disabled={loading}>
+          <Button
+            className="w-full rounded-xl bg-neutral-900 text-white shadow-[0_10px_20px_rgba(15,23,42,0.2)] hover:bg-neutral-800"
+            onClick={handleVerify}
+            disabled={loading}
+          >
             {loading ? "Verifying..." : "Verify OTP"}
           </Button>
 
           <Button
             variant="outline"
-            className="w-full flex justify-between items-center"
+            className="w-full flex justify-between items-center rounded-xl border border-neutral-200 bg-white/70 text-neutral-800 hover:bg-white"
             onClick={handleResend}
             disabled={!canResend || loading}
           >
