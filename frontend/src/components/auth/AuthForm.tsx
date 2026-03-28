@@ -112,75 +112,69 @@ export function AuthForm({ mode }: AuthFormProps) {
     <div className="w-full">
       <form
         onSubmit={handleRequestOtp}
-        className="space-y-5 rounded-[32px] border border-white/70 bg-white/85 p-7 shadow-[0_35px_90px_rgba(15,23,42,0.18)] backdrop-blur"
+        className="space-y-5 rounded-[28px] border border-white/80 bg-white/90 p-7 shadow-[0_30px_70px_rgba(15,23,42,0.18)] backdrop-blur"
       >
         <div className="flex flex-col items-center gap-3 text-center">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-neutral-800 shadow-[0_10px_30px_rgba(15,23,42,0.12)]">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-neutral-900 text-white shadow-[0_12px_30px_rgba(15,23,42,0.2)]">
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M12 5v14" />
               <path d="M6 11l6 6 6-6" />
             </svg>
           </div>
-          <p className="text-xs uppercase tracking-[0.24em] text-neutral-500">{isSignup ? "Create account" : "Welcome back"}</p>
+          <p className="text-xs uppercase tracking-[0.28em] text-neutral-500">
+            {isSignup ? "Create account" : "Welcome back"}
+          </p>
           <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
             {isSignup ? "Sign up with OTP" : "Sign in with OTP"}
           </h1>
           <p className="text-sm text-neutral-600">
-            {isSignup ? "Start your scent journey with secure OTP access." : "Access your account and orders securely."}
+            {isSignup
+              ? "We’ll send a one-time code to create your account."
+              : "We’ll send a one-time code to sign you in securely."}
           </p>
         </div>
 
         {isSignup ? (
           <>
-            <label className="block space-y-2">
-              <span className="text-sm font-medium text-neutral-800">Full name</span>
-              <Input
-                type="text"
-                value={fullName}
-                onChange={(event) => setFullName(event.target.value)}
-                required
-                placeholder="Aarav Sharma"
-              />
-            </label>
-            <label className="block space-y-2">
-              <span className="text-sm font-medium text-neutral-800">Email</span>
-              <Input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                required
-                placeholder="you@example.com"
-              />
-            </label>
-            <label className="block space-y-2">
-              <span className="text-sm font-medium text-neutral-800">Mobile number</span>
-              <Input
-                type="tel"
-                value={phone}
-                onChange={(event) => setPhone(event.target.value)}
-                required
-                placeholder="+91 9876543210"
-              />
-            </label>
+            <Field
+              label="Full name"
+              placeholder="Aarav Sharma"
+              value={fullName}
+              onChange={(value) => setFullName(value)}
+              icon="user"
+            />
+            <Field
+              label="Email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(value) => setEmail(value)}
+              type="email"
+              icon="mail"
+            />
+            <Field
+              label="Mobile number"
+              placeholder="+91 9876543210"
+              value={phone}
+              onChange={(value) => setPhone(value)}
+              type="tel"
+              icon="phone"
+            />
           </>
         ) : (
-          <label className="block space-y-2">
-            <span className="text-sm font-medium text-neutral-800">Email or mobile number</span>
-            <Input
-              type="text"
-              value={identifier}
-              onChange={(event) => setIdentifier(event.target.value)}
-              required
-              placeholder="you@example.com or +91 9876543210"
-            />
-          </label>
+          <Field
+            label="Email or mobile number"
+            placeholder="you@example.com or +91 9876543210"
+            value={identifier}
+            onChange={(value) => setIdentifier(value)}
+            icon="mail"
+          />
         )}
 
-        {error ? <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+        {error ? <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
 
         <Button
           type="submit"
-          className="w-full rounded-xl bg-neutral-900 text-white shadow-[0_10px_20px_rgba(15,23,42,0.2)] hover:bg-neutral-800"
+          className="w-full rounded-xl bg-neutral-900 text-white shadow-[0_14px_30px_rgba(15,23,42,0.25)] hover:bg-neutral-800"
           disabled={isSubmitting}
         >
           {isSubmitting ? "Sending..." : "Continue"}
@@ -206,5 +200,49 @@ export function AuthForm({ mode }: AuthFormProps) {
         success={otpSuccess}
       />
     </div>
+  );
+}
+
+function Field({
+  label,
+  placeholder,
+  value,
+  onChange,
+  type = "text",
+  icon = "mail",
+}: {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: "text" | "email" | "tel";
+  icon?: "mail" | "phone" | "user";
+}) {
+  const iconPath =
+    icon === "phone"
+      ? "M6.2 3.6a1.5 1.5 0 0 1 1.7-.4l2.3.8a1.5 1.5 0 0 1 1 1.3l.2 2a1.5 1.5 0 0 1-.6 1.3l-1.5 1.1a12.8 12.8 0 0 0 5 5l1.1-1.5a1.5 1.5 0 0 1 1.3-.6l2 .2a1.5 1.5 0 0 1 1.3 1l.8 2.3a1.5 1.5 0 0 1-.4 1.7l-1.2 1.2a2 2 0 0 1-2 .5c-3.7-1.1-6.9-3.1-9.6-5.8-2.7-2.7-4.7-5.9-5.8-9.6a2 2 0 0 1 .5-2l1.2-1.2Z"
+      : icon === "user"
+      ? "M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm-7 9a7 7 0 0 1 14 0"
+      : "M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm2.2.8 5.6 4.2a2 2 0 0 0 2.4 0l5.6-4.2";
+
+  return (
+    <label className="block space-y-2">
+      <span className="text-sm font-medium text-neutral-800">{label}</span>
+      <div className="relative">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <path d={iconPath} />
+          </svg>
+        </span>
+        <Input
+          type={type}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          required
+          placeholder={placeholder}
+          className="h-11 rounded-xl bg-white pl-9 text-neutral-900 placeholder:text-neutral-400"
+        />
+      </div>
+    </label>
   );
 }

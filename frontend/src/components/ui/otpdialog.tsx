@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -42,6 +43,7 @@ export default function OTPDialog({
   const [message, setMessage] = useState("");
   const [timeLeft, setTimeLeft] = useState(cooldownSeconds);
   const [canResend, setCanResend] = useState(false);
+  const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => {
     if (!open) return;
@@ -49,6 +51,7 @@ export default function OTPDialog({
     setMessage("");
     setTimeLeft(cooldownSeconds);
     setCanResend(false);
+    setTimeout(() => inputRefs.current[0]?.focus(), 80);
   }, [open, otpLength, cooldownSeconds]);
 
   useEffect(() => {
@@ -61,16 +64,73 @@ export default function OTPDialog({
     return () => clearTimeout(timer);
   }, [timeLeft, open]);
 
-  const handleChange = (value: string, index: number) => {
-    if (/^\d?$/.test(value)) {
-      const updated = [...otp];
-      updated[index] = value;
-      setOtp(updated);
-      if (value && index < otp.length - 1) {
-        const nextInput = document.getElementById(`otp-${index + 1}`);
-        nextInput?.focus();
-      }
+  const applyDigits = (startIndex: number, digits: string) => {
+    if (!digits) return;
+    const updated = [...otp];
+    let writeIndex = startIndex;
+    for (const digit of digits) {
+      if (writeIndex >= updated.length) break;
+      updated[writeIndex] = digit;
+      writeIndex += 1;
     }
+    setOtp(updated);
+    const nextIndex = Math.min(writeIndex, updated.length - 1);
+    inputRefs.current[nextIndex]?.focus();
+  };
+
+  const handleChange = (value: string, index: number) => {
+    const digits = value.replace(/\D/g, "");
+    if (!digits) {
+      const updated = [...otp];
+      updated[index] = "";
+      setOtp(updated);
+      return;
+    }
+    if (digits.length === 1) {
+      const updated = [...otp];
+      updated[index] = digits;
+      setOtp(updated);
+      if (index < otp.length - 1) {
+        inputRefs.current[index + 1]?.focus();
+      }
+      return;
+    }
+    applyDigits(index, digits);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (event.key === "Backspace") {
+      event.preventDefault();
+      const updated = [...otp];
+      if (updated[index]) {
+        updated[index] = "";
+        setOtp(updated);
+        return;
+      }
+      if (index > 0) {
+        updated[index - 1] = "";
+        setOtp(updated);
+        inputRefs.current[index - 1]?.focus();
+      }
+      return;
+    }
+
+    if (event.key === "ArrowLeft" && index > 0) {
+      event.preventDefault();
+      inputRefs.current[index - 1]?.focus();
+    }
+
+    if (event.key === "ArrowRight" && index < otp.length - 1) {
+      event.preventDefault();
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>, index: number) => {
+    event.preventDefault();
+    const pasted = event.clipboardData.getData("text").replace(/\D/g, "");
+    if (!pasted) return;
+    applyDigits(index, pasted);
   };
 
   const handleVerify = async () => {
@@ -127,10 +187,15 @@ export default function OTPDialog({
               id={`otp-${idx}`}
               value={digit}
               onChange={(e) => handleChange(e.target.value, idx)}
+              onKeyDown={(event) => handleKeyDown(event, idx)}
+              onPaste={(event) => handlePaste(event, idx)}
               className="w-12 h-12 text-center text-lg font-medium rounded-md border border-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
               maxLength={1}
               inputMode="numeric"
               autoComplete={idx === 0 ? "one-time-code" : undefined}
+              ref={(el) => {
+                inputRefs.current[idx] = el;
+              }}
             />
           ))}
         </div>

@@ -19,6 +19,8 @@ export interface StoreSettings {
   storeName: string;
   logoUrl: string;
   heroImageUrl: string;
+  authBackgroundUrl?: string | null;
+  authBackgroundColor?: string | null;
   tagline: string;
   updatedAt: string;
 }

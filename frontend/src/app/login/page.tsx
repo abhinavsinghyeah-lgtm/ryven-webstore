@@ -1,9 +1,33 @@
 import { AuthForm } from "@/components/auth/AuthForm";
+import { apiRequest } from "@/lib/api";
+import type { StoreSettings } from "@/types/auth";
 
-export default function LoginPage() {
+async function getStoreSettings() {
+  try {
+    const response = await apiRequest<{ settings: StoreSettings }>("/store-settings");
+    return response.settings;
+  } catch {
+    return null;
+  }
+}
+
+export default async function LoginPage() {
+  const settings = await getStoreSettings();
+  const backgroundUrl = settings?.authBackgroundUrl || "";
+  const backgroundColor = settings?.authBackgroundColor || "#f4f4f5";
+
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,#bfe6ff_0%,#e9f4ff_45%,#f7fbff_100%)] px-5 py-12">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.9)_0%,transparent_60%),radial-gradient(circle_at_70%_10%,rgba(255,255,255,0.7)_0%,transparent_60%)]" />
+    <main
+      className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-10"
+      style={{
+        backgroundColor,
+        backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : undefined,
+        backgroundSize: backgroundUrl ? "cover" : undefined,
+        backgroundPosition: backgroundUrl ? "center" : undefined,
+      }}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/70 via-white/40 to-white/20" />
+      <div className="pointer-events-none absolute -top-16 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-white/50 blur-3xl" />
       <div className="relative w-full max-w-md">
         <AuthForm mode="login" />
       </div>

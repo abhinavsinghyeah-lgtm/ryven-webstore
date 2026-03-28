@@ -13,7 +13,14 @@ import type { StoreSettingsResponse } from "@/types/dashboard";
 export default function AdminSettingsPage() {
   const router = useRouter();
 
-  const [form, setForm] = useState({ storeName: "", logoUrl: "", heroImageUrl: "", tagline: "" });
+  const [form, setForm] = useState({
+    storeName: "",
+    logoUrl: "",
+    heroImageUrl: "",
+    authBackgroundUrl: "",
+    authBackgroundColor: "",
+    tagline: "",
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +46,8 @@ export default function AdminSettingsPage() {
           storeName: data.settings.storeName,
           logoUrl: data.settings.logoUrl,
           heroImageUrl: data.settings.heroImageUrl || data.settings.logoUrl,
+          authBackgroundUrl: data.settings.authBackgroundUrl || "",
+          authBackgroundColor: data.settings.authBackgroundColor || "",
           tagline: data.settings.tagline,
         });
       })
@@ -87,7 +96,7 @@ export default function AdminSettingsPage() {
         <form onSubmit={onSubmit} className="space-y-4">
           {loading ? (
             <div className="space-y-3">
-              {Array.from({ length: 4 }).map((_, index) => (
+              {Array.from({ length: 6 }).map((_, index) => (
                 <ContentSkeleton key={index} rows={3} showAvatar={false} className="min-h-[112px]" />
               ))}
             </div>
@@ -96,6 +105,16 @@ export default function AdminSettingsPage() {
               <Field label="Store name" value={form.storeName} onChange={(value) => setForm((f) => ({ ...f, storeName: value }))} />
               <Field label="Logo image URL" value={form.logoUrl} onChange={(value) => setForm((f) => ({ ...f, logoUrl: value }))} />
               <Field label="Homepage hero image URL" value={form.heroImageUrl} onChange={(value) => setForm((f) => ({ ...f, heroImageUrl: value }))} />
+              <Field
+                label="Auth background image URL (optional)"
+                value={form.authBackgroundUrl}
+                onChange={(value) => setForm((f) => ({ ...f, authBackgroundUrl: value }))}
+              />
+              <Field
+                label="Auth background base color (optional)"
+                value={form.authBackgroundColor}
+                onChange={(value) => setForm((f) => ({ ...f, authBackgroundColor: value }))}
+              />
               <Field label="Tagline" value={form.tagline} onChange={(value) => setForm((f) => ({ ...f, tagline: value }))} />
 
               <button type="submit" disabled={saving} className={adminButtonClasses.primary}>

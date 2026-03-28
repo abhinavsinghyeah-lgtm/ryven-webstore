@@ -97,7 +97,7 @@ export default function AdminDashboardPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <AdminCard className="bg-gradient-to-r from-[#b33a30] via-[#2f574d] to-[#0d7c6a]">
+        <AdminCard className="bg-gradient-to-r from-[#b5362f] via-[#2f544a] to-[#0b6f60]">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-white/70">Hello Admin</p>
             <p className="mt-2 text-2xl font-semibold text-white">Welcome back.</p>
@@ -105,8 +105,8 @@ export default function AdminDashboardPage() {
               Monitor orders, track revenue, and keep the storefront healthy.
             </p>
           </div>
-          <button type="button" className="mt-6 inline-flex rounded-full bg-white px-4 py-2 text-xs font-semibold text-neutral-900">
-            Start action
+          <button type="button" className="mt-6 inline-flex rounded-xl bg-white px-4 py-2 text-xs font-semibold text-neutral-900">
+            Start AI
           </button>
         </AdminCard>
 
@@ -118,7 +118,7 @@ export default function AdminDashboardPage() {
               <button className="grid h-7 w-7 place-items-center rounded-full border border-white/10 bg-white/5 text-xs">›</button>
             </div>
           </div>
-          <p className="mt-3 text-sm text-white/70">Create a product story for your next launch.</p>
+          <p className="mt-3 text-sm text-white/70">Create a blog post for your next product drop.</p>
           <button className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80">
             Read now
           </button>
@@ -176,12 +176,14 @@ export default function AdminDashboardPage() {
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <article className="rounded-[18px] border border-white/5 bg-[#151c26] p-5 shadow-sm">
-      <div className="flex items-center justify-between">
-        <p className="text-xs uppercase tracking-[0.24em] text-white/50">{label}</p>
-        <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+      <div className="flex items-center gap-3">
+        <span className="grid h-9 w-9 place-items-center rounded-full bg-emerald-500/20 text-emerald-300">⦿</span>
+        <div>
+          <p className="text-xs uppercase tracking-[0.24em] text-white/50">{label}</p>
+          <p className="mt-2 text-3xl font-semibold text-white">{value}</p>
+        </div>
       </div>
-      <p className="mt-3 text-3xl font-semibold text-white">{value}</p>
-      <p className="mt-2 text-xs text-white/40">Updated just now</p>
+      <p className="mt-3 text-xs text-white/40">Updated just now</p>
     </article>
   );
 }
@@ -189,9 +191,14 @@ function StatCard({ label, value }: { label: string; value: string }) {
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
     <article className="rounded-[18px] border border-white/5 bg-[#151c26] p-5 shadow-sm">
-      <p className="text-xs uppercase tracking-[0.24em] text-white/50">{label}</p>
-      <p className="mt-3 text-2xl font-semibold text-white">{value}</p>
-      <p className="mt-2 text-xs text-emerald-400">+2.29% ↑</p>
+      <div className="flex items-center gap-3">
+        <span className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white/70">⦿</span>
+        <div>
+          <p className="text-xs uppercase tracking-[0.24em] text-white/50">{label}</p>
+          <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
+        </div>
+      </div>
+      <p className="mt-3 text-xs text-emerald-400">+2.29% ↑</p>
     </article>
   );
 }

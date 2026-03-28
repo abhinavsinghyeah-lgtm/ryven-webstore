@@ -15,7 +15,7 @@ const envSchema = z.object({
   DB_PASSWORD: z.string().min(1),
   DB_SSL: z.string().default("false"),
   JWT_SECRET: z.string().min(32),
-  JWT_EXPIRES_IN: z.string().default("1d"),
+  JWT_EXPIRES_IN: z.string().default("14d"),
   SKIP_RAZORPAY: z.string().default("false"),
   RAZORPAY_KEY_ID: z.string().optional().default(""),
   RAZORPAY_KEY_SECRET: z.string().optional().default(""),
