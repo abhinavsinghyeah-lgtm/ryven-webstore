@@ -97,59 +97,77 @@ export default function AdminDashboardPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <AdminCard className="bg-gradient-to-r from-[#b33a30] via-[#2f574d] to-[#0d7c6a]">
+          <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-white/70">Hello Admin</p>
+            <p className="mt-2 text-2xl font-semibold text-white">Welcome back.</p>
+            <p className="mt-2 text-sm text-white/70">
+              Monitor orders, track revenue, and keep the storefront healthy.
+            </p>
+          </div>
+          <button type="button" className="mt-6 inline-flex rounded-full bg-white px-4 py-2 text-xs font-semibold text-neutral-900">
+            Start action
+          </button>
+        </AdminCard>
+
         <AdminCard>
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-white">Revenue snapshot</p>
-              <p className="mt-1 text-sm text-white/60">Track store health at a glance.</p>
+            <p className="text-sm font-semibold text-white">Ideas for you</p>
+            <div className="flex items-center gap-2">
+              <button className="grid h-7 w-7 place-items-center rounded-full border border-white/10 bg-white/5 text-xs">‹</button>
+              <button className="grid h-7 w-7 place-items-center rounded-full border border-white/10 bg-white/5 text-xs">›</button>
             </div>
-            <div className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">Live</div>
           </div>
+          <p className="mt-3 text-sm text-white/70">Create a product story for your next launch.</p>
+          <button className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80">
+            Read now
+          </button>
+        </AdminCard>
+      </section>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/5 bg-white/5 p-5">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/50">Total Revenue</p>
-              <p className="mt-3 text-3xl font-semibold text-white">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <MetricCard label="Orders" value={String(data.stats.totalOrders)} />
+        <MetricCard label="Revenue" value={formatPricePaise(data.stats.totalRevenuePaise, "INR")} />
+        <MetricCard label="Conversion Rate" value="3.5%" />
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <AdminCard>
+          <p className="text-sm font-semibold text-white">Revenue</p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-white/50">Total income</p>
+              <p className="mt-2 text-2xl font-semibold text-white">
                 {formatPricePaise(data.stats.totalRevenuePaise, "INR")}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/5 bg-white/5 p-5">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/50">Paid Revenue</p>
-              <p className="mt-3 text-3xl font-semibold text-white">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-white/50">Total expenses</p>
+              <p className="mt-2 text-2xl font-semibold text-white">
                 {formatPricePaise(data.stats.paidRevenuePaise, "INR")}
               </p>
             </div>
           </div>
-
-          <div className="mt-8 h-56 rounded-[1.4rem] border border-white/5 bg-white/5 p-6">
+          <div className="mt-6 h-48 rounded-2xl border border-white/10 bg-white/5 p-4">
             <div className="flex h-full items-end gap-3">
               {[28, 42, 35, 68, 47, 60, 55, 72, 64, 76, 58, 81].map((height, index) => (
-                <div
-                  key={index}
-                  className="flex-1 rounded-t-2xl bg-emerald-400/80"
-                  style={{ height: `${height}%` }}
-                />
+                <div key={index} className="flex-1 rounded-t-2xl bg-emerald-400/70" style={{ height: `${height}%` }} />
               ))}
             </div>
           </div>
         </AdminCard>
 
-        <div className="space-y-6">
-          <AdminCard>
-            <p className="text-sm font-semibold text-white">Quick actions</p>
-            <div className="mt-4 grid gap-3">
-              <QuickCard href="/admin/products" title="Add or edit products" description="Keep the catalog and hero visuals in sync." />
-              <QuickCard href="/admin/orders" title="Review incoming orders" description="Track pending, paid, and processed orders." />
-              <QuickCard href="/admin/settings" title="Update storefront settings" description="Control hero image, branding, and tagline." />
-            </div>
-          </AdminCard>
-
-          <AdminCard className="border border-white/10 bg-[#0f1620] text-white">
-            <p className="text-sm font-semibold text-white/90">Operations pulse</p>
-            <p className="mt-3 text-4xl font-semibold">{data.stats.pendingOrders}</p>
-            <p className="mt-2 text-sm text-white/70">orders waiting for action right now</p>
-          </AdminCard>
-        </div>
+        <AdminCard>
+          <p className="text-sm font-semibold text-white">Product Sales</p>
+          <div className="mt-4 flex h-48 items-center justify-center">
+            <div className="h-40 w-40 rounded-full border-[18px] border-emerald-400 border-t-amber-400 border-r-cyan-400 border-b-emerald-400" />
+          </div>
+          <div className="mt-4 space-y-2 text-sm text-white/70">
+            <p>Smartphones — ₹22,120</p>
+            <p>Laptops — ₹4,510</p>
+            <p>Headphones — ₹800</p>
+          </div>
+        </AdminCard>
       </section>
     </AdminShell>
   );
@@ -157,13 +175,23 @@ export default function AdminDashboardPage() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-[22px] border border-white/5 bg-[#151c26] p-5 shadow-sm">
+    <article className="rounded-[18px] border border-white/5 bg-[#151c26] p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase tracking-[0.24em] text-white/50">{label}</p>
         <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
       </div>
       <p className="mt-3 text-3xl font-semibold text-white">{value}</p>
       <p className="mt-2 text-xs text-white/40">Updated just now</p>
+    </article>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value: string }) {
+  return (
+    <article className="rounded-[18px] border border-white/5 bg-[#151c26] p-5 shadow-sm">
+      <p className="text-xs uppercase tracking-[0.24em] text-white/50">{label}</p>
+      <p className="mt-3 text-2xl font-semibold text-white">{value}</p>
+      <p className="mt-2 text-xs text-emerald-400">+2.29% ↑</p>
     </article>
   );
 }

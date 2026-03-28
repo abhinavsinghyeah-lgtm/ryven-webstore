@@ -6,7 +6,7 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 
 export function RootShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const hideChrome = pathname?.startsWith("/coming-soon");
+  const hideChrome = pathname?.startsWith("/coming-soon") || pathname?.startsWith("/admin");
 
   return (
     <>

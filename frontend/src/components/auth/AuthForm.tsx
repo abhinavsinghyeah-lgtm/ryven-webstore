@@ -112,7 +112,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     <div className="w-full">
       <form
         onSubmit={handleRequestOtp}
-        className="space-y-5 rounded-[28px] border border-white/60 bg-white/80 p-6 shadow-[0_30px_80px_rgba(15,23,42,0.18)] backdrop-blur"
+        className="space-y-5 rounded-[32px] border border-white/70 bg-white/85 p-7 shadow-[0_35px_90px_rgba(15,23,42,0.18)] backdrop-blur"
       >
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-neutral-800 shadow-[0_10px_30px_rgba(15,23,42,0.12)]">
