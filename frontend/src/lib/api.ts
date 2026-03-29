@@ -35,10 +35,23 @@ type RequestOptions = {
 };
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  let sessionId: string | null = null;
+  let pagePath: string | null = null;
+  if (typeof window !== "undefined") {
+    sessionId = window.localStorage.getItem("ryven_session_id");
+    if (!sessionId) {
+      sessionId = Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+      window.localStorage.setItem("ryven_session_id", sessionId);
+    }
+    pagePath = window.location.pathname || null;
+  }
+
   const response = await fetch(`${getApiBase()}${path}`, {
     method: options.method ?? "GET",
     headers: {
       "Content-Type": "application/json",
+      ...(sessionId ? { "X-Session-Id": sessionId } : {}),
+      ...(pagePath ? { "X-Page-Path": pagePath } : {}),
       ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
     },
     body: options.body ? JSON.stringify(options.body) : undefined,

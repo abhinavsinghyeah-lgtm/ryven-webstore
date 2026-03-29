@@ -27,6 +27,7 @@ const envSchema = z.object({
   SMTP_FROM: z.string().min(1),
   SHIPPING_BASIC_PAISE: z.coerce.number().int().min(0).default(6000),
   SHIPPING_EXPRESS_PAISE: z.coerce.number().int().min(0).default(12000),
+  CONTROL_ACTIONS_SECRET: z.string().optional().default(""),
   TWILIO_ACCOUNT_SID: z.string().optional().default(""),
   TWILIO_AUTH_TOKEN: z.string().optional().default(""),
   TWILIO_FROM_NUMBER: z.string().optional().default(""),

@@ -11,6 +11,7 @@ const apiRoutes = require("./routes");
 const webhookRoutes = require("./routes/webhook.routes");
 const { notFound } = require("./middlewares/notFound.middleware");
 const { errorHandler } = require("./middlewares/error.middleware");
+const { activityLogger } = require("./middlewares/activity.middleware");
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
+app.use(env.API_PREFIX, activityLogger);
 app.use(env.API_PREFIX, apiRoutes);
 
 app.use(notFound);

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { apiRequest } from "@/lib/api";
 import { authStorage } from "@/lib/auth";
 import { AdminCard, AdminShell, StatusBanner, adminButtonClasses, adminInputClasses, adminTextareaClasses } from "@/components/admin/AdminShell";
-import { ContentSkeleton } from "@/components/ui/ContentSkeleton";
+import { AdminLoader } from "@/components/admin/AdminLoader";
 import type { Product, ProductCatalogResponse } from "@/types/product";
 
 const initialForm = {
@@ -191,10 +191,8 @@ export default function AdminProductsPage() {
         <AdminCard>
           <h2 className="text-lg font-semibold text-white">Live Products</h2>
           {loading ? (
-            <div className="mt-4 space-y-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <ContentSkeleton key={index} rows={3} className="min-h-[120px]" />
-              ))}
+            <div className="mt-4">
+              <AdminLoader label="Loading products..." />
             </div>
           ) : products.length === 0 ? (
             <p className="mt-3 text-sm text-white/60">No products yet.</p>

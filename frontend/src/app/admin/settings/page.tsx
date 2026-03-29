@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { apiRequest } from "@/lib/api";
 import { authStorage } from "@/lib/auth";
 import { AdminCard, AdminShell, StatusBanner, adminButtonClasses, adminInputClasses } from "@/components/admin/AdminShell";
-import { ContentSkeleton } from "@/components/ui/ContentSkeleton";
+import { AdminLoader } from "@/components/admin/AdminLoader";
 import type { StoreSettingsResponse } from "@/types/dashboard";
 
 export default function AdminSettingsPage() {
@@ -95,11 +95,7 @@ export default function AdminSettingsPage() {
       <AdminCard>
         <form onSubmit={onSubmit} className="space-y-4">
           {loading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <ContentSkeleton key={index} rows={3} showAvatar={false} className="min-h-[112px]" />
-              ))}
-            </div>
+            <AdminLoader label="Loading settings..." />
           ) : (
             <>
               <Field label="Store name" value={form.storeName} onChange={(value) => setForm((f) => ({ ...f, storeName: value }))} />

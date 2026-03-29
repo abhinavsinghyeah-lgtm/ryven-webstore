@@ -4,18 +4,19 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { ContentSkeleton } from "@/components/ui/ContentSkeleton";
+import { AdminLoader } from "@/components/admin/AdminLoader";
 import { AdminCard, AdminShell, StatusBanner, adminButtonClasses } from "@/components/admin/AdminShell";
 import { apiRequest } from "@/lib/api";
 import { authStorage } from "@/lib/auth";
 import { formatPricePaise } from "@/lib/format";
-import type { AdminDashboardResponse } from "@/types/dashboard";
+import type { AdminDashboardResponse, EngagementOverviewResponse } from "@/types/dashboard";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<AdminDashboardResponse | null>(null);
+  const [engagement, setEngagement] = useState<EngagementOverviewResponse | null>(null);
 
   useEffect(() => {
     const token = authStorage.getToken();
@@ -31,8 +32,14 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    apiRequest<AdminDashboardResponse>("/admin/dashboard", { token })
-      .then((response) => setData(response))
+    Promise.all([
+      apiRequest<AdminDashboardResponse>("/admin/dashboard", { token }),
+      apiRequest<EngagementOverviewResponse>("/admin/engagement/overview", { token }),
+    ])
+      .then(([response, engagementResponse]) => {
+        setData(response);
+        setEngagement(engagementResponse);
+      })
       .catch((err) => setError(err instanceof Error ? err.message : "Could not load admin dashboard"))
       .finally(() => setLoading(false));
   }, [router]);
@@ -45,20 +52,7 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <AdminShell title="Loading dashboard" subtitle="Fetching the latest admin metrics.">
-        <div className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <ContentSkeleton key={index} rows={3} className="min-h-[150px]" />
-            ))}
-          </div>
-          <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-            <ContentSkeleton rows={4} showAvatar={false} className="min-h-[330px]" />
-            <div className="space-y-6">
-              <ContentSkeleton rows={3} showAvatar={false} className="min-h-[180px]" />
-              <ContentSkeleton rows={2} showAvatar={false} className="min-h-[160px]" />
-            </div>
-          </div>
-        </div>
+        <AdminLoader label="Loading dashboard data..." />
       </AdminShell>
     );
   }
@@ -92,7 +86,7 @@ export default function AdminDashboardPage() {
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Total Orders" value={String(data.stats.totalOrders)} />
         <StatCard label="Paid Orders" value={String(data.stats.paidOrders)} />
-        <StatCard label="Pending Orders" value={String(data.stats.pendingOrders)} />
+        <StatCard label="Live Visitors" value={String(engagement?.summary?.liveVisitors ?? 0)} />
         <StatCard label="Active Products" value={String(data.stats.totalProducts)} />
       </section>
 
