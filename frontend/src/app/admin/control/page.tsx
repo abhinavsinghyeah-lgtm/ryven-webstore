@@ -7,29 +7,39 @@ import { AdminCard, AdminShell, StatusBanner, adminButtonClasses } from "@/compo
 import { AdminLoader } from "@/components/admin/AdminLoader";
 import { authStorage } from "@/lib/auth";
 import { apiRequest } from "@/lib/api";
-import type { AdminControlStatusResponse, ControlErrorLogsResponse } from "@/types/dashboard";
+import type { AdminControlStatusResponse, ControlErrorLogsResponse, EngagementLogsResponse } from "@/types/dashboard";
 
 export default function AdminControlPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<AdminControlStatusResponse | null>(null);
-  const [logs, setLogs] = useState<ControlErrorLogsResponse | null>(null);
+  const [errorLogs, setErrorLogs] = useState<ControlErrorLogsResponse | null>(null);
+  const [activityLogs, setActivityLogs] = useState<EngagementLogsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [secret, setSecret] = useState("");
+  const [errorPage, setErrorPage] = useState(0);
+  const [activityPage, setActivityPage] = useState(0);
 
-  const fetchData = async () => {
+  const fetchData = async (nextErrorPage = 0, nextActivityPage = 0) => {
     const token = authStorage.getToken();
     if (!token) return;
+
     setLoading(true);
     setError(null);
+
     try {
-      const [statusData, logsData] = await Promise.all([
+      const [statusData, errorLogsData, activityLogsData] = await Promise.all([
         apiRequest<AdminControlStatusResponse>("/admin/control/status", { token }),
-        apiRequest<ControlErrorLogsResponse>("/admin/control/errors", { token }),
+        apiRequest<ControlErrorLogsResponse>(`/admin/control/errors?limit=5&offset=${nextErrorPage * 5}`, { token }),
+        apiRequest<EngagementLogsResponse>(`/admin/control/activity?limit=5&offset=${nextActivityPage * 5}`, { token }),
       ]);
+
       setStatus(statusData);
-      setLogs(logsData);
+      setErrorLogs(errorLogsData);
+      setActivityLogs(activityLogsData);
+      setErrorPage(nextErrorPage);
+      setActivityPage(nextActivityPage);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load control data");
     } finally {
@@ -48,7 +58,7 @@ export default function AdminControlPage() {
       router.replace("/account");
       return;
     }
-    void fetchData();
+    void fetchData(0, 0);
   }, [router]);
 
   const runAction = async (action: string) => {
@@ -69,15 +79,39 @@ export default function AdminControlPage() {
     }
   };
 
+  const loadErrorPage = async (page: number) => {
+    const token = authStorage.getToken();
+    if (!token) return;
+    try {
+      const data = await apiRequest<ControlErrorLogsResponse>(`/admin/control/errors?limit=5&offset=${page * 5}`, { token });
+      setErrorLogs(data);
+      setErrorPage(page);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load error logs");
+    }
+  };
+
+  const loadActivityPage = async (page: number) => {
+    const token = authStorage.getToken();
+    if (!token) return;
+    try {
+      const data = await apiRequest<EngagementLogsResponse>(`/admin/control/activity?limit=5&offset=${page * 5}`, { token });
+      setActivityLogs(data);
+      setActivityPage(page);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load activity logs");
+    }
+  };
+
   const uptime = status?.data?.apiUptimeSeconds ?? 0;
   const uptimeText = `${Math.floor(uptime / 60)}m ${Math.floor(uptime % 60)}s`;
 
   return (
     <AdminShell
       title="Control Center"
-      subtitle="Monitor system health, review errors, and prepare operational actions."
+      subtitle="Monitor system health, review issues, and manage secure service actions."
       actions={
-        <button type="button" className={adminButtonClasses.soft} onClick={fetchData}>
+        <button type="button" className={adminButtonClasses.soft} onClick={() => fetchData(errorPage, activityPage)}>
           Refresh status
         </button>
       }
@@ -152,8 +186,8 @@ export default function AdminControlPage() {
             <AdminCard>
               <p className="text-sm font-semibold text-white">Errors & warnings</p>
               <div className="mt-4 space-y-3">
-                {logs?.logs?.length ? (
-                  logs.logs.map((log) => (
+                {errorLogs?.logs?.length ? (
+                  errorLogs.logs.map((log) => (
                     <LogRow
                       key={log.id}
                       title={`${log.method} ${log.path}`}
@@ -161,8 +195,11 @@ export default function AdminControlPage() {
                     />
                   ))
                 ) : (
-                  <EmptyRow message="No warnings captured yet. Logs will appear here." />
+                  <EmptyRow message="No errors or warnings captured yet." />
                 )}
+              </div>
+              <div className="mt-4">
+                <Pagination total={errorLogs?.pagination?.total ?? 0} current={errorPage} pageSize={5} onChange={loadErrorPage} />
               </div>
             </AdminCard>
           </section>
@@ -170,20 +207,23 @@ export default function AdminControlPage() {
           <AdminCard>
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-white">Activity log</p>
-              <span className="text-xs uppercase tracking-[0.24em] text-white/50">Recent events</span>
+              <span className="text-xs uppercase tracking-[0.24em] text-white/50">Latest traffic events</span>
             </div>
             <div className="mt-4 space-y-3">
-              {logs?.logs?.length ? (
-                logs.logs.map((log) => (
+              {activityLogs?.logs?.length ? (
+                activityLogs.logs.map((log) => (
                   <LogRow
                     key={`activity-${log.id}`}
                     title={`${log.method} ${log.path}`}
-                    detail={`${log.status} · ${log.ip || "Unknown IP"}`}
+                    detail={`${log.status} · ${log.email || "Guest"} · ${log.ip || "Unknown IP"} · ${new Date(log.createdAt).toLocaleString()}`}
                   />
                 ))
               ) : (
                 <EmptyRow message="No recent activity captured yet." />
               )}
+            </div>
+            <div className="mt-4">
+              <Pagination total={activityLogs?.pagination?.total ?? 0} current={activityPage} pageSize={5} onChange={loadActivityPage} />
             </div>
           </AdminCard>
         </>
@@ -205,6 +245,26 @@ function LogRow({ title, detail }: { title: string; detail: string }) {
     <div className="rounded-2xl border border-white/5 bg-white/5 p-4">
       <p className="text-sm font-semibold text-white">{title}</p>
       <p className="mt-1 text-sm text-white/60">{detail}</p>
+    </div>
+  );
+}
+
+function Pagination({ total, current, pageSize, onChange }: { total: number; current: number; pageSize: number; onChange: (page: number) => void }) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const pages = Array.from({ length: totalPages }, (_, idx) => idx);
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {pages.map((page) => (
+        <button
+          key={page}
+          type="button"
+          className={page === current ? adminButtonClasses.soft : adminButtonClasses.ghost}
+          onClick={() => onChange(page)}
+        >
+          {page + 1}
+        </button>
+      ))}
     </div>
   );
 }

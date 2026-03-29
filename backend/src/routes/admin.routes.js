@@ -23,6 +23,7 @@ router.post(
   adminController.runControlAction,
 );
 router.get("/admin/control/errors", requireAuth, requireAdmin, adminController.getErrorLogs);
+router.get("/admin/control/activity", requireAuth, requireAdmin, validate(paginationSchema), adminController.getControlActivityLogs);
 
 router.get("/admin/engagement/overview", requireAuth, requireAdmin, adminController.getEngagementOverview);
 router.get("/admin/engagement/sessions", requireAuth, requireAdmin, validate(paginationSchema), adminController.getEngagementSessions);

@@ -111,7 +111,7 @@ const listTopPages = async ({ days = 7, limit = 5 }) => {
   return result.rows;
 };
 
-const listErrorLogs = async ({ limit = 10 }) => {
+const listErrorLogs = async ({ limit = 10, offset = 0 }) => {
   const sql = `
     SELECT
       l.id,
@@ -125,10 +125,15 @@ const listErrorLogs = async ({ limit = 10 }) => {
     LEFT JOIN users u ON u.id = l.user_id
     WHERE l.status >= 400
     ORDER BY l.created_at DESC
-    LIMIT $1
+    LIMIT $1 OFFSET $2
   `;
-  const result = await query(sql, [limit]);
+  const result = await query(sql, [limit, offset]);
   return result.rows;
+};
+
+const countErrorLogs = async () => {
+  const result = await query("SELECT COUNT(*)::int AS total FROM activity_logs WHERE status >= 400");
+  return result.rows[0].total;
 };
 
 const listAbandonedCarts = async ({ limit, offset }) => {
@@ -175,7 +180,7 @@ const countAbandonedCarts = async () => {
   return result.rows[0];
 };
 
-const listNotifications = async ({ limit }) => {
+const listNotifications = async ({ limit, offset = 0 }) => {
   const sql = `
     SELECT *
     FROM (
@@ -218,10 +223,26 @@ const listNotifications = async ({ limit }) => {
       LEFT JOIN users u ON u.id = c.user_id
     ) events
     ORDER BY "createdAt" DESC
-    LIMIT $1
+    LIMIT $1 OFFSET $2
   `;
-  const result = await query(sql, [limit]);
+  const result = await query(sql, [limit, offset]);
   return result.rows;
+};
+
+const countNotifications = async () => {
+  const sql = `
+    SELECT (
+      (SELECT COUNT(*)::int FROM sessions)
+      +
+      (SELECT COUNT(*)::int FROM users)
+      +
+      (SELECT COUNT(*)::int FROM orders)
+      +
+      (SELECT COUNT(*)::int FROM carts)
+    ) AS total
+  `;
+  const result = await query(sql);
+  return Number(result.rows[0]?.total || 0);
 };
 
 module.exports = {
@@ -234,7 +255,9 @@ module.exports = {
   countActivityLogs,
   listTopPages,
   listErrorLogs,
+  countErrorLogs,
   listAbandonedCarts,
   countAbandonedCarts,
   listNotifications,
+  countNotifications,
 };

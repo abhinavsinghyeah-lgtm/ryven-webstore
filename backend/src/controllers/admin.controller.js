@@ -11,9 +11,11 @@ const {
   countActivityLogs,
   listTopPages,
   listErrorLogs,
+  countErrorLogs,
   listAbandonedCarts,
   countAbandonedCarts,
   listNotifications,
+  countNotifications,
 } = require("../models/analytics.model");
 const {
   listUsersForAdmin,
@@ -127,9 +129,32 @@ const getEngagementAbandoned = asyncHandler(async (req, res) => {
   });
 });
 
-const getErrorLogs = asyncHandler(async (_req, res) => {
-  const logs = await listErrorLogs({ limit: 12 });
-  res.status(200).json({ logs });
+const getErrorLogs = asyncHandler(async (req, res) => {
+  const limit = Number(req.query.limit || 5);
+  const offset = Number(req.query.offset || 0);
+  const [logs, total] = await Promise.all([listErrorLogs({ limit, offset }), countErrorLogs()]);
+  res.status(200).json({
+    logs,
+    pagination: {
+      limit,
+      offset,
+      total,
+    },
+  });
+});
+
+const getControlActivityLogs = asyncHandler(async (req, res) => {
+  const limit = Number(req.query.limit || 5);
+  const offset = Number(req.query.offset || 0);
+  const [logs, total] = await Promise.all([listActivityLogs({ limit, offset }), countActivityLogs()]);
+  res.status(200).json({
+    logs,
+    pagination: {
+      limit,
+      offset,
+      total,
+    },
+  });
 });
 
 const getUsers = asyncHandler(async (req, res) => {
@@ -186,8 +211,16 @@ const patchUserStatus = asyncHandler(async (req, res) => {
 
 const getNotifications = asyncHandler(async (req, res) => {
   const limit = Number(req.query.limit || 12);
-  const events = await listNotifications({ limit });
-  res.status(200).json({ events });
+  const offset = Number(req.query.offset || 0);
+  const [events, total] = await Promise.all([listNotifications({ limit, offset }), countNotifications()]);
+  res.status(200).json({
+    events,
+    pagination: {
+      limit,
+      offset,
+      total,
+    },
+  });
 });
 
 const sendUserNotification = asyncHandler(async (req, res) => {
@@ -253,6 +286,7 @@ module.exports = {
   getEngagementLogs,
   getEngagementAbandoned,
   getErrorLogs,
+  getControlActivityLogs,
   getUsers,
   createAdminUser,
   patchUserRole,

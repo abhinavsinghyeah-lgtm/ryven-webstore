@@ -52,6 +52,10 @@ export default function AdminDashboardPage() {
     router.push("/");
   };
 
+  const conversionRate = engagement?.summary?.weekVisitors
+    ? `${((data?.stats?.totalOrders ?? 0) / Math.max(1, engagement.summary.weekVisitors) * 100).toFixed(1)}%`
+    : "0.0%";
+
   if (loading) {
     return (
       <AdminShell title="Loading dashboard" subtitle="Fetching the latest admin metrics.">
@@ -102,9 +106,9 @@ export default function AdminDashboardPage() {
               Monitor orders, track revenue, and keep the storefront healthy.
             </p>
           </div>
-          <button type="button" className="mt-6 inline-flex rounded-xl bg-white px-4 py-2 text-xs font-semibold text-neutral-900">
-            Start AI
-          </button>
+          <Link href="/admin/control" className="mt-6 inline-flex rounded-xl bg-white px-4 py-2 text-xs font-semibold text-neutral-900">
+            Open control
+          </Link>
         </AdminCard>
 
         <AdminCard>
@@ -119,16 +123,16 @@ export default function AdminDashboardPage() {
               ? `${engagement.topPages[0].path} — ${engagement.topPages[0].hits} visits`
               : "No page traffic yet."}
           </p>
-          <button className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80">
+          <Link href="/admin/engagement" className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80">
             View details
-          </button>
+          </Link>
         </AdminCard>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <MetricCard label="Orders" value={String(data.stats.totalOrders)} />
         <MetricCard label="Revenue" value={formatPricePaise(data.stats.totalRevenuePaise, "INR")} />
-        <MetricCard label="Conversion Rate" value="3.5%" />
+        <MetricCard label="Conversion Rate" value={conversionRate} />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
@@ -223,6 +227,9 @@ export default function AdminDashboardPage() {
             <p className="text-sm text-white/60">No notifications yet.</p>
           )}
         </div>
+        <Link href="/admin/notifications" className="mt-4 inline-flex rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/80">
+          Open notifications page
+        </Link>
       </AdminCard>
     </AdminShell>
   );

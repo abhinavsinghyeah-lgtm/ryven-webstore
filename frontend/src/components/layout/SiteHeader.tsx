@@ -88,7 +88,11 @@ export function SiteHeader() {
               <img
                 src={settings.logoUrl}
                 alt={settings.storeName || "RYVEN"}
-                className="h-7 w-auto object-contain"
+                className="max-w-none object-contain"
+                style={{
+                  width: `${settings.logoWidthPx || 120}px`,
+                  height: `${settings.logoHeightPx || 32}px`,
+                }}
               />
             ) : (
               <span className={logoClass}>RYVEN</span>

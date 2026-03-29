@@ -20,6 +20,8 @@ export interface StoreSettings {
   id: number;
   storeName: string;
   logoUrl: string;
+  logoWidthPx?: number;
+  logoHeightPx?: number;
   heroImageUrl: string;
   authBackgroundUrl?: string | null;
   authBackgroundColor?: string | null;

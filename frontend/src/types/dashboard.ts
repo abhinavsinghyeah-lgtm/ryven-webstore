@@ -133,6 +133,7 @@ export interface ControlErrorLog {
 
 export interface ControlErrorLogsResponse {
   logs: ControlErrorLog[];
+  pagination: { limit: number; offset: number; total: number };
 }
 
 export interface AdminUsersListItem {
@@ -164,6 +165,7 @@ export interface NotificationEvent {
 
 export interface NotificationsResponse {
   events: NotificationEvent[];
+  pagination: { limit: number; offset: number; total: number };
 }
 
 export interface AccountNotificationItem {

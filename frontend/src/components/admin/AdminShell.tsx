@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ReactNode, CSSProperties } from "react";
-import { usePathname } from "next/navigation";
+import { ReactNode, CSSProperties, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { authStorage } from "@/lib/auth";
 
 type AdminShellProps = {
   title: string;
@@ -16,6 +17,7 @@ const navItems = [
   { href: "/admin", label: "Dashboard", description: "Overview & KPIs" },
   { href: "/admin/control", label: "Control", description: "Systems & logs" },
   { href: "/admin/engagement", label: "Engagement", description: "Live activity" },
+  { href: "/admin/notifications", label: "Notifications", description: "Events & alerts" },
   { href: "/admin/users", label: "Users", description: "Accounts & access" },
   { href: "/admin/products", label: "Products", description: "Catalog & pricing" },
   { href: "/admin/orders", label: "Orders", description: "Fulfillment flow" },
@@ -30,11 +32,11 @@ const isActiveRoute = (pathname: string | null, href: string) => {
 
 export const adminButtonClasses = {
   primary:
-    "inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 disabled:cursor-not-allowed disabled:opacity-60",
+    "inline-flex cursor-pointer items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 disabled:cursor-not-allowed disabled:opacity-60",
   ghost:
-    "inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20",
+    "inline-flex cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20",
   soft:
-    "inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15",
+    "inline-flex cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15",
 };
 
 export const adminInputClasses =
@@ -45,6 +47,19 @@ export const adminTextareaClasses =
 
 export function AdminShell({ title, subtitle, eyebrow = "Admin", actions, children }: AdminShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [profileOpen, setProfileOpen] = useState(false);
+  const results = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return [];
+    return navItems.filter((item) => `${item.label} ${item.description}`.toLowerCase().includes(query)).slice(0, 5);
+  }, [search]);
+
+  const logout = () => {
+    authStorage.clear();
+    router.push("/");
+  };
 
   return (
     <main className="min-h-screen bg-[#0b111a] text-slate-100">
@@ -70,8 +85,8 @@ export function AdminShell({ title, subtitle, eyebrow = "Admin", actions, childr
                   href={item.href}
                   className={
                     isActive
-                      ? "flex items-center gap-3 rounded-xl bg-[#1a2432] px-3 py-2 text-sm font-semibold text-white"
-                      : "flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-white/70 transition hover:bg-white/5 hover:text-white"
+                      ? "flex cursor-pointer items-center gap-3 rounded-xl bg-[#1a2432] px-3 py-2 text-sm font-semibold text-white"
+                      : "flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm text-white/70 transition hover:bg-white/5 hover:text-white"
                   }
                 >
                   <span className="grid h-7 w-7 place-items-center rounded-lg bg-white/5 text-[10px] text-white/70">
@@ -99,12 +114,87 @@ export function AdminShell({ title, subtitle, eyebrow = "Admin", actions, childr
               Home
             </Link>
             <div className="flex items-center gap-3">
-              <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/60 md:flex">
-                <span>Search</span>
-                <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px]">⌘K</span>
+              <div className="relative hidden md:block">
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    const target = results[0]?.href || "/admin";
+                    setSearch("");
+                    router.push(target);
+                  }}
+                  className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/60"
+                >
+                  <input
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="Search"
+                    className="w-24 bg-transparent text-sm text-white outline-none placeholder:text-white/45"
+                  />
+                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px]">⌘K</span>
+                </form>
+                {results.length ? (
+                  <div className="absolute right-0 top-full z-30 mt-2 w-56 rounded-2xl border border-white/10 bg-[#151c26] p-2 shadow-[0_24px_50px_rgba(6,10,16,0.5)]">
+                    {results.map((item) => (
+                      <button
+                        key={item.href}
+                        type="button"
+                        className="flex w-full cursor-pointer items-start rounded-xl px-3 py-2 text-left transition hover:bg-white/5"
+                        onClick={() => {
+                          setSearch("");
+                          router.push(item.href);
+                        }}
+                      >
+                        <span>
+                          <span className="block text-sm font-semibold text-white">{item.label}</span>
+                          <span className="block text-xs text-white/50">{item.description}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
-              <div className="grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/5 text-xs text-white/70">🔔</div>
-              <div className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-xs font-semibold text-white">A</div>
+              <Link
+                href="/admin/notifications"
+                className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border border-white/10 bg-white/5 text-xs text-white/70 transition hover:border-white/20 hover:text-white"
+                aria-label="Open notifications"
+              >
+                🔔
+              </Link>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setProfileOpen((value) => !value)}
+                  className="grid h-8 w-8 cursor-pointer place-items-center rounded-full bg-white/10 text-xs font-semibold text-white"
+                  aria-label="Open profile menu"
+                >
+                  A
+                </button>
+                {profileOpen ? (
+                  <div className="absolute right-0 top-full z-30 mt-2 w-48 rounded-2xl border border-white/10 bg-[#151c26] p-2 shadow-[0_24px_50px_rgba(6,10,16,0.5)]">
+                    <Link
+                      href="/admin/settings"
+                      className="block cursor-pointer rounded-xl px-3 py-2 text-sm text-white/75 transition hover:bg-white/5 hover:text-white"
+                      onClick={() => setProfileOpen(false)}
+                    >
+                      Settings
+                    </Link>
+                    <Link
+                      href="/"
+                      className="block cursor-pointer rounded-xl px-3 py-2 text-sm text-white/75 transition hover:bg-white/5 hover:text-white"
+                      onClick={() => setProfileOpen(false)}
+                    >
+                      View storefront
+                    </Link>
+                    <button
+                      type="button"
+                      className="block w-full cursor-pointer rounded-xl px-3 py-2 text-left text-sm text-rose-200 transition hover:bg-rose-500/10"
+                      onClick={logout}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
 

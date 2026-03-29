@@ -16,6 +16,8 @@ export default function AdminSettingsPage() {
   const [form, setForm] = useState({
     storeName: "",
     logoUrl: "",
+    logoWidthPx: "120",
+    logoHeightPx: "32",
     heroImageUrl: "",
     authBackgroundUrl: "",
     authBackgroundColor: "",
@@ -45,6 +47,8 @@ export default function AdminSettingsPage() {
         setForm({
           storeName: data.settings.storeName,
           logoUrl: data.settings.logoUrl,
+          logoWidthPx: String(data.settings.logoWidthPx || 120),
+          logoHeightPx: String(data.settings.logoHeightPx || 32),
           heroImageUrl: data.settings.heroImageUrl || data.settings.logoUrl,
           authBackgroundUrl: data.settings.authBackgroundUrl || "",
           authBackgroundColor: data.settings.authBackgroundColor || "",
@@ -100,6 +104,10 @@ export default function AdminSettingsPage() {
             <>
               <Field label="Store name" value={form.storeName} onChange={(value) => setForm((f) => ({ ...f, storeName: value }))} />
               <Field label="Logo image URL" value={form.logoUrl} onChange={(value) => setForm((f) => ({ ...f, logoUrl: value }))} />
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label="Logo width (px)" value={form.logoWidthPx} onChange={(value) => setForm((f) => ({ ...f, logoWidthPx: value }))} />
+                <Field label="Logo height (px)" value={form.logoHeightPx} onChange={(value) => setForm((f) => ({ ...f, logoHeightPx: value }))} />
+              </div>
               <Field label="Homepage hero image URL" value={form.heroImageUrl} onChange={(value) => setForm((f) => ({ ...f, heroImageUrl: value }))} />
               <Field
                 label="Auth background image URL (optional)"

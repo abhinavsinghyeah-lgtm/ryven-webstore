@@ -6,6 +6,8 @@ const getStoreSettings = async () => {
       id,
       store_name AS "storeName",
       logo_url AS "logoUrl",
+      logo_width_px AS "logoWidthPx",
+      logo_height_px AS "logoHeightPx",
       hero_image_url AS "heroImageUrl",
       auth_background_url AS "authBackgroundUrl",
       auth_background_color AS "authBackgroundColor",
@@ -20,21 +22,34 @@ const getStoreSettings = async () => {
   return result.rows[0] || null;
 };
 
-const updateStoreSettings = async ({ storeName, logoUrl, heroImageUrl, tagline, authBackgroundUrl, authBackgroundColor }) => {
+const updateStoreSettings = async ({
+  storeName,
+  logoUrl,
+  logoWidthPx,
+  logoHeightPx,
+  heroImageUrl,
+  tagline,
+  authBackgroundUrl,
+  authBackgroundColor,
+}) => {
   const sql = `
     UPDATE store_settings
     SET store_name = $1,
         logo_url = $2,
-        hero_image_url = $3,
-        auth_background_url = $4,
-        auth_background_color = $5,
-        tagline = $6,
+        logo_width_px = $3,
+        logo_height_px = $4,
+        hero_image_url = $5,
+        auth_background_url = $6,
+        auth_background_color = $7,
+        tagline = $8,
         updated_at = NOW()
     WHERE id = 1
     RETURNING
       id,
       store_name AS "storeName",
       logo_url AS "logoUrl",
+      logo_width_px AS "logoWidthPx",
+      logo_height_px AS "logoHeightPx",
       hero_image_url AS "heroImageUrl",
       auth_background_url AS "authBackgroundUrl",
       auth_background_color AS "authBackgroundColor",
@@ -45,6 +60,8 @@ const updateStoreSettings = async ({ storeName, logoUrl, heroImageUrl, tagline, 
   const result = await query(sql, [
     storeName,
     logoUrl,
+    logoWidthPx,
+    logoHeightPx,
     heroImageUrl || logoUrl,
     authBackgroundUrl || null,
     authBackgroundColor || null,

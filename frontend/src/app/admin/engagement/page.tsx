@@ -105,7 +105,32 @@ export default function AdminEngagementPage() {
       title="Engagement Pulse"
       subtitle="Live traffic, visit patterns, and session depth at a glance."
       actions={
-        <button type="button" className={adminButtonClasses.ghost}>
+        <button
+          type="button"
+          className={adminButtonClasses.ghost}
+          onClick={async () => {
+            const token = authStorage.getToken();
+            if (!token) return;
+            setLoading(true);
+            setError(null);
+            try {
+              const [overviewData, sessionsData, logsData, abandonedData] = await Promise.all([
+                apiRequest<EngagementOverviewResponse>("/admin/engagement/overview", { token }),
+                apiRequest<EngagementSessionsResponse>(`/admin/engagement/sessions?limit=6&offset=${sessionPage * 6}`, { token }),
+                apiRequest<EngagementLogsResponse>(`/admin/engagement/logs?limit=6&offset=${logPage * 6}`, { token }),
+                apiRequest<AbandonedCartsResponse>("/admin/engagement/abandoned?limit=6&offset=0", { token }),
+              ]);
+              setOverview(overviewData);
+              setSessions(sessionsData);
+              setLogs(logsData);
+              setAbandoned(abandonedData);
+            } catch (err) {
+              setError(err instanceof Error ? err.message : "Unable to refresh engagement data");
+            } finally {
+              setLoading(false);
+            }
+          }}
+        >
           Refresh data
         </button>
       }
