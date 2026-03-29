@@ -154,6 +154,23 @@ export interface AdminUsersResponse {
   pagination: { limit: number; offset: number; total: number };
 }
 
+export interface AdminUserDetailsResponse {
+  user: AuthUser & {
+    phone: string | null;
+    isActive: boolean;
+    isPasswordSet: boolean;
+    isVerified: boolean;
+    createdAt: string;
+    updatedAt: string | null;
+  };
+  recentOrders: OrderListItem[];
+  summary: {
+    totalOrders: number;
+    activeOrders: number;
+    totalSpentPaise: number;
+  };
+}
+
 export interface NotificationEvent {
   type: "visit" | "signup" | "order" | "cart";
   refId: string;

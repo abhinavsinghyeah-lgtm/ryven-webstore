@@ -60,6 +60,14 @@ const sendUserNotificationSchema = z.object({
   query: z.object({}).optional(),
 });
 
+const adminUserParamsSchema = z.object({
+  body: z.object({}).optional(),
+  params: z.object({
+    id: z.coerce.number().int().positive(),
+  }),
+  query: z.object({}).optional(),
+});
+
 module.exports = {
   paginationSchema,
   controlActionSchema,
@@ -67,4 +75,5 @@ module.exports = {
   updateUserStatusSchema,
   createUserSchema,
   sendUserNotificationSchema,
+  adminUserParamsSchema,
 };

@@ -10,6 +10,7 @@ const {
   updateUserStatusSchema,
   createUserSchema,
   sendUserNotificationSchema,
+  adminUserParamsSchema,
 } = require("../validators/admin.validator");
 
 const router = express.Router();
@@ -34,6 +35,7 @@ router.get("/admin/engagement/logs/export", requireAuth, requireAdmin, adminCont
 router.get("/admin/users", requireAuth, requireAdmin, validate(paginationSchema), adminController.getUsers);
 router.post("/admin/users", requireAuth, requireAdmin, validate(createUserSchema), adminController.createAdminUser);
 router.get("/admin/users/export", requireAuth, requireAdmin, adminController.exportUsersCsv);
+router.get("/admin/users/:id", requireAuth, requireAdmin, validate(adminUserParamsSchema), adminController.getUserDetails);
 router.post("/admin/users/:id/notify", requireAuth, requireAdmin, validate(sendUserNotificationSchema), adminController.sendUserNotification);
 router.patch("/admin/users/:id/role", requireAuth, requireAdmin, validate(updateUserRoleSchema), adminController.patchUserRole);
 router.patch("/admin/users/:id/status", requireAuth, requireAdmin, validate(updateUserStatusSchema), adminController.patchUserStatus);

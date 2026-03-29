@@ -23,7 +23,9 @@ const {
   updateUserRole,
   updateUserStatus,
   createUser,
+  findUserById,
 } = require("../models/user.model");
+const { listOrdersByUser, countOrdersByUser } = require("../models/order.model");
 const { createUserNotification } = require("../models/notification.model");
 
 const getControlStatus = asyncHandler(async (_req, res) => {
@@ -171,6 +173,29 @@ const getUsers = asyncHandler(async (req, res) => {
   });
 });
 
+const getUserDetails = asyncHandler(async (req, res) => {
+  const userId = req.validated.params.id;
+  const [user, recentOrders, totalOrders] = await Promise.all([
+    findUserById(userId),
+    listOrdersByUser({ userId, limit: 20, offset: 0 }),
+    countOrdersByUser(userId),
+  ]);
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  res.status(200).json({
+    user,
+    recentOrders,
+    summary: {
+      totalOrders,
+      activeOrders: recentOrders.filter((order) => !["delivered", "cancelled"].includes(order.status)).length,
+      totalSpentPaise: recentOrders.reduce((sum, order) => sum + Number(order.totalPaise || 0), 0),
+    },
+  });
+});
+
 const createAdminUser = asyncHandler(async (req, res) => {
   const { fullName, email, phone, role } = req.validated.body;
   const user = await createUser({
@@ -288,6 +313,7 @@ module.exports = {
   getErrorLogs,
   getControlActivityLogs,
   getUsers,
+  getUserDetails,
   createAdminUser,
   patchUserRole,
   patchUserStatus,
