@@ -7,6 +7,7 @@ export interface AuthUser {
   phone?: string | null;
   role: UserRole;
   isVerified?: boolean;
+  isPasswordSet?: boolean;
   createdAt?: string;
 }
 

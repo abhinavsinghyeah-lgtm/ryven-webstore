@@ -48,6 +48,17 @@ const findUserByPhone = async (phone) => {
   return result.rows[0] || null;
 };
 
+const getUserAuthById = async (id) => {
+  const sql = `
+    SELECT id, password_hash AS "passwordHash", is_password_set AS "isPasswordSet"
+    FROM users
+    WHERE id = $1
+    LIMIT 1
+  `;
+  const result = await query(sql, [id]);
+  return result.rows[0] || null;
+};
+
 const findOrCreateGuestUser = async ({ fullName, email, phone }) => {
   const normalizedEmail = email.toLowerCase();
 
@@ -85,6 +96,17 @@ const setUserPassword = async ({ userId, passwordHash }) => {
     RETURNING id
   `;
 
+  const result = await query(sql, [passwordHash, userId]);
+  return Boolean(result.rows[0]);
+};
+
+const updateUserPassword = async ({ userId, passwordHash }) => {
+  const sql = `
+    UPDATE users
+    SET password_hash = $1, is_password_set = TRUE, updated_at = NOW()
+    WHERE id = $2
+    RETURNING id
+  `;
   const result = await query(sql, [passwordHash, userId]);
   return Boolean(result.rows[0]);
 };
@@ -152,8 +174,10 @@ module.exports = {
   findUserByEmail,
   findUserByPhone,
   findUserById,
+  getUserAuthById,
   findOrCreateGuestUser,
   setUserPassword,
+  updateUserPassword,
   updateUserPhone,
   markUserVerified,
   listUsersForAdmin,

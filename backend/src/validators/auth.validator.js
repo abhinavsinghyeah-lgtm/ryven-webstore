@@ -20,4 +20,13 @@ const verifyOtpSchema = z.object({
   query: z.object({}).optional(),
 });
 
-module.exports = { requestOtpSchema, verifyOtpSchema };
+const changePasswordSchema = z.object({
+  body: z.object({
+    oldPassword: z.string().trim().min(6).optional(),
+    newPassword: z.string().trim().min(8).max(120),
+  }),
+  params: z.object({}).optional(),
+  query: z.object({}).optional(),
+});
+
+module.exports = { requestOtpSchema, verifyOtpSchema, changePasswordSchema };

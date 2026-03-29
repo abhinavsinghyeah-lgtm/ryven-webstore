@@ -19,4 +19,10 @@ const me = asyncHandler(async (req, res) => {
   res.status(200).json({ user });
 });
 
-module.exports = { requestOtp, verifyOtp, me };
+const changePassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.validated.body;
+  const result = await authService.changePassword({ userId: req.user.id, oldPassword, newPassword });
+  res.status(200).json(result);
+});
+
+module.exports = { requestOtp, verifyOtp, me, changePassword };

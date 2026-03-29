@@ -1,9 +1,19 @@
 const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 const { USER_ROLES } = require("../constants/roles");
 const { env } = require("../config/env");
 const { ApiError } = require("../utils/apiError");
 const { signAccessToken } = require("../utils/jwt");
-const { createUser, findUserByEmail, findUserByPhone, findUserById, markUserVerified, updateUserPhone } = require("../models/user.model");
+const {
+  createUser,
+  findUserByEmail,
+  findUserByPhone,
+  findUserById,
+  markUserVerified,
+  updateUserPhone,
+  getUserAuthById,
+  updateUserPassword,
+} = require("../models/user.model");
 const { createOtp, findLatestOtp, recordOtpAttempt, consumeOtp } = require("../models/otp.model");
 const { sendOtpEmail } = require("./email.service");
 const { sendOtpSms } = require("./sms.service");
@@ -157,4 +167,28 @@ const getCurrentUser = async (userId) => {
   return user;
 };
 
-module.exports = { requestOtp, verifyOtp, getCurrentUser };
+const changePassword = async ({ userId, oldPassword, newPassword }) => {
+  const authUser = await getUserAuthById(userId);
+  if (!authUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  if (authUser.isPasswordSet) {
+    if (!oldPassword) {
+      throw new ApiError(400, "Current password is required");
+    }
+    const matches = await bcrypt.compare(oldPassword, authUser.passwordHash || "");
+    if (!matches) {
+      throw new ApiError(400, "Current password is incorrect");
+    }
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  const updated = await updateUserPassword({ userId, passwordHash });
+  if (!updated) {
+    throw new ApiError(500, "Unable to update password");
+  }
+  return { status: "ok" };
+};
+
+module.exports = { requestOtp, verifyOtp, getCurrentUser, changePassword };
