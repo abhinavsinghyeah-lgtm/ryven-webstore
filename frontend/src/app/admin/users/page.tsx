@@ -15,6 +15,8 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<AdminUsersListItem[]>([]);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [newUser, setNewUser] = useState({ fullName: "", email: "", phone: "", role: "customer" });
 
   useEffect(() => {
     const token = authStorage.getToken();
@@ -75,7 +77,7 @@ export default function AdminUsersPage() {
       title="User Command"
       subtitle="Manage customer accounts, access levels, and audit trails."
       actions={
-        <button type="button" className={adminButtonClasses.primary}>
+        <button type="button" className={adminButtonClasses.primary} onClick={() => setShowForm(true)}>
           Add user
         </button>
       }
@@ -90,10 +92,99 @@ export default function AdminUsersPage() {
           <AdminCard>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
+                <p className="text-sm font-semibold text-white">Add new user</p>
+                <p className="mt-1 text-sm text-white/60">Create a user account directly from admin.</p>
+              </div>
+              <button type="button" className={adminButtonClasses.soft} onClick={() => setShowForm((prev) => !prev)}>
+                {showForm ? "Hide form" : "Add user"}
+              </button>
+            </div>
+
+            {showForm ? (
+              <form
+                className="mt-4 grid gap-3 md:grid-cols-2"
+                onSubmit={async (event) => {
+                  event.preventDefault();
+                  const token = authStorage.getToken();
+                  if (!token) return;
+                  setError(null);
+                  setActionMessage(null);
+                  try {
+                    const response = await apiRequest<{ user: AdminUsersListItem }>("/admin/users", {
+                      method: "POST",
+                      token,
+                      body: newUser,
+                    });
+                    setUsers((prev) => [response.user, ...prev]);
+                    setNewUser({ fullName: "", email: "", phone: "", role: "customer" });
+                    setActionMessage("User created.");
+                    setShowForm(false);
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : "Unable to create user");
+                  }
+                }}
+              >
+                <input
+                  value={newUser.fullName}
+                  onChange={(event) => setNewUser((prev) => ({ ...prev, fullName: event.target.value }))}
+                  placeholder="Full name"
+                  className="h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none"
+                  required
+                />
+                <input
+                  value={newUser.email}
+                  onChange={(event) => setNewUser((prev) => ({ ...prev, email: event.target.value }))}
+                  placeholder="Email"
+                  className="h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none"
+                  required
+                />
+                <input
+                  value={newUser.phone}
+                  onChange={(event) => setNewUser((prev) => ({ ...prev, phone: event.target.value }))}
+                  placeholder="Phone (optional)"
+                  className="h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none"
+                />
+                <select
+                  value={newUser.role}
+                  onChange={(event) => setNewUser((prev) => ({ ...prev, role: event.target.value }))}
+                  className="h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none"
+                >
+                  <option value="customer">Customer</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <div className="md:col-span-2">
+                  <button type="submit" className={adminButtonClasses.primary}>
+                    Create user
+                  </button>
+                </div>
+              </form>
+            ) : null}
+          </AdminCard>
+
+          <AdminCard>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
                 <p className="text-sm font-semibold text-white">User directory</p>
                 <p className="mt-1 text-sm text-white/60">Live user accounts and recent access history.</p>
               </div>
-              <button type="button" className={adminButtonClasses.ghost}>
+              <button
+                type="button"
+                className={adminButtonClasses.ghost}
+                onClick={async () => {
+                  const token = authStorage.getToken();
+                  if (!token) return;
+                  const response = await fetch("/api/v1/admin/users/export", {
+                    headers: { Authorization: `Bearer ${token}` },
+                  });
+                  const blob = await response.blob();
+                  const url = URL.createObjectURL(blob);
+                  const link = document.createElement("a");
+                  link.href = url;
+                  link.download = "users.csv";
+                  link.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
                 Export list
               </button>
             </div>

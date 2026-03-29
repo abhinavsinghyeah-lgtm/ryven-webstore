@@ -96,6 +96,20 @@ export interface EngagementLogsResponse {
   pagination: { limit: number; offset: number; total: number };
 }
 
+export interface AbandonedCartItem {
+  userId: number;
+  fullName: string | null;
+  email: string | null;
+  phone: string | null;
+  updatedAt: string;
+  itemCount: number;
+}
+
+export interface AbandonedCartsResponse {
+  carts: AbandonedCartItem[];
+  pagination: { limit: number; offset: number; total: number };
+}
+
 export interface AdminControlStatusResponse {
   status: string;
   data: {
@@ -137,6 +151,19 @@ export interface AdminUsersListItem {
 export interface AdminUsersResponse {
   users: AdminUsersListItem[];
   pagination: { limit: number; offset: number; total: number };
+}
+
+export interface NotificationEvent {
+  type: "visit" | "signup" | "order" | "cart";
+  refId: string;
+  ip: string | null;
+  email: string | null;
+  name: string | null;
+  createdAt: string;
+}
+
+export interface NotificationsResponse {
+  events: NotificationEvent[];
 }
 
 export interface StoreSettingsResponse {

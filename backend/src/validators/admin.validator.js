@@ -38,9 +38,21 @@ const updateUserStatusSchema = z.object({
   query: z.object({}).optional(),
 });
 
+const createUserSchema = z.object({
+  body: z.object({
+    fullName: z.string().trim().min(2).max(80),
+    email: z.string().trim().email().max(120),
+    phone: z.string().trim().max(32).optional(),
+    role: z.enum(["admin", "customer"]).optional(),
+  }),
+  params: z.object({}).optional(),
+  query: z.object({}).optional(),
+});
+
 module.exports = {
   paginationSchema,
   controlActionSchema,
   updateUserRoleSchema,
   updateUserStatusSchema,
+  createUserSchema,
 };

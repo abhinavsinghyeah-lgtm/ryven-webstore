@@ -8,6 +8,7 @@ const {
   controlActionSchema,
   updateUserRoleSchema,
   updateUserStatusSchema,
+  createUserSchema,
 } = require("../validators/admin.validator");
 
 const router = express.Router();
@@ -25,9 +26,15 @@ router.get("/admin/control/errors", requireAuth, requireAdmin, adminController.g
 router.get("/admin/engagement/overview", requireAuth, requireAdmin, adminController.getEngagementOverview);
 router.get("/admin/engagement/sessions", requireAuth, requireAdmin, validate(paginationSchema), adminController.getEngagementSessions);
 router.get("/admin/engagement/logs", requireAuth, requireAdmin, validate(paginationSchema), adminController.getEngagementLogs);
+router.get("/admin/engagement/abandoned", requireAuth, requireAdmin, validate(paginationSchema), adminController.getEngagementAbandoned);
+router.get("/admin/engagement/logs/export", requireAuth, requireAdmin, adminController.exportLogsCsv);
 
 router.get("/admin/users", requireAuth, requireAdmin, validate(paginationSchema), adminController.getUsers);
+router.post("/admin/users", requireAuth, requireAdmin, validate(createUserSchema), adminController.createAdminUser);
+router.get("/admin/users/export", requireAuth, requireAdmin, adminController.exportUsersCsv);
 router.patch("/admin/users/:id/role", requireAuth, requireAdmin, validate(updateUserRoleSchema), adminController.patchUserRole);
 router.patch("/admin/users/:id/status", requireAuth, requireAdmin, validate(updateUserStatusSchema), adminController.patchUserStatus);
+
+router.get("/admin/notifications", requireAuth, requireAdmin, adminController.getNotifications);
 
 module.exports = router;

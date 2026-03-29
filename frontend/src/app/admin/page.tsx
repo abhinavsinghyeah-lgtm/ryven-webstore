@@ -9,7 +9,7 @@ import { AdminCard, AdminShell, StatusBanner, adminButtonClasses } from "@/compo
 import { apiRequest } from "@/lib/api";
 import { authStorage } from "@/lib/auth";
 import { formatPricePaise } from "@/lib/format";
-import type { AdminDashboardResponse, EngagementOverviewResponse } from "@/types/dashboard";
+import type { AdminDashboardResponse, EngagementOverviewResponse, NotificationsResponse } from "@/types/dashboard";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -17,6 +17,7 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<AdminDashboardResponse | null>(null);
   const [engagement, setEngagement] = useState<EngagementOverviewResponse | null>(null);
+  const [notifications, setNotifications] = useState<NotificationsResponse | null>(null);
 
   useEffect(() => {
     const token = authStorage.getToken();
@@ -35,10 +36,12 @@ export default function AdminDashboardPage() {
     Promise.all([
       apiRequest<AdminDashboardResponse>("/admin/dashboard", { token }),
       apiRequest<EngagementOverviewResponse>("/admin/engagement/overview", { token }),
+      apiRequest<NotificationsResponse>("/admin/notifications?limit=6", { token }),
     ])
-      .then(([response, engagementResponse]) => {
+      .then(([response, engagementResponse, notificationsResponse]) => {
         setData(response);
         setEngagement(engagementResponse);
+        setNotifications(notificationsResponse);
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Could not load admin dashboard"))
       .finally(() => setLoading(false));
@@ -106,15 +109,18 @@ export default function AdminDashboardPage() {
 
         <AdminCard>
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-white">Ideas for you</p>
-            <div className="flex items-center gap-2">
-              <button className="grid h-7 w-7 place-items-center rounded-full border border-white/10 bg-white/5 text-xs">‹</button>
-              <button className="grid h-7 w-7 place-items-center rounded-full border border-white/10 bg-white/5 text-xs">›</button>
+            <p className="text-sm font-semibold text-white">Top page</p>
+            <div className="flex items-center gap-2 text-xs text-white/50">
+              Last 7 days
             </div>
           </div>
-          <p className="mt-3 text-sm text-white/70">Create a blog post for your next product drop.</p>
+          <p className="mt-3 text-sm text-white/70">
+            {engagement?.topPages?.[0]
+              ? `${engagement.topPages[0].path} — ${engagement.topPages[0].hits} visits`
+              : "No page traffic yet."}
+          </p>
           <button className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80">
-            Read now
+            View details
           </button>
         </AdminCard>
       </section>
@@ -130,39 +136,94 @@ export default function AdminDashboardPage() {
           <p className="text-sm font-semibold text-white">Revenue</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-white/50">Total income</p>
+              <p className="text-xs uppercase tracking-[0.22em] text-white/50">Total revenue</p>
               <p className="mt-2 text-2xl font-semibold text-white">
                 {formatPricePaise(data.stats.totalRevenuePaise, "INR")}
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-white/50">Total expenses</p>
+              <p className="text-xs uppercase tracking-[0.22em] text-white/50">Paid revenue</p>
               <p className="mt-2 text-2xl font-semibold text-white">
                 {formatPricePaise(data.stats.paidRevenuePaise, "INR")}
               </p>
             </div>
           </div>
-          <div className="mt-6 h-48 rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="flex h-full items-end gap-3">
-              {[28, 42, 35, 68, 47, 60, 55, 72, 64, 76, 58, 81].map((height, index) => (
-                <div key={index} className="flex-1 rounded-t-2xl bg-emerald-400/70" style={{ height: `${height}%` }} />
-              ))}
+          <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
+            <p className="text-xs uppercase tracking-[0.22em] text-white/50">Revenue completion</p>
+            <div className="mt-3 h-3 w-full rounded-full bg-white/10">
+              <div
+                className="h-3 rounded-full bg-emerald-400"
+                style={{
+                  width:
+                    data.stats.totalRevenuePaise > 0
+                      ? `${Math.min(100, Math.round((data.stats.paidRevenuePaise / data.stats.totalRevenuePaise) * 100))}%`
+                      : "0%",
+                }}
+              />
             </div>
+            <p className="mt-2 text-xs text-white/60">
+              {data.stats.totalRevenuePaise > 0
+                ? `${Math.round((data.stats.paidRevenuePaise / data.stats.totalRevenuePaise) * 100)}% captured`
+                : "No revenue data yet."}
+            </p>
           </div>
         </AdminCard>
 
         <AdminCard>
-          <p className="text-sm font-semibold text-white">Product Sales</p>
+          <p className="text-sm font-semibold text-white">Order Mix</p>
           <div className="mt-4 flex h-48 items-center justify-center">
-            <div className="h-40 w-40 rounded-full border-[18px] border-emerald-400 border-t-amber-400 border-r-cyan-400 border-b-emerald-400" />
+            <div
+              className="h-40 w-40 rounded-full"
+              style={{
+                background: `conic-gradient(#10b981 0% ${Math.round(
+                  data.stats.totalOrders > 0 ? (data.stats.paidOrders / data.stats.totalOrders) * 100 : 0,
+                )}%,
+                #f59e0b ${Math.round(
+                  data.stats.totalOrders > 0 ? (data.stats.paidOrders / data.stats.totalOrders) * 100 : 0,
+                )}% ${Math.round(
+                  data.stats.totalOrders > 0 ? ((data.stats.paidOrders + data.stats.pendingOrders) / data.stats.totalOrders) * 100 : 0,
+                )}%,
+                #3b82f6 ${Math.round(
+                  data.stats.totalOrders > 0 ? ((data.stats.paidOrders + data.stats.pendingOrders) / data.stats.totalOrders) * 100 : 0,
+                )}% 100%)`,
+              }}
+            >
+              <div className="flex h-full w-full items-center justify-center rounded-full bg-[#151c26] text-sm text-white">
+                {data.stats.totalOrders}
+              </div>
+            </div>
           </div>
           <div className="mt-4 space-y-2 text-sm text-white/70">
-            <p>Smartphones — ₹22,120</p>
-            <p>Laptops — ₹4,510</p>
-            <p>Headphones — ₹800</p>
+            <p>Paid — {data.stats.paidOrders}</p>
+            <p>Pending — {data.stats.pendingOrders}</p>
+            <p>Other — {Math.max(0, data.stats.totalOrders - data.stats.paidOrders - data.stats.pendingOrders)}</p>
           </div>
         </AdminCard>
       </section>
+
+      <AdminCard>
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold text-white">Notifications</p>
+          <span className="text-xs uppercase tracking-[0.24em] text-white/50">Latest events</span>
+        </div>
+        <div className="mt-4 space-y-3">
+          {notifications?.events?.length ? (
+            notifications.events.map((event) => (
+              <div key={`${event.type}-${event.refId}-${event.createdAt}`} className="rounded-2xl border border-white/5 bg-white/5 p-4 text-sm text-white/70">
+                <p className="text-white">
+                  {event.type === "visit" && `New visit from ${event.ip || "Unknown IP"}`}
+                  {event.type === "signup" && `New signup: ${event.email || event.name}`}
+                  {event.type === "order" && `New order placed by ${event.email || event.name}`}
+                  {event.type === "cart" && `Cart updated by ${event.email || event.name}`}
+                </p>
+                <p className="mt-1 text-xs text-white/50">{new Date(event.createdAt).toLocaleString()}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-white/60">No notifications yet.</p>
+          )}
+        </div>
+      </AdminCard>
     </AdminShell>
   );
 }

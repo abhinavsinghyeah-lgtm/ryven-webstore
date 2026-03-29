@@ -18,6 +18,25 @@ export default function AdminControlPage() {
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [secret, setSecret] = useState("");
 
+  const fetchData = async () => {
+    const token = authStorage.getToken();
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const [statusData, logsData] = await Promise.all([
+        apiRequest<AdminControlStatusResponse>("/admin/control/status", { token }),
+        apiRequest<ControlErrorLogsResponse>("/admin/control/errors", { token }),
+      ]);
+      setStatus(statusData);
+      setLogs(logsData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load control data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const token = authStorage.getToken();
     const user = authStorage.getUser();
@@ -29,19 +48,7 @@ export default function AdminControlPage() {
       router.replace("/account");
       return;
     }
-
-    setLoading(true);
-    setError(null);
-    Promise.all([
-      apiRequest<AdminControlStatusResponse>("/admin/control/status", { token }),
-      apiRequest<ControlErrorLogsResponse>("/admin/control/errors", { token }),
-    ])
-      .then(([statusData, logsData]) => {
-        setStatus(statusData);
-        setLogs(logsData);
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : "Unable to load control data"))
-      .finally(() => setLoading(false));
+    void fetchData();
   }, [router]);
 
   const runAction = async (action: string) => {
@@ -70,7 +77,7 @@ export default function AdminControlPage() {
       title="Control Center"
       subtitle="Monitor system health, review errors, and prepare operational actions."
       actions={
-        <button type="button" className={adminButtonClasses.soft}>
+        <button type="button" className={adminButtonClasses.soft} onClick={fetchData}>
           Refresh status
         </button>
       }

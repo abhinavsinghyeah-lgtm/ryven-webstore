@@ -7,7 +7,12 @@ import { AdminCard, AdminShell, StatusBanner, adminButtonClasses } from "@/compo
 import { AdminLoader } from "@/components/admin/AdminLoader";
 import { authStorage } from "@/lib/auth";
 import { apiRequest } from "@/lib/api";
-import type { EngagementLogsResponse, EngagementOverviewResponse, EngagementSessionsResponse } from "@/types/dashboard";
+import type {
+  AbandonedCartsResponse,
+  EngagementLogsResponse,
+  EngagementOverviewResponse,
+  EngagementSessionsResponse,
+} from "@/types/dashboard";
 
 export default function AdminEngagementPage() {
   const router = useRouter();
@@ -16,6 +21,9 @@ export default function AdminEngagementPage() {
   const [overview, setOverview] = useState<EngagementOverviewResponse | null>(null);
   const [sessions, setSessions] = useState<EngagementSessionsResponse | null>(null);
   const [logs, setLogs] = useState<EngagementLogsResponse | null>(null);
+  const [abandoned, setAbandoned] = useState<AbandonedCartsResponse | null>(null);
+  const [logPage, setLogPage] = useState(0);
+  const [sessionPage, setSessionPage] = useState(0);
 
   useEffect(() => {
     const token = authStorage.getToken();
@@ -34,13 +42,15 @@ export default function AdminEngagementPage() {
 
     Promise.all([
       apiRequest<EngagementOverviewResponse>("/admin/engagement/overview", { token }),
-      apiRequest<EngagementSessionsResponse>("/admin/engagement/sessions?limit=8&offset=0", { token }),
-      apiRequest<EngagementLogsResponse>("/admin/engagement/logs?limit=8&offset=0", { token }),
+      apiRequest<EngagementSessionsResponse>("/admin/engagement/sessions?limit=6&offset=0", { token }),
+      apiRequest<EngagementLogsResponse>("/admin/engagement/logs?limit=6&offset=0", { token }),
+      apiRequest<AbandonedCartsResponse>("/admin/engagement/abandoned?limit=6&offset=0", { token }),
     ])
-      .then(([overviewData, sessionsData, logsData]) => {
+      .then(([overviewData, sessionsData, logsData, abandonedData]) => {
         setOverview(overviewData);
         setSessions(sessionsData);
         setLogs(logsData);
+        setAbandoned(abandonedData);
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Unable to load engagement data"))
       .finally(() => setLoading(false));
@@ -56,6 +66,39 @@ export default function AdminEngagementPage() {
     const seconds = totalSeconds % 60;
     return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
   }, [summary]);
+
+  const loadLogsPage = async (page: number) => {
+    const token = authStorage.getToken();
+    if (!token) return;
+    const offset = page * 6;
+    const data = await apiRequest<EngagementLogsResponse>(`/admin/engagement/logs?limit=6&offset=${offset}`, { token });
+    setLogs(data);
+    setLogPage(page);
+  };
+
+  const loadSessionsPage = async (page: number) => {
+    const token = authStorage.getToken();
+    if (!token) return;
+    const offset = page * 6;
+    const data = await apiRequest<EngagementSessionsResponse>(`/admin/engagement/sessions?limit=6&offset=${offset}`, { token });
+    setSessions(data);
+    setSessionPage(page);
+  };
+
+  const downloadLogs = async () => {
+    const token = authStorage.getToken();
+    if (!token) return;
+    const response = await fetch("/api/v1/admin/engagement/logs/export", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "activity-logs.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <AdminShell
@@ -99,6 +142,16 @@ export default function AdminEngagementPage() {
                   <EmptyRow message="No live sessions yet. Activity will stream here." />
                 )}
               </div>
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/60">
+                <Pagination
+                  total={logs?.pagination?.total ?? 0}
+                  current={logPage}
+                  onChange={(page) => loadLogsPage(page)}
+                />
+                <button type="button" className={adminButtonClasses.soft} onClick={downloadLogs}>
+                  Download logs
+                </button>
+              </div>
             </AdminCard>
 
             <AdminCard>
@@ -136,6 +189,38 @@ export default function AdminEngagementPage() {
                 <EmptyRow message="Session-level logs will be listed here once tracking is enabled." />
               )}
             </div>
+            <div className="mt-4 flex items-center gap-2 text-xs text-white/60">
+              <Pagination
+                total={sessions?.pagination?.total ?? 0}
+                current={sessionPage}
+                onChange={(page) => loadSessionsPage(page)}
+              />
+            </div>
+          </AdminCard>
+
+          <AdminCard>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-white">Abandoned carts (30 days)</p>
+              <span className="text-xs uppercase tracking-[0.24em] text-white/50">
+                {abandoned?.pagination?.total ?? 0} carts
+              </span>
+            </div>
+            <div className="mt-4 space-y-3">
+              {abandoned?.carts?.length ? (
+                abandoned.carts.map((cart) => (
+                  <div key={`${cart.userId}-${cart.updatedAt}`} className="rounded-2xl border border-white/5 bg-white/5 p-4 text-sm text-white/70">
+                    <p className="text-white">
+                      {cart.email || "Guest"} · {cart.itemCount} items
+                    </p>
+                    <p className="mt-1 text-xs text-white/50">
+                      Last update {new Date(cart.updatedAt).toLocaleString()} · {cart.phone || "No phone"}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <EmptyRow message="No abandoned carts recorded yet." />
+              )}
+            </div>
           </AdminCard>
         </>
       )}
@@ -166,6 +251,34 @@ function EmptyRow({ message }: { message: string }) {
   return (
     <div className="rounded-2xl border border-white/5 bg-white/5 p-4 text-sm text-white/60">
       {message}
+    </div>
+  );
+}
+
+function Pagination({
+  total,
+  current,
+  onChange,
+}: {
+  total: number;
+  current: number;
+  onChange: (page: number) => void;
+}) {
+  const totalPages = Math.max(1, Math.ceil(total / 6));
+  const pages = Array.from({ length: Math.min(3, totalPages) }, (_, idx) => idx);
+
+  return (
+    <div className="flex items-center gap-2">
+      {pages.map((page) => (
+        <button
+          key={page}
+          type="button"
+          className={page === current ? adminButtonClasses.soft : adminButtonClasses.ghost}
+          onClick={() => onChange(page)}
+        >
+          {page + 1}
+        </button>
+      ))}
     </div>
   );
 }

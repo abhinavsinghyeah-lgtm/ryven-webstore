@@ -131,6 +131,99 @@ const listErrorLogs = async ({ limit = 10 }) => {
   return result.rows;
 };
 
+const listAbandonedCarts = async ({ limit, offset }) => {
+  const sql = `
+    SELECT
+      c.user_id AS "userId",
+      u.full_name AS "fullName",
+      u.email,
+      u.phone,
+      c.updated_at AS "updatedAt",
+      COUNT(ci.id)::int AS "itemCount"
+    FROM carts c
+    INNER JOIN cart_items ci ON ci.cart_id = c.id
+    LEFT JOIN users u ON u.id = c.user_id
+    WHERE c.updated_at >= NOW() - INTERVAL '30 days'
+      AND NOT EXISTS (
+        SELECT 1 FROM orders o
+        WHERE o.user_id = c.user_id AND o.created_at >= c.updated_at
+      )
+    GROUP BY c.user_id, u.full_name, u.email, u.phone, c.updated_at
+    ORDER BY c.updated_at DESC
+    LIMIT $1 OFFSET $2
+  `;
+  const result = await query(sql, [limit, offset]);
+  return result.rows;
+};
+
+const countAbandonedCarts = async () => {
+  const sql = `
+    SELECT COUNT(*)::int AS total
+    FROM (
+      SELECT c.user_id
+      FROM carts c
+      INNER JOIN cart_items ci ON ci.cart_id = c.id
+      WHERE c.updated_at >= NOW() - INTERVAL '30 days'
+        AND NOT EXISTS (
+          SELECT 1 FROM orders o
+          WHERE o.user_id = c.user_id AND o.created_at >= c.updated_at
+        )
+      GROUP BY c.user_id
+    ) t
+  `;
+  const result = await query(sql);
+  return result.rows[0];
+};
+
+const listNotifications = async ({ limit }) => {
+  const sql = `
+    SELECT *
+    FROM (
+      SELECT
+        'visit' AS type,
+        s.session_id AS "refId",
+        s.ip,
+        NULL::text AS email,
+        NULL::text AS name,
+        s.first_seen AS "createdAt"
+      FROM sessions s
+      UNION ALL
+      SELECT
+        'signup' AS type,
+        u.id::text AS "refId",
+        NULL::text AS ip,
+        u.email,
+        u.full_name AS name,
+        u.created_at AS "createdAt"
+      FROM users u
+      UNION ALL
+      SELECT
+        'order' AS type,
+        o.id::text AS "refId",
+        NULL::text AS ip,
+        u.email,
+        u.full_name AS name,
+        o.created_at AS "createdAt"
+      FROM orders o
+      LEFT JOIN users u ON u.id = o.user_id
+      UNION ALL
+      SELECT
+        'cart' AS type,
+        c.user_id::text AS "refId",
+        NULL::text AS ip,
+        u.email,
+        u.full_name AS name,
+        c.updated_at AS "createdAt"
+      FROM carts c
+      LEFT JOIN users u ON u.id = c.user_id
+    ) events
+    ORDER BY "createdAt" DESC
+    LIMIT $1
+  `;
+  const result = await query(sql, [limit]);
+  return result.rows;
+};
+
 module.exports = {
   upsertSession,
   logActivity,
@@ -141,4 +234,7 @@ module.exports = {
   countActivityLogs,
   listTopPages,
   listErrorLogs,
+  listAbandonedCarts,
+  countAbandonedCarts,
+  listNotifications,
 };

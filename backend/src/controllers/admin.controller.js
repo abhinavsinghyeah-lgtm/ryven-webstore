@@ -11,8 +11,17 @@ const {
   countActivityLogs,
   listTopPages,
   listErrorLogs,
+  listAbandonedCarts,
+  countAbandonedCarts,
+  listNotifications,
 } = require("../models/analytics.model");
-const { listUsersForAdmin, countUsersForAdmin, updateUserRole, updateUserStatus } = require("../models/user.model");
+const {
+  listUsersForAdmin,
+  countUsersForAdmin,
+  updateUserRole,
+  updateUserStatus,
+  createUser,
+} = require("../models/user.model");
 
 const getControlStatus = asyncHandler(async (_req, res) => {
   let dbConnected = false;
@@ -103,6 +112,20 @@ const getEngagementLogs = asyncHandler(async (req, res) => {
   });
 });
 
+const getEngagementAbandoned = asyncHandler(async (req, res) => {
+  const limit = Number(req.query.limit || 10);
+  const offset = Number(req.query.offset || 0);
+  const [carts, total] = await Promise.all([listAbandonedCarts({ limit, offset }), countAbandonedCarts()]);
+  res.status(200).json({
+    carts,
+    pagination: {
+      limit,
+      offset,
+      total: total.total,
+    },
+  });
+});
+
 const getErrorLogs = asyncHandler(async (_req, res) => {
   const logs = await listErrorLogs({ limit: 12 });
   res.status(200).json({ logs });
@@ -120,6 +143,18 @@ const getUsers = asyncHandler(async (req, res) => {
       total,
     },
   });
+});
+
+const createAdminUser = asyncHandler(async (req, res) => {
+  const { fullName, email, phone, role } = req.validated.body;
+  const user = await createUser({
+    fullName,
+    email,
+    phone: phone || null,
+    passwordHash: null,
+    role: role || "customer",
+  });
+  res.status(201).json({ user });
 });
 
 const patchUserRole = asyncHandler(async (req, res) => {
@@ -148,14 +183,64 @@ const patchUserStatus = asyncHandler(async (req, res) => {
   res.status(200).json({ user: updated });
 });
 
+const getNotifications = asyncHandler(async (req, res) => {
+  const limit = Number(req.query.limit || 12);
+  const events = await listNotifications({ limit });
+  res.status(200).json({ events });
+});
+
+const exportUsersCsv = asyncHandler(async (_req, res) => {
+  const users = await listUsersForAdmin({ limit: 2000, offset: 0 });
+  const header = ["id", "fullName", "email", "phone", "role", "isActive", "createdAt", "lastSeen", "lastIp"];
+  const rows = users.map((u) =>
+    [u.id, u.fullName, u.email, u.phone || "", u.role, u.isActive, u.createdAt, u.lastSeen || "", u.lastIp || ""]
+      .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+      .join(","),
+  );
+  const csv = [header.join(","), ...rows].join("\n");
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", "attachment; filename=users.csv");
+  res.status(200).send(csv);
+});
+
+const exportLogsCsv = asyncHandler(async (_req, res) => {
+  const logs = await listActivityLogs({ limit: 2000, offset: 0 });
+  const header = ["id", "sessionId", "userId", "email", "ip", "path", "method", "status", "durationMs", "createdAt"];
+  const rows = logs.map((l) =>
+    [
+      l.id,
+      l.sessionId || "",
+      l.userId || "",
+      l.email || "",
+      l.ip || "",
+      l.path,
+      l.method,
+      l.status,
+      l.durationMs,
+      l.createdAt,
+    ]
+      .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+      .join(","),
+  );
+  const csv = [header.join(","), ...rows].join("\n");
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", "attachment; filename=activity-logs.csv");
+  res.status(200).send(csv);
+});
+
 module.exports = {
   getControlStatus,
   runControlAction,
   getEngagementOverview,
   getEngagementSessions,
   getEngagementLogs,
+  getEngagementAbandoned,
   getErrorLogs,
   getUsers,
+  createAdminUser,
   patchUserRole,
   patchUserStatus,
+  getNotifications,
+  exportUsersCsv,
+  exportLogsCsv,
 };

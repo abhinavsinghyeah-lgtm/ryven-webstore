@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { AdminCard, AdminShell, StatusBanner, adminButtonClasses } from "@/components/admin/AdminShell";
+import { AdminLoader } from "@/components/admin/AdminLoader";
 import { apiRequest } from "@/lib/api";
 import { authStorage } from "@/lib/auth";
 import { formatPricePaise } from "@/lib/format";
@@ -114,7 +115,7 @@ export default function AdminOrdersPage() {
 
       <AdminCard>
         {loading ? (
-          <p className="text-sm text-white/60">Loading orders...</p>
+          <AdminLoader label="Loading orders..." />
         ) : !orders || orders.orders.length === 0 ? (
           <p className="text-sm text-white/60">No orders found for this filter.</p>
         ) : (
