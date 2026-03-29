@@ -105,8 +105,22 @@ export default function AdminSettingsPage() {
               <Field label="Store name" value={form.storeName} onChange={(value) => setForm((f) => ({ ...f, storeName: value }))} />
               <Field label="Logo image URL" value={form.logoUrl} onChange={(value) => setForm((f) => ({ ...f, logoUrl: value }))} />
               <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Logo width (px)" value={form.logoWidthPx} onChange={(value) => setForm((f) => ({ ...f, logoWidthPx: value }))} />
-                <Field label="Logo height (px)" value={form.logoHeightPx} onChange={(value) => setForm((f) => ({ ...f, logoHeightPx: value }))} />
+                <Field
+                  label="Logo width (px, max 600)"
+                  value={form.logoWidthPx}
+                  onChange={(value) => setForm((f) => ({ ...f, logoWidthPx: value }))}
+                  type="number"
+                  min={40}
+                  max={600}
+                />
+                <Field
+                  label="Logo height (px, max 200)"
+                  value={form.logoHeightPx}
+                  onChange={(value) => setForm((f) => ({ ...f, logoHeightPx: value }))}
+                  type="number"
+                  min={16}
+                  max={200}
+                />
               </div>
               <Field label="Homepage hero image URL" value={form.heroImageUrl} onChange={(value) => setForm((f) => ({ ...f, heroImageUrl: value }))} />
               <Field
@@ -136,15 +150,24 @@ function Field({
   label,
   value,
   onChange,
+  type = "text",
+  min,
+  max,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  type?: string;
+  min?: number;
+  max?: number;
 }) {
   return (
     <label className="block space-y-1.5">
       <span className="text-sm text-white/70">{label}</span>
       <input
+        type={type}
+        min={min}
+        max={max}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className={adminInputClasses}
