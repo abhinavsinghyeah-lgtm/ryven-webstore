@@ -8,6 +8,11 @@ const {
   getAdminOrderStats,
 } = require("../models/order.model");
 const { countProducts } = require("../models/product.model");
+const {
+  listUserNotifications,
+  countUserNotifications,
+  markNotificationsRead,
+} = require("../models/notification.model");
 const { ApiError } = require("../utils/apiError");
 
 const getCustomerDashboard = async (userId) => {
@@ -50,6 +55,26 @@ const getCustomerOrders = async ({ userId, page, limit }) => {
       totalPages: Math.ceil(total / safeLimit) || 1,
     },
   };
+};
+
+const getCustomerNotifications = async ({ userId, limit, offset }) => {
+  const [notifications, total] = await Promise.all([
+    listUserNotifications({ userId, limit, offset }),
+    countUserNotifications(userId),
+  ]);
+
+  return {
+    notifications,
+    pagination: {
+      limit,
+      offset,
+      total,
+    },
+  };
+};
+
+const markCustomerNotificationsRead = async ({ userId }) => {
+  await markNotificationsRead({ userId });
 };
 
 const getAdminDashboard = async () => {
@@ -102,6 +127,8 @@ const adminUpdateOrderStatus = async ({ orderId, status }) => {
 module.exports = {
   getCustomerDashboard,
   getCustomerOrders,
+  getCustomerNotifications,
+  markCustomerNotificationsRead,
   getAdminDashboard,
   getAdminOrders,
   adminUpdateOrderStatus,

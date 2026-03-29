@@ -17,6 +17,8 @@ export default function AdminUsersPage() {
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [newUser, setNewUser] = useState({ fullName: "", email: "", phone: "", role: "customer" });
+  const [messageUserId, setMessageUserId] = useState<number | null>(null);
+  const [messageForm, setMessageForm] = useState({ title: "", message: "" });
 
   useEffect(() => {
     const token = authStorage.getToken();
@@ -69,6 +71,25 @@ export default function AdminUsersPage() {
       setActionMessage("User status updated.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to update user status");
+    }
+  };
+
+  const sendMessage = async () => {
+    const token = authStorage.getToken();
+    if (!token || !messageUserId) return;
+    setError(null);
+    setActionMessage(null);
+    try {
+      await apiRequest(`/admin/users/${messageUserId}/notify`, {
+        method: "POST",
+        token,
+        body: messageForm,
+      });
+      setActionMessage("Message sent to user.");
+      setMessageUserId(null);
+      setMessageForm({ title: "", message: "" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to send message");
     }
   };
 
@@ -159,6 +180,41 @@ export default function AdminUsersPage() {
                 </div>
               </form>
             ) : null}
+
+            {messageUserId ? (
+              <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-sm font-semibold text-white">Message user</p>
+                <div className="mt-3 grid gap-3">
+                  <input
+                    value={messageForm.title}
+                    onChange={(event) => setMessageForm((prev) => ({ ...prev, title: event.target.value }))}
+                    placeholder="Notification title"
+                    className="h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none"
+                  />
+                  <textarea
+                    value={messageForm.message}
+                    onChange={(event) => setMessageForm((prev) => ({ ...prev, message: event.target.value }))}
+                    placeholder="Write your message"
+                    className="min-h-[120px] rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white outline-none"
+                  />
+                  <div className="flex gap-2">
+                    <button type="button" className={adminButtonClasses.primary} onClick={sendMessage}>
+                      Send message
+                    </button>
+                    <button
+                      type="button"
+                      className={adminButtonClasses.ghost}
+                      onClick={() => {
+                        setMessageUserId(null);
+                        setMessageForm({ title: "", message: "" });
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </AdminCard>
 
           <AdminCard>
@@ -229,6 +285,19 @@ export default function AdminUsersPage() {
                               onClick={() => updateStatus(entry.id, !entry.isActive)}
                             >
                               {entry.isActive ? "Disable" : "Enable"}
+                            </button>
+                            <button
+                              type="button"
+                              className={adminButtonClasses.ghost}
+                              onClick={() => {
+                                setMessageUserId(entry.id);
+                                setMessageForm({
+                                  title: `Message for ${entry.fullName}`,
+                                  message: "",
+                                });
+                              }}
+                            >
+                              Message
                             </button>
                           </div>
                         </td>

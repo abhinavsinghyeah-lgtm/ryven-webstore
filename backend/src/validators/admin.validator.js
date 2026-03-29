@@ -49,10 +49,22 @@ const createUserSchema = z.object({
   query: z.object({}).optional(),
 });
 
+const sendUserNotificationSchema = z.object({
+  body: z.object({
+    title: z.string().trim().min(2).max(120),
+    message: z.string().trim().min(2).max(1000),
+  }),
+  params: z.object({
+    id: z.coerce.number().int().positive(),
+  }),
+  query: z.object({}).optional(),
+});
+
 module.exports = {
   paginationSchema,
   controlActionSchema,
   updateUserRoleSchema,
   updateUserStatusSchema,
   createUserSchema,
+  sendUserNotificationSchema,
 };

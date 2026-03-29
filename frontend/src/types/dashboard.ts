@@ -166,6 +166,25 @@ export interface NotificationsResponse {
   events: NotificationEvent[];
 }
 
+export interface AccountNotificationItem {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  meta?: Record<string, unknown>;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface AccountNotificationsResponse {
+  notifications: AccountNotificationItem[];
+  pagination: {
+    limit: number;
+    offset: number;
+    total: number;
+  };
+}
+
 export interface StoreSettingsResponse {
   settings: StoreSettings;
 }

@@ -22,6 +22,7 @@ const {
   updateUserStatus,
   createUser,
 } = require("../models/user.model");
+const { createUserNotification } = require("../models/notification.model");
 
 const getControlStatus = asyncHandler(async (_req, res) => {
   let dbConnected = false;
@@ -189,6 +190,22 @@ const getNotifications = asyncHandler(async (req, res) => {
   res.status(200).json({ events });
 });
 
+const sendUserNotification = asyncHandler(async (req, res) => {
+  const targetUserId = Number(req.params.id);
+  const { title, message } = req.validated.body;
+
+  const event = await createUserNotification({
+    userId: targetUserId,
+    sourceUserId: req.user.id,
+    type: "admin_message",
+    title,
+    message,
+    meta: { source: "admin" },
+  });
+
+  res.status(201).json({ event });
+});
+
 const exportUsersCsv = asyncHandler(async (_req, res) => {
   const users = await listUsersForAdmin({ limit: 2000, offset: 0 });
   const header = ["id", "fullName", "email", "phone", "role", "isActive", "createdAt", "lastSeen", "lastIp"];
@@ -241,6 +258,7 @@ module.exports = {
   patchUserRole,
   patchUserStatus,
   getNotifications,
+  sendUserNotification,
   exportUsersCsv,
   exportLogsCsv,
 };

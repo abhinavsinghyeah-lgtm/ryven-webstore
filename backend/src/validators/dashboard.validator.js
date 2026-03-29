@@ -29,8 +29,18 @@ const updateOrderStatusSchema = z.object({
   }),
 });
 
+const accountNotificationsSchema = z.object({
+  body: z.object({}).optional(),
+  params: z.object({}).optional(),
+  query: z.object({
+    limit: z.coerce.number().int().positive().max(50).optional().default(20),
+    offset: z.coerce.number().int().min(0).optional().default(0),
+  }),
+});
+
 module.exports = {
   customerOrdersSchema,
   adminOrdersSchema,
   updateOrderStatusSchema,
+  accountNotificationsSchema,
 };

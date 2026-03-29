@@ -16,6 +16,21 @@ const getCustomerOrders = asyncHandler(async (req, res) => {
   res.status(200).json(result);
 });
 
+const getCustomerNotifications = asyncHandler(async (req, res) => {
+  const { limit, offset } = req.validated.query;
+  const result = await dashboardService.getCustomerNotifications({
+    userId: req.user.id,
+    limit,
+    offset,
+  });
+  res.status(200).json(result);
+});
+
+const markCustomerNotificationsRead = asyncHandler(async (req, res) => {
+  await dashboardService.markCustomerNotificationsRead({ userId: req.user.id });
+  res.status(200).json({ status: "ok" });
+});
+
 const getAdminDashboard = asyncHandler(async (_req, res) => {
   const data = await dashboardService.getAdminDashboard();
   res.status(200).json(data);
@@ -39,6 +54,8 @@ const updateAdminOrderStatus = asyncHandler(async (req, res) => {
 module.exports = {
   getCustomerDashboard,
   getCustomerOrders,
+  getCustomerNotifications,
+  markCustomerNotificationsRead,
   getAdminDashboard,
   getAdminOrders,
   updateAdminOrderStatus,

@@ -7,6 +7,7 @@ import { ReactNode, useState } from "react";
 const navItems = [
   { href: "/account", label: "Your account", icon: UserIcon },
   { href: "/account/orders", label: "Purchase history", icon: CartIcon },
+  { href: "/account/notifications", label: "Notifications", icon: BellIcon },
   { href: "/account/settings", label: "Login & security", icon: ShieldIcon },
 ];
 
@@ -17,7 +18,7 @@ export function AccountShell({ children, userName, userEmail }: { children: Reac
 
   return (
     <main className="min-h-screen bg-[#f3f4f6]">
-      <div className="mx-auto flex min-h-screen w-full max-w-[1600px]">
+      <div className="flex min-h-screen w-full">
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
@@ -30,7 +31,7 @@ export function AccountShell({ children, userName, userEmail }: { children: Reac
         <aside
           className={`fixed inset-y-0 left-0 z-30 w-[286px] border-r border-black/5 bg-white px-5 py-5 transition-transform duration-200 lg:static lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}
         >
-          <div className="flex h-full flex-col rounded-[30px] border border-neutral-200 bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
+          <div className="flex h-full flex-col bg-white p-2 lg:p-3">
             <div className="flex items-center gap-3 border-b border-neutral-100 pb-4">
               <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[#dff7b2] text-neutral-900 shadow-inner">
                 <BagIcon className="h-5 w-5" />
@@ -77,23 +78,6 @@ export function AccountShell({ children, userName, userEmail }: { children: Reac
               })}
             </nav>
 
-            <div className="mt-5 border-t border-neutral-100 pt-5">
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-medium text-neutral-600">
-                  <BellIcon className="h-[18px] w-[18px] text-neutral-500" />
-                  Notification
-                </div>
-                <Link
-                  href="/account/settings"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-medium text-neutral-600 transition hover:bg-neutral-50 hover:text-neutral-900"
-                >
-                  <SettingsIcon className="h-[18px] w-[18px] text-neutral-500" />
-                  Settings
-                </Link>
-              </div>
-            </div>
-
             <div className="mt-auto border-t border-neutral-100 pt-4 text-xs text-neutral-400">
               Support: <span className="font-medium text-neutral-600">support@ryven.in</span>
             </div>
@@ -102,7 +86,7 @@ export function AccountShell({ children, userName, userEmail }: { children: Reac
 
         {open ? <button type="button" aria-label="Close account menu" onClick={() => setOpen(false)} className="fixed inset-0 z-20 bg-black/25 lg:hidden" /> : null}
 
-        <section className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</section>
+        <section className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">{children}</section>
       </div>
     </main>
   );
@@ -122,15 +106,6 @@ function ShieldIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
       <path d="M12 3 6.5 5v5.6c0 4 2.2 7.2 5.5 8.9 3.3-1.7 5.5-4.9 5.5-8.9V5L12 3Z" />
       <path d="m9.8 11.8 1.5 1.5 3.2-3.3" />
-    </svg>
-  );
-}
-
-function SettingsIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19 12a7 7 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7.7 7.7 0 0 0-1.7-1L14.5 3h-5l-.3 3a7.7 7.7 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.7 7.7 0 0 0 1.7 1l.3 3h5l.3-3a7.7 7.7 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6c.1-.3.1-.7.1-1Z" />
     </svg>
   );
 }
