@@ -9,6 +9,7 @@ const getStoreSettings = async () => {
       logo_width_px AS "logoWidthPx",
       logo_height_px AS "logoHeightPx",
       hero_image_url AS "heroImageUrl",
+      theme_config AS "themeConfig",
       auth_background_url AS "authBackgroundUrl",
       auth_background_color AS "authBackgroundColor",
       tagline,
@@ -70,4 +71,28 @@ const updateStoreSettings = async ({
   return result.rows[0] || null;
 };
 
-module.exports = { getStoreSettings, updateStoreSettings };
+const updateThemeConfig = async ({ themeConfig }) => {
+  const sql = `
+    UPDATE store_settings
+    SET theme_config = $1,
+        updated_at = NOW()
+    WHERE id = 1
+    RETURNING
+      id,
+      store_name AS "storeName",
+      logo_url AS "logoUrl",
+      logo_width_px AS "logoWidthPx",
+      logo_height_px AS "logoHeightPx",
+      hero_image_url AS "heroImageUrl",
+      theme_config AS "themeConfig",
+      auth_background_url AS "authBackgroundUrl",
+      auth_background_color AS "authBackgroundColor",
+      tagline,
+      updated_at AS "updatedAt"
+  `;
+
+  const result = await query(sql, [JSON.stringify(themeConfig)]);
+  return result.rows[0] || null;
+};
+
+module.exports = { getStoreSettings, updateStoreSettings, updateThemeConfig };

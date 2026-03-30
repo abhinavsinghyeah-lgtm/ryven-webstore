@@ -25,6 +25,7 @@ export interface StoreSettings {
   heroImageUrl: string;
   authBackgroundUrl?: string | null;
   authBackgroundColor?: string | null;
+  themeConfig?: import("./theme").ThemeConfig;
   tagline: string;
   updatedAt: string;
 }

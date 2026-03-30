@@ -21,6 +21,7 @@ const navItems = [
   { href: "/admin/notifications", label: "Notifications", description: "Events & alerts" },
   { href: "/admin/users", label: "Users", description: "Accounts & access" },
   { href: "/admin/products", label: "Products", description: "Catalog & pricing" },
+  { href: "/admin/theme-editor", label: "Theme Editor", description: "Pages & sections" },
   { href: "/admin/orders", label: "Orders", description: "Fulfillment flow" },
   { href: "/admin/settings", label: "Settings", description: "Brand + hero" },
 ];

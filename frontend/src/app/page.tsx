@@ -1,6 +1,5 @@
 import { apiRequest } from "@/lib/api";
-import { HeroBannerSection } from "@/components/home/HeroBannerSection";
-import { ProductCollectionSection } from "@/components/home/ProductCollectionSection";
+import { ThemePageRenderer } from "@/components/theme/ThemePageRenderer";
 import type { ProductCatalogResponse } from "@/types/product";
 import type { StoreSettings } from "@/types/auth";
 
@@ -26,8 +25,7 @@ export default async function Home() {
 
   return (
     <main className="-mt-[64px] bg-white">
-      <HeroBannerSection settings={settings} />
-      <ProductCollectionSection products={catalog.products} />
+      <ThemePageRenderer settings={settings} products={catalog.products} />
     </main>
   );
 }

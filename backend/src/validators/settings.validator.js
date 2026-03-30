@@ -15,4 +15,23 @@ const updateStoreSettingsSchema = z.object({
   query: z.object({}).optional(),
 });
 
-module.exports = { updateStoreSettingsSchema };
+const themeSectionSchema = z.object({
+  id: z.string().trim().min(1).max(120),
+  type: z.enum(["hero", "featured-collection", "testimonials", "image-with-text"]),
+  enabled: z.boolean(),
+  settings: z.record(z.any()),
+});
+
+const updateThemeEditorSchema = z.object({
+  body: z.object({
+    themeConfig: z.object({
+      home: z.object({
+        sections: z.array(themeSectionSchema).max(30),
+      }),
+    }),
+  }),
+  params: z.object({}).optional(),
+  query: z.object({}).optional(),
+});
+
+module.exports = { updateStoreSettingsSchema, updateThemeEditorSchema };
