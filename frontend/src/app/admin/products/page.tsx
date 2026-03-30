@@ -55,7 +55,8 @@ export default function AdminProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
+  const [composerError, setComposerError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -72,12 +73,12 @@ export default function AdminProductsPage() {
     const token = authStorage.getToken();
     if (!token) return;
     setLoading(true);
-    setError(null);
+    setPageError(null);
     try {
-      const result = await apiRequest<ProductCatalogResponse>(`/admin/products?page=1&limit=60&q=${encodeURIComponent(query)}`, { token });
+      const result = await apiRequest<ProductCatalogResponse>(`/admin/products?page=1&limit=40&q=${encodeURIComponent(query)}`, { token });
       setProducts(result.products);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not load products");
+      setPageError(err instanceof Error ? err.message : "Could not load products");
     } finally {
       setLoading(false);
     }
@@ -100,7 +101,8 @@ export default function AdminProductsPage() {
   }, [router]);
 
   const openCreate = () => {
-    setError(null);
+    setPageError(null);
+    setComposerError(null);
     setFeedback(null);
     setEditingProductId(null);
     setForm(initialForm);
@@ -108,7 +110,8 @@ export default function AdminProductsPage() {
   };
 
   const openEdit = (product: Product) => {
-    setError(null);
+    setPageError(null);
+    setComposerError(null);
     setFeedback(null);
     setEditingProductId(product.id);
     setForm({
@@ -126,6 +129,7 @@ export default function AdminProductsPage() {
   const closeComposer = () => {
     setShowComposer(false);
     setEditingProductId(null);
+    setComposerError(null);
     setForm(initialForm);
   };
 
@@ -136,7 +140,7 @@ export default function AdminProductsPage() {
 
     const validationError = validateForm(form);
     if (validationError) {
-      setError(validationError);
+      setComposerError(validationError);
       return;
     }
 
@@ -166,7 +170,8 @@ export default function AdminProductsPage() {
       isActive: true,
     };
 
-    setError(null);
+    setPageError(null);
+    setComposerError(null);
     setFeedback(null);
     setIsSaving(true);
 
@@ -188,7 +193,7 @@ export default function AdminProductsPage() {
 
       closeComposer();
     } catch (err) {
-      setError(err instanceof Error ? err.message : editingProductId ? "Could not update product" : "Could not create product");
+      setComposerError(err instanceof Error ? err.message : editingProductId ? "Could not update product" : "Could not create product");
     } finally {
       setIsSaving(false);
     }
@@ -200,7 +205,7 @@ export default function AdminProductsPage() {
     if (!window.confirm(`Delete ${product.name}? It will be hidden from the storefront but preserved in order history.`)) return;
 
     setDeletingId(product.id);
-    setError(null);
+    setPageError(null);
     setFeedback(null);
     try {
       await apiRequest<{ product: Product }>(`/admin/products/${product.id}`, {
@@ -214,7 +219,7 @@ export default function AdminProductsPage() {
       }
       setFeedback("Product deleted from the live catalog.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not delete product");
+      setPageError(err instanceof Error ? err.message : "Could not delete product");
     } finally {
       setDeletingId(null);
     }
@@ -251,7 +256,7 @@ export default function AdminProductsPage() {
       subtitle="Manage the catalog like a proper storefront: spotlight products, inspect order history, and control what goes live."
       actions={
         <>
-          <button type="button" className={adminButtonClasses.ghost} onClick={() => loadProducts(search)}>
+          <button type="button" className={adminButtonClasses.ghost} onClick={() => loadProducts(search.trim())}>
             Refresh
           </button>
           <button type="button" className={adminButtonClasses.primary} onClick={openCreate}>
@@ -260,7 +265,7 @@ export default function AdminProductsPage() {
         </>
       }
     >
-      {error ? <StatusBanner tone="error" title="Product issue" description={error} /> : null}
+      {pageError ? <StatusBanner tone="error" title="Product issue" description={pageError} /> : null}
       {feedback ? <StatusBanner tone="success" title="Product updated" description={feedback} /> : null}
 
       <AdminCard>
@@ -276,7 +281,7 @@ export default function AdminProductsPage() {
               placeholder="Search products, categories, or slugs"
               className={`${adminInputClasses} min-w-[280px]`}
             />
-            <button type="button" className={adminButtonClasses.soft} onClick={() => loadProducts(search)}>
+            <button type="button" className={adminButtonClasses.soft} onClick={() => loadProducts(search.trim())}>
               Search live
             </button>
           </div>
@@ -406,6 +411,12 @@ export default function AdminProductsPage() {
                 Close
               </button>
             </div>
+
+            {composerError ? (
+              <div className="mt-4">
+                <StatusBanner tone="error" title="Form issue" description={composerError} />
+              </div>
+            ) : null}
 
             <form onSubmit={onSubmit} className="mt-6 grid gap-4 md:grid-cols-2">
               <Input label="Name" value={form.name} onChange={(value) => setForm((prev) => ({ ...prev, name: value }))} required />
