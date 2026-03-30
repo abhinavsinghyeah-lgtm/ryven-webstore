@@ -121,6 +121,50 @@ export interface AdminControlStatusResponse {
   };
 }
 
+export interface AdminSystemService {
+  name: string;
+  kind: "pm2" | "database" | "system";
+  status: string;
+  cpuPercent: number | null;
+  memoryBytes: number | null;
+  uptimeSeconds: number | null;
+  restarts: number | null;
+}
+
+export interface AdminSystemOverviewResponse {
+  summary: {
+    hostname: string;
+    platform: string;
+    env: string;
+    apiUptimeSeconds: number;
+    dbConnected: boolean;
+    memory: {
+      totalBytes: number;
+      usedBytes: number;
+      freeBytes: number;
+      usedPercent: number;
+    };
+    cpu: {
+      coreCount: number;
+      model: string;
+      loadAverage1m: number;
+      loadAverage5m: number;
+      loadAverage15m: number;
+      usedPercent: number;
+      usedCoresApprox: number;
+      freeCoresApprox: number;
+    };
+    storage: {
+      path: string;
+      totalBytes: number;
+      usedBytes: number;
+      freeBytes: number;
+      usedPercent: number;
+    };
+  };
+  services: AdminSystemService[];
+}
+
 export interface ControlErrorLog {
   id: number;
   path: string;

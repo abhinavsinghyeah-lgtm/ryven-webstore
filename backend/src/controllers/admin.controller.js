@@ -1,4 +1,6 @@
 const { exec } = require("child_process");
+const os = require("os");
+const util = require("util");
 const { query } = require("../config/db");
 const { env } = require("../config/env");
 const { asyncHandler } = require("../utils/asyncHandler");
@@ -27,6 +29,71 @@ const {
 } = require("../models/user.model");
 const { listOrdersByUser, countOrdersByUser } = require("../models/order.model");
 const { createUserNotification } = require("../models/notification.model");
+const execAsync = util.promisify(exec);
+
+const safeExec = async (command) => {
+  try {
+    const { stdout } = await execAsync(command, { timeout: 5000, windowsHide: true });
+    return stdout.trim();
+  } catch {
+    return "";
+  }
+};
+
+const getDiskUsage = async () => {
+  const output = await safeExec("df -k /");
+  const lines = output.split("\n").map((line) => line.trim()).filter(Boolean);
+  if (lines.length < 2) {
+    return null;
+  }
+
+  const parts = lines[lines.length - 1].split(/\s+/);
+  if (parts.length < 6) {
+    return null;
+  }
+
+  const totalBytes = Number(parts[1]) * 1024;
+  const usedBytes = Number(parts[2]) * 1024;
+  const freeBytes = Number(parts[3]) * 1024;
+  const usedPercent = Number(String(parts[4]).replace("%", "")) || 0;
+
+  return {
+    path: parts[5],
+    totalBytes,
+    usedBytes,
+    freeBytes,
+    usedPercent,
+  };
+};
+
+const getPm2Processes = async () => {
+  const output = await safeExec("pm2 jlist");
+  if (!output) {
+    return [];
+  }
+
+  try {
+    const apps = JSON.parse(output);
+    return apps.map((app) => ({
+      name: app.name,
+      status: app.pm2_env?.status || "unknown",
+      cpuPercent: Number(app.monit?.cpu || 0),
+      memoryBytes: Number(app.monit?.memory || 0),
+      uptimeSeconds: app.pm2_env?.pm_uptime ? Math.max(0, Math.floor((Date.now() - app.pm2_env.pm_uptime) / 1000)) : 0,
+      restarts: Number(app.pm2_env?.restart_time || 0),
+    }));
+  } catch {
+    return [];
+  }
+};
+
+const getServiceStatus = async (name, command) => {
+  const output = await safeExec(command);
+  return {
+    name,
+    status: output || "unknown",
+  };
+};
 
 const getControlStatus = asyncHandler(async (_req, res) => {
   let dbConnected = false;
@@ -51,6 +118,95 @@ const getControlStatus = asyncHandler(async (_req, res) => {
       env: env.NODE_ENV,
       controlActionsEnabled: Boolean(env.CONTROL_ACTIONS_SECRET),
     },
+  });
+});
+
+const getSystemOverview = asyncHandler(async (_req, res) => {
+  let dbConnected = false;
+  try {
+    await query("SELECT 1");
+    dbConnected = true;
+  } catch {
+    dbConnected = false;
+  }
+
+  const totalMemoryBytes = os.totalmem();
+  const freeMemoryBytes = os.freemem();
+  const usedMemoryBytes = totalMemoryBytes - freeMemoryBytes;
+  const cpuCount = os.cpus().length || 1;
+  const loadAverage = os.loadavg();
+  const cpuUsagePercent = Math.min(100, Number(((loadAverage[0] / cpuCount) * 100).toFixed(1)));
+  const cpuUsedCoresApprox = Number(loadAverage[0].toFixed(2));
+  const cpuFreeCoresApprox = Number(Math.max(0, cpuCount - loadAverage[0]).toFixed(2));
+
+  const [disk, pm2Processes, nginxStatus] = await Promise.all([
+    getDiskUsage(),
+    getPm2Processes(),
+    getServiceStatus("nginx", "systemctl is-active nginx"),
+  ]);
+
+  const services = [
+    ...pm2Processes.map((process) => ({
+      name: process.name,
+      kind: "pm2",
+      status: process.status,
+      cpuPercent: process.cpuPercent,
+      memoryBytes: process.memoryBytes,
+      uptimeSeconds: process.uptimeSeconds,
+      restarts: process.restarts,
+    })),
+    {
+      name: "database",
+      kind: "database",
+      status: dbConnected ? "active" : "down",
+      cpuPercent: null,
+      memoryBytes: null,
+      uptimeSeconds: null,
+      restarts: null,
+    },
+    {
+      name: nginxStatus.name,
+      kind: "system",
+      status: nginxStatus.status,
+      cpuPercent: null,
+      memoryBytes: null,
+      uptimeSeconds: null,
+      restarts: null,
+    },
+  ];
+
+  res.status(200).json({
+    summary: {
+      hostname: os.hostname(),
+      platform: `${os.platform()} ${os.release()}`,
+      env: env.NODE_ENV,
+      apiUptimeSeconds: Math.floor(process.uptime()),
+      dbConnected,
+      memory: {
+        totalBytes: totalMemoryBytes,
+        usedBytes: usedMemoryBytes,
+        freeBytes: freeMemoryBytes,
+        usedPercent: Number(((usedMemoryBytes / totalMemoryBytes) * 100).toFixed(1)),
+      },
+      cpu: {
+        coreCount: cpuCount,
+        model: os.cpus()[0]?.model || "Unknown CPU",
+        loadAverage1m: Number(loadAverage[0].toFixed(2)),
+        loadAverage5m: Number(loadAverage[1].toFixed(2)),
+        loadAverage15m: Number(loadAverage[2].toFixed(2)),
+        usedPercent: cpuUsagePercent,
+        usedCoresApprox: cpuUsedCoresApprox,
+        freeCoresApprox: cpuFreeCoresApprox,
+      },
+      storage: disk || {
+        path: "/",
+        totalBytes: 0,
+        usedBytes: 0,
+        freeBytes: 0,
+        usedPercent: 0,
+      },
+    },
+    services,
   });
 });
 
@@ -305,6 +461,7 @@ const exportLogsCsv = asyncHandler(async (_req, res) => {
 
 module.exports = {
   getControlStatus,
+  getSystemOverview,
   runControlAction,
   getEngagementOverview,
   getEngagementSessions,

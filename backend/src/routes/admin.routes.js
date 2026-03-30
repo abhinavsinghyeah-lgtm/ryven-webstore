@@ -16,6 +16,7 @@ const {
 const router = express.Router();
 
 router.get("/admin/control/status", requireAuth, requireAdmin, adminController.getControlStatus);
+router.get("/admin/system", requireAuth, requireAdmin, adminController.getSystemOverview);
 router.post(
   "/admin/control/action",
   requireAuth,
