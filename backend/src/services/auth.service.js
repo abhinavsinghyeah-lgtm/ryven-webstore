@@ -80,8 +80,14 @@ const requestOtp = async ({ identifier, fullName, email, phone }) => {
   const latest = await findLatestOtp({ identifier: value, channel });
   if (latest) {
     const elapsed = (Date.now() - new Date(latest.createdAt).getTime()) / 1000;
-    if (elapsed < OTP_COOLDOWN_SECONDS) {
-      throw new ApiError(429, "Please wait before requesting another OTP");
+    const expiresAt = new Date(latest.expiresAt).getTime();
+    const isStillActive = !latest.consumedAt && expiresAt > Date.now();
+    if (elapsed < OTP_COOLDOWN_SECONDS && isStillActive) {
+      return {
+        status: "ok",
+        reusedExisting: true,
+        retryAfterSeconds: Math.max(1, Math.ceil(OTP_COOLDOWN_SECONDS - elapsed)),
+      };
     }
   }
 
@@ -113,7 +119,7 @@ const requestOtp = async ({ identifier, fullName, email, phone }) => {
     }
   }
 
-  return { status: "ok" };
+  return { status: "ok", reusedExisting: false, retryAfterSeconds: OTP_COOLDOWN_SECONDS };
 };
 
 const verifyOtp = async ({ identifier, code }) => {

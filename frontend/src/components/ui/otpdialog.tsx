@@ -19,6 +19,7 @@ type OTPDialogProps = {
   identifierValue: string;
   otpLength?: number;
   cooldownSeconds?: number;
+  cooldownUntil?: number | null;
   onVerify: (code: string) => Promise<void>;
   onResend: () => Promise<void>;
   loading?: boolean;
@@ -33,6 +34,7 @@ export default function OTPDialog({
   identifierValue,
   otpLength = 6,
   cooldownSeconds = 45,
+  cooldownUntil,
   onVerify,
   onResend,
   loading = false,
@@ -49,10 +51,11 @@ export default function OTPDialog({
     if (!open) return;
     setOtp(Array.from({ length: otpLength }, () => ""));
     setMessage("");
-    setTimeLeft(cooldownSeconds);
-    setCanResend(false);
+    const nextTimeLeft = cooldownUntil ? Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000)) : cooldownSeconds;
+    setTimeLeft(nextTimeLeft);
+    setCanResend(nextTimeLeft <= 0);
     setTimeout(() => inputRefs.current[0]?.focus(), 80);
-  }, [open, otpLength, cooldownSeconds]);
+  }, [open, otpLength, cooldownSeconds, cooldownUntil]);
 
   useEffect(() => {
     if (!open) return;
@@ -168,7 +171,11 @@ export default function OTPDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm !rounded-xl p-6">
+      <DialogContent
+        className="sm:max-w-sm !rounded-xl p-6"
+        onPointerDownOutside={(event) => event.preventDefault()}
+        onEscapeKeyDown={(event) => event.preventDefault()}
+      >
         <DialogHeader className="text-center mb-4">
           <DialogTitle className="text-lg font-semibold">OTP Verification</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground mt-1">
@@ -176,9 +183,16 @@ export default function OTPDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <p className="text-center text-xs text-muted-foreground mb-4">
-          Step 1 of 1: Verify your account
-        </p>
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-neutral-50 px-3 py-2 text-xs text-neutral-500">
+          <span>Step 1 of 1: Verify your account</span>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="cursor-pointer font-medium text-neutral-700 underline underline-offset-4"
+          >
+            Hide for now
+          </button>
+        </div>
 
         <div className="flex justify-center gap-3 mb-4">
           {otp.map((digit, idx) => (
@@ -227,7 +241,7 @@ export default function OTPDialog({
         </div>
 
         {feedback ? (
-          <p className="mt-3 text-center text-sm text-muted-foreground">{feedback}</p>
+          <p className={`mt-3 rounded-xl px-3 py-2 text-center text-sm ${error ? "bg-red-50 text-red-700" : success || message ? "bg-emerald-50 text-emerald-700" : "text-muted-foreground"}`}>{feedback}</p>
         ) : null}
       </DialogContent>
     </Dialog>

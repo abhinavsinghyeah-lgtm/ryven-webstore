@@ -19,6 +19,12 @@ type AuthFormProps = {
   mode: Mode;
 };
 
+type RequestOtpResponse = {
+  status: string;
+  reusedExisting?: boolean;
+  retryAfterSeconds?: number;
+};
+
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const { refreshCart } = useCart();
@@ -33,6 +39,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [otpSuccess, setOtpSuccess] = useState<string | null>(null);
+  const [otpCooldownUntil, setOtpCooldownUntil] = useState<number | null>(null);
 
   const isSignup = mode === "signup";
 
@@ -49,16 +56,27 @@ export function AuthForm({ mode }: AuthFormProps) {
     setIsSubmitting(true);
 
     try {
+      const currentIdentifier = isSignup ? email.trim() : identifier.trim();
+      if (otpIdentifier && currentIdentifier === otpIdentifier && otpCooldownUntil && otpCooldownUntil > Date.now()) {
+        setOtpOpen(true);
+        setOtpSuccess("Continue with the OTP already sent to this account.");
+        return;
+      }
+
       const body = buildRequestPayload();
-      await apiRequest("/auth/request-otp", {
+      const response = await apiRequest<RequestOtpResponse>("/auth/request-otp", {
         method: "POST",
         body,
       });
 
-      const currentIdentifier = isSignup ? email.trim() : identifier.trim();
       setOtpIdentifier(currentIdentifier);
+      setOtpCooldownUntil(Date.now() + (response.retryAfterSeconds ?? 45) * 1000);
       setOtpOpen(true);
-      setOtpSuccess("OTP sent. Enter the code to continue.");
+      setOtpSuccess(
+        response.reusedExisting
+          ? "Use the OTP already sent. You can request a fresh code in a moment."
+          : "OTP sent. Enter the code to continue.",
+      );
     } catch (requestError) {
       const err = requestError as Error & { status?: number };
       if (err.status === 503 && !isSignup) {
@@ -101,11 +119,16 @@ export function AuthForm({ mode }: AuthFormProps) {
     setOtpError(null);
     setOtpSuccess(null);
     const body = buildRequestPayload();
-    await apiRequest("/auth/request-otp", {
+    const response = await apiRequest<RequestOtpResponse>("/auth/request-otp", {
       method: "POST",
       body,
     });
-    setOtpSuccess("OTP resent. Check your inbox.");
+    setOtpCooldownUntil(Date.now() + (response.retryAfterSeconds ?? 45) * 1000);
+    setOtpSuccess(
+      response.reusedExisting
+        ? "Use the OTP already sent. A fresh resend will unlock when the timer ends."
+        : "OTP resent. Check your inbox.",
+    );
   };
 
   return (
@@ -198,7 +221,40 @@ export function AuthForm({ mode }: AuthFormProps) {
         loading={otpLoading}
         error={otpError}
         success={otpSuccess}
+        cooldownUntil={otpCooldownUntil}
       />
+
+      {otpIdentifier && !otpOpen ? (
+        <div className="mt-4 rounded-2xl border border-neutral-200 bg-white/80 p-4 text-sm text-neutral-600 shadow-[0_14px_30px_rgba(15,23,42,0.08)]">
+          <p className="font-medium text-neutral-900">OTP session active for {otpIdentifier}</p>
+          <p className="mt-1">If the OTP box was closed by mistake, reopen it and continue without requesting a new code.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setOtpError(null);
+                setOtpOpen(true);
+              }}
+              className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white"
+            >
+              Continue OTP
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setOtpOpen(false);
+                setOtpIdentifier("");
+                setOtpCooldownUntil(null);
+                setOtpError(null);
+                setOtpSuccess(null);
+              }}
+              className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700"
+            >
+              Use another account
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

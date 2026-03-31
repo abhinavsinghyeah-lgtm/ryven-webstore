@@ -4,20 +4,18 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { AdminLoader } from "@/components/admin/AdminLoader";
+import { ContentSkeleton } from "@/components/ui/ContentSkeleton";
 import { AdminCard, AdminShell, StatusBanner, adminButtonClasses } from "@/components/admin/AdminShell";
 import { apiRequest } from "@/lib/api";
 import { authStorage } from "@/lib/auth";
 import { formatPricePaise } from "@/lib/format";
-import type { AdminDashboardResponse, EngagementOverviewResponse, NotificationsResponse } from "@/types/dashboard";
+import type { AdminDashboardResponse } from "@/types/dashboard";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<AdminDashboardResponse | null>(null);
-  const [engagement, setEngagement] = useState<EngagementOverviewResponse | null>(null);
-  const [notifications, setNotifications] = useState<NotificationsResponse | null>(null);
 
   useEffect(() => {
     const token = authStorage.getToken();
@@ -33,16 +31,8 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    Promise.all([
-      apiRequest<AdminDashboardResponse>("/admin/dashboard", { token }),
-      apiRequest<EngagementOverviewResponse>("/admin/engagement/overview", { token }),
-      apiRequest<NotificationsResponse>("/admin/notifications?limit=6", { token }),
-    ])
-      .then(([response, engagementResponse, notificationsResponse]) => {
-        setData(response);
-        setEngagement(engagementResponse);
-        setNotifications(notificationsResponse);
-      })
+    apiRequest<AdminDashboardResponse>("/admin/dashboard", { token })
+      .then((response) => setData(response))
       .catch((err) => setError(err instanceof Error ? err.message : "Could not load admin dashboard"))
       .finally(() => setLoading(false));
   }, [router]);
@@ -52,14 +42,23 @@ export default function AdminDashboardPage() {
     router.push("/");
   };
 
-  const conversionRate = engagement?.summary?.weekVisitors
-    ? `${((data?.stats?.totalOrders ?? 0) / Math.max(1, engagement.summary.weekVisitors) * 100).toFixed(1)}%`
-    : "0.0%";
-
   if (loading) {
     return (
       <AdminShell title="Loading dashboard" subtitle="Fetching the latest admin metrics.">
-        <AdminLoader label="Loading dashboard data..." />
+        <div className="space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <ContentSkeleton key={index} rows={3} className="min-h-[150px]" />
+            ))}
+          </div>
+          <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+            <ContentSkeleton rows={4} showAvatar={false} className="min-h-[330px]" />
+            <div className="space-y-6">
+              <ContentSkeleton rows={3} showAvatar={false} className="min-h-[180px]" />
+              <ContentSkeleton rows={2} showAvatar={false} className="min-h-[160px]" />
+            </div>
+          </div>
+        </div>
       </AdminShell>
     );
   }
@@ -91,176 +90,95 @@ export default function AdminDashboardPage() {
       }
     >
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Total Orders" value={String(data.stats.totalOrders)} />
-        <StatCard label="Paid Orders" value={String(data.stats.paidOrders)} />
-        <StatCard label="Live Visitors" value={String(engagement?.summary?.liveVisitors ?? 0)} />
-        <StatCard label="Active Products" value={String(data.stats.totalProducts)} />
+        <StatCard label="Total Orders" value={String(data.stats.totalOrders)} tone="sunset" delay="40ms" />
+        <StatCard label="Paid Orders" value={String(data.stats.paidOrders)} tone="mint" delay="120ms" />
+        <StatCard label="Pending Orders" value={String(data.stats.pendingOrders)} tone="amber" delay="200ms" />
+        <StatCard label="Active Products" value={String(data.stats.totalProducts)} tone="sky" delay="280ms" />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <AdminCard className="bg-gradient-to-r from-[#b5362f] via-[#2f544a] to-[#0b6f60]">
-          <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-white/70">Hello Admin</p>
-            <p className="mt-2 text-2xl font-semibold text-white">Welcome back.</p>
-            <p className="mt-2 text-sm text-white/70">
-              Monitor orders, track revenue, and keep the storefront healthy.
-            </p>
-          </div>
-          <Link href="/admin/control" className="mt-6 inline-flex rounded-xl bg-white px-4 py-2 text-xs font-semibold text-neutral-900">
-            Open control
-          </Link>
-        </AdminCard>
-
-        <AdminCard>
+        <AdminCard className="fade-up" style={{ animationDelay: "120ms" }}>
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-white">Top page</p>
-            <div className="flex items-center gap-2 text-xs text-white/50">
-              Last 7 days
+            <div>
+              <p className="text-sm font-semibold text-neutral-900">Revenue snapshot</p>
+              <p className="mt-1 text-sm text-neutral-500">Track store health at a glance.</p>
             </div>
+            <div className="rounded-full border border-black/10 bg-white/80 px-3 py-1 text-xs font-semibold text-neutral-600">Live</div>
           </div>
-          <p className="mt-3 text-sm text-white/70">
-            {engagement?.topPages?.[0]
-              ? `${engagement.topPages[0].path} — ${engagement.topPages[0].hits} visits`
-              : "No page traffic yet."}
-          </p>
-          <Link href="/admin/engagement" className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80">
-            View details
-          </Link>
-        </AdminCard>
-      </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <MetricCard label="Orders" value={String(data.stats.totalOrders)} />
-        <MetricCard label="Revenue" value={formatPricePaise(data.stats.totalRevenuePaise, "INR")} />
-        <MetricCard label="Conversion Rate" value={conversionRate} />
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <AdminCard>
-          <p className="text-sm font-semibold text-white">Revenue</p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-white/50">Total revenue</p>
-              <p className="mt-2 text-2xl font-semibold text-white">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-3xl border border-black/5 bg-[#fff4e8] p-5">
+              <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Total Revenue</p>
+              <p className="mt-3 text-3xl font-semibold text-neutral-900">
                 {formatPricePaise(data.stats.totalRevenuePaise, "INR")}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-white/50">Paid revenue</p>
-              <p className="mt-2 text-2xl font-semibold text-white">
+            <div className="rounded-3xl border border-black/5 bg-[#e9f6f0] p-5">
+              <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Paid Revenue</p>
+              <p className="mt-3 text-3xl font-semibold text-neutral-900">
                 {formatPricePaise(data.stats.paidRevenuePaise, "INR")}
               </p>
             </div>
           </div>
-          <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
-            <p className="text-xs uppercase tracking-[0.22em] text-white/50">Revenue completion</p>
-            <div className="mt-3 h-3 w-full rounded-full bg-white/10">
-              <div
-                className="h-3 rounded-full bg-emerald-400"
-                style={{
-                  width:
-                    data.stats.totalRevenuePaise > 0
-                      ? `${Math.min(100, Math.round((data.stats.paidRevenuePaise / data.stats.totalRevenuePaise) * 100))}%`
-                      : "0%",
-                }}
-              />
+
+          <div className="mt-8 h-56 rounded-[1.6rem] bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_100%)] p-6">
+            <div className="flex h-full items-end gap-3">
+              {[28, 42, 35, 68, 47, 60, 55, 72, 64, 76, 58, 81].map((height, index) => (
+                <div
+                  key={index}
+                  className="flex-1 rounded-t-2xl bg-[linear-gradient(180deg,#1f2937_0%,#0f172a_100%)] opacity-90 shadow-[0_8px_18px_rgba(15,23,42,0.22)]"
+                  style={{ height: `${height}%` }}
+                />
+              ))}
             </div>
-            <p className="mt-2 text-xs text-white/60">
-              {data.stats.totalRevenuePaise > 0
-                ? `${Math.round((data.stats.paidRevenuePaise / data.stats.totalRevenuePaise) * 100)}% captured`
-                : "No revenue data yet."}
-            </p>
           </div>
         </AdminCard>
 
-        <AdminCard>
-          <p className="text-sm font-semibold text-white">Order Mix</p>
-          <div className="mt-4 flex h-48 items-center justify-center">
-            <div
-              className="h-40 w-40 rounded-full"
-              style={{
-                background: `conic-gradient(#10b981 0% ${Math.round(
-                  data.stats.totalOrders > 0 ? (data.stats.paidOrders / data.stats.totalOrders) * 100 : 0,
-                )}%,
-                #f59e0b ${Math.round(
-                  data.stats.totalOrders > 0 ? (data.stats.paidOrders / data.stats.totalOrders) * 100 : 0,
-                )}% ${Math.round(
-                  data.stats.totalOrders > 0 ? ((data.stats.paidOrders + data.stats.pendingOrders) / data.stats.totalOrders) * 100 : 0,
-                )}%,
-                #3b82f6 ${Math.round(
-                  data.stats.totalOrders > 0 ? ((data.stats.paidOrders + data.stats.pendingOrders) / data.stats.totalOrders) * 100 : 0,
-                )}% 100%)`,
-              }}
-            >
-              <div className="flex h-full w-full items-center justify-center rounded-full bg-[#151c26] text-sm text-white">
-                {data.stats.totalOrders}
-              </div>
+        <div className="space-y-6">
+          <AdminCard className="fade-up" style={{ animationDelay: "200ms" }}>
+            <p className="text-sm font-semibold text-neutral-900">Quick actions</p>
+            <div className="mt-4 grid gap-3">
+              <QuickCard href="/admin/products" title="Add or edit products" description="Keep the catalog and hero visuals in sync." />
+              <QuickCard href="/admin/orders" title="Review incoming orders" description="Track pending, paid, and processed orders." />
+              <QuickCard href="/admin/settings" title="Update storefront settings" description="Control hero image, branding, and tagline." />
             </div>
-          </div>
-          <div className="mt-4 space-y-2 text-sm text-white/70">
-            <p>Paid — {data.stats.paidOrders}</p>
-            <p>Pending — {data.stats.pendingOrders}</p>
-            <p>Other — {Math.max(0, data.stats.totalOrders - data.stats.paidOrders - data.stats.pendingOrders)}</p>
-          </div>
-        </AdminCard>
+          </AdminCard>
+
+          <AdminCard className="fade-up bg-[#0f1115] text-white" style={{ animationDelay: "260ms" }}>
+            <p className="text-sm font-semibold">Operations pulse</p>
+            <p className="mt-3 text-4xl font-semibold">{data.stats.pendingOrders}</p>
+            <p className="mt-2 text-sm text-white/70">orders waiting for action right now</p>
+          </AdminCard>
+        </div>
       </section>
-
-      <AdminCard>
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-white">Notifications</p>
-          <span className="text-xs uppercase tracking-[0.24em] text-white/50">Latest events</span>
-        </div>
-        <div className="mt-4 space-y-3">
-          {notifications?.events?.length ? (
-            notifications.events.map((event) => (
-              <div key={`${event.type}-${event.refId}-${event.createdAt}`} className="rounded-2xl border border-white/5 bg-white/5 p-4 text-sm text-white/70">
-                <p className="text-white">
-                  {event.type === "visit" && `New visit from ${event.ip || "Unknown IP"}`}
-                  {event.type === "signup" && `New signup: ${event.email || event.name}`}
-                  {event.type === "order" && `New order placed by ${event.email || event.name}`}
-                  {event.type === "cart" && `Cart updated by ${event.email || event.name}`}
-                </p>
-                <p className="mt-1 text-xs text-white/50">{new Date(event.createdAt).toLocaleString()}</p>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-white/60">No notifications yet.</p>
-          )}
-        </div>
-        <Link href="/admin/notifications" className="mt-4 inline-flex rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/80">
-          Open notifications page
-        </Link>
-      </AdminCard>
     </AdminShell>
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <article className="rounded-[18px] border border-white/5 bg-[#151c26] p-5 shadow-sm">
-      <div className="flex items-center gap-3">
-        <span className="grid h-9 w-9 place-items-center rounded-full bg-emerald-500/20 text-emerald-300">⦿</span>
-        <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-white/50">{label}</p>
-          <p className="mt-2 text-3xl font-semibold text-white">{value}</p>
-        </div>
-      </div>
-      <p className="mt-3 text-xs text-white/40">Updated just now</p>
-    </article>
-  );
-}
+function StatCard({
+  label,
+  value,
+  tone,
+  delay,
+}: {
+  label: string;
+  value: string;
+  tone: "sunset" | "mint" | "amber" | "sky";
+  delay: string;
+}) {
+  const toneMap = {
+    sunset: "bg-[#ffe1c7]",
+    mint: "bg-[#daf4e7]",
+    amber: "bg-[#ffe8b8]",
+    sky: "bg-[#d8ecff]",
+  };
 
-function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-[18px] border border-white/5 bg-[#151c26] p-5 shadow-sm">
-      <div className="flex items-center gap-3">
-        <span className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white/70">⦿</span>
-        <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-white/50">{label}</p>
-          <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
-        </div>
-      </div>
-      <p className="mt-3 text-xs text-emerald-400">+2.29% ↑</p>
+    <article className="fade-up relative overflow-hidden rounded-[26px] border border-black/5 bg-white/80 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)]" style={{ animationDelay: delay }}>
+      <div className={`absolute -right-10 -top-12 h-28 w-28 rounded-full blur-2xl ${toneMap[tone]}`} />
+      <p className="text-xs uppercase tracking-[0.24em] text-neutral-500">{label}</p>
+      <p className="mt-3 text-3xl font-semibold text-neutral-900">{value}</p>
+      <p className="mt-2 text-xs text-neutral-500">Updated just now</p>
     </article>
   );
 }
@@ -269,11 +187,11 @@ function QuickCard({ href, title, description }: { href: string; title: string; 
   return (
     <Link
       href={href}
-      className="group rounded-2xl border border-white/5 bg-white/5 p-4 transition hover:-translate-y-0.5 hover:border-white/20"
+      className="group rounded-3xl border border-black/5 bg-white/70 p-4 transition hover:-translate-y-0.5 hover:border-black/10 hover:bg-white"
     >
-      <p className="text-sm font-semibold text-white">{title}</p>
-      <p className="mt-1 text-sm leading-6 text-white/65">{description}</p>
-      <p className="mt-3 text-xs font-semibold uppercase tracking-[0.22em] text-white/40 group-hover:text-white/70">Open</p>
+      <p className="text-sm font-semibold text-neutral-900">{title}</p>
+      <p className="mt-1 text-sm leading-6 text-neutral-600">{description}</p>
+      <p className="mt-3 text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400 group-hover:text-neutral-600">Open</p>
     </Link>
   );
 }
