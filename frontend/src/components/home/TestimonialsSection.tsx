@@ -2,45 +2,41 @@ import type { Product } from "@/types/product";
 
 type TestimonialsSectionProps = {
   products: Product[];
-  config?: Record<string, string | number | boolean | null | undefined>;
 };
 
 const reviewNames = ["Aarav M.", "Siddhi R.", "Kabir V."];
+const cardColors = [
+  "from-pink-100 to-rose-100",
+  "from-purple-100 to-blue-100",
+  "from-yellow-100 to-orange-100",
+];
 
-export function TestimonialsSection({ products, config }: TestimonialsSectionProps) {
+export function TestimonialsSection({ products }: TestimonialsSectionProps) {
   const picks = products.slice(0, 3);
-  const eyebrow = String(config?.eyebrow || "Testimonials");
-  const title = String(config?.title || "Loved by repeat buyers");
-  const subtitle = String(config?.subtitle || "Customer quotes and confidence-building proof.");
-  const backgroundColor = String(config?.backgroundColor || "#f4f7fb");
-  const textColor = String(config?.textColor || "#111827");
-  const paddingTop = Number(config?.paddingTop || 56);
-  const paddingBottom = Number(config?.paddingBottom || 64);
 
   return (
-    <section style={{ backgroundColor, color: textColor, paddingTop: `${paddingTop}px`, paddingBottom: `${paddingBottom}px` }}>
-      <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] opacity-65">{eyebrow}</p>
-        <h2 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl">{title}</h2>
-        <p className="mt-4 max-w-2xl text-base opacity-70">{subtitle}</p>
+    <div className="min-h-screen w-full bg-gradient-to-br from-cyan-50 via-purple-50 to-pink-50 px-5 py-14 sm:px-8 sm:py-16">
+      <div className="mx-auto flex min-h-[80vh] w-full max-w-7xl flex-col justify-center">
+        <p className="text-xs uppercase tracking-[0.3em] font-bold text-purple-600">Testimonials</p>
+        <h2 className="mt-3 font-display text-5xl text-neutral-800 sm:text-6xl font-bold leading-tight">Loved by repeat buyers</h2>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+        <div className="mt-12 grid gap-6 lg:grid-cols-3">
           {picks.length ? (
             picks.map((product, index) => (
-              <article key={product.id} className="rounded-[28px] border border-black/5 bg-white/85 p-7 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] opacity-60">{product.name}</p>
-                <p className="mt-4 text-base leading-relaxed opacity-85">
+              <article key={product.id} className={`rounded-2xl border-2 border-white/50 bg-gradient-to-br ${cardColors[index]} p-7 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-1`}>
+                <p className="text-xs uppercase tracking-[0.2em] font-bold text-purple-600">{product.name}</p>
+                <p className="mt-4 text-base leading-relaxed text-neutral-800 font-medium">
                   &quot;Projection is sharp for the first two hours and the dry-down stays smooth. This became my
                   automatic pick for {index === 0 ? "office" : index === 1 ? "evenings" : "events"}.&quot;
                 </p>
-                <p className="mt-6 text-sm font-semibold opacity-75">{reviewNames[index] || "RYVEN buyer"}</p>
+                <p className="mt-6 text-sm font-semibold text-neutral-700">{reviewNames[index] || "RYVEN buyer"}</p>
               </article>
             ))
           ) : (
-            <p className="text-sm opacity-70">Customer reviews will appear once products are live.</p>
+            <p className="text-sm text-neutral-600">Customer reviews will appear once products are live.</p>
           )}
         </div>
       </div>
-    </section>
+    </div>
   );
 }
