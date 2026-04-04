@@ -1,44 +1,20 @@
 export function BrandMarquee() {
-  const items = [
-    "RYVEN PERFUMES",
-    "★",
-    "CRAFTED IN INDIA",
-    "★",
-    "LONG-LASTING",
-    "★",
-    "PREMIUM INGREDIENTS",
-    "★",
-    "FREE SHIPPING",
-    "★",
-    "RYVEN PERFUMES",
-    "★",
-    "CRAFTED IN INDIA",
-    "★",
-    "LONG-LASTING",
-    "★",
-    "PREMIUM INGREDIENTS",
-    "★",
-    "FREE SHIPPING",
-    "★",
-  ];
-
   return (
-    <section className="overflow-hidden border-y border-[var(--border)] bg-white py-5">
-      <div
-        className="flex gap-8 whitespace-nowrap"
-        style={{ animation: "marquee 25s linear infinite", width: "max-content" }}
-      >
-        {items.map((item, i) => (
-          <span
-            key={i}
-            className={`text-sm font-medium tracking-[.08em] uppercase ${
-              item === "★" ? "text-[var(--pop)] text-xs" : "text-[var(--text-3)]"
-            }`}
-          >
-            {item}
-          </span>
-        ))}
+    <div className="brand-bar">
+      <div className="brand-bar-track">
+        <span>PREMIUM QUALITY</span><span>?</span>
+        <span>LONG LASTING</span><span>?</span>
+        <span>CRUELTY FREE</span><span>?</span>
+        <span>MADE IN INDIA</span><span>?</span>
+        <span>FREE SHIPPING</span><span>?</span>
+        <span>EASY RETURNS</span><span>?</span>
+        <span>PREMIUM QUALITY</span><span>?</span>
+        <span>LONG LASTING</span><span>?</span>
+        <span>CRUELTY FREE</span><span>?</span>
+        <span>MADE IN INDIA</span><span>?</span>
+        <span>FREE SHIPPING</span><span>?</span>
+        <span>EASY RETURNS</span><span>?</span>
       </div>
-    </section>
+    </div>
   );
 }

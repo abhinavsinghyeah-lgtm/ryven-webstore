@@ -1,106 +1,86 @@
 "use client";
+import { useEffect, useRef, useState } from "react";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+const SOLD_PRODUCTS = [
+  "Noir Velvet",
+  "Rose Absolue",
+  "Oud Royale",
+  "Amber Eclipse",
+  "Midnight Saffron",
+  "Silver Mist",
+];
 
 export function HeroSection() {
-  const [shopCount, setShopCount] = useState("3,240");
-  const [soldProduct, setSoldProduct] = useState({ name: "Noir Velvet", time: "12s ago" });
-
-  const soldProducts = [
-    { name: "Noir Velvet", time: "12s ago" },
-    { name: "Rose Absolue", time: "34s ago" },
-    { name: "Oud Royale", time: "1m ago" },
-    { name: "Amber Eclipse", time: "2m ago" },
-    { name: "Midnight Saffron", time: "3m ago" },
-    { name: "Silver Mist", time: "4m ago" },
-  ];
+  const [soldIdx, setSoldIdx] = useState(0);
+  const [shoppers, setShoppers] = useState(47);
 
   useEffect(() => {
-    let idx = 0;
-    const soldInterval = setInterval(() => {
-      idx = (idx + 1) % soldProducts.length;
-      setSoldProduct(soldProducts[idx]);
-    }, 4000);
+    const id = setInterval(() => setSoldIdx((i) => (i + 1) % SOLD_PRODUCTS.length), 4000);
+    return () => clearInterval(id);
+  }, []);
 
-    const countInterval = setInterval(() => {
-      const variance = Math.floor(Math.random() * 200) - 100;
-      setShopCount((3240 + variance).toLocaleString());
-    }, 8000);
-
-    return () => {
-      clearInterval(soldInterval);
-      clearInterval(countInterval);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const id = setInterval(() => setShoppers(Math.floor(Math.random() * 30) + 30), 8000);
+    return () => clearInterval(id);
   }, []);
 
   return (
-    <section className="relative min-h-screen bg-[var(--bg-warm)] flex items-center overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[var(--bg-warm)] via-[var(--bg)] to-white" />
-
-      <div className="relative mx-auto max-w-[var(--max-w)] w-full px-[var(--px)] py-24 md:py-32">
-        {/* Live badge */}
-        <div className="inline-flex items-center gap-2 rounded-full bg-white border border-[var(--border)] px-4 py-2 mb-8 anim-up">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--green)] opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--green)]" />
-          </span>
-          <span className="text-[.8rem] text-[var(--text-2)]">{shopCount} people shopping right now</span>
-        </div>
-
-        <h1 className="text-[clamp(2.8rem,7vw,5.5rem)] font-bold leading-[1.05] text-[var(--text)] max-w-3xl anim-up">
-          Find Your{" "}
-          <em className="font-serif not-italic text-[var(--pop)]" style={{ fontFamily: "'Instrument Serif', serif" }}>
-            Signature
-          </em>{" "}
-          Scent
-        </h1>
-
-        <p className="mt-6 text-lg text-[var(--text-2)] max-w-xl leading-relaxed anim-up">
-          Premium Indian-crafted fragrances that last 12+ hours. Bold, clean, and designed for those who refuse to blend in.
-        </p>
-
-        <div className="mt-8 flex flex-wrap gap-4 anim-up">
-          <Link href="/products" className="btn btn-primary">
-            Shop Collection
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
-          <Link href="#process" className="btn btn-outline">Our Process</Link>
-        </div>
-
-        {/* Stats */}
-        <div className="mt-14 flex flex-wrap gap-10 anim-up">
-          <div>
-            <p className="text-3xl font-bold text-[var(--text)]">50+</p>
-            <p className="text-sm text-[var(--text-3)] mt-1">Fragrances</p>
+    <section className="hero">
+      <div className="container">
+        <div className="hero-grid">
+          <div className="hero-content">
+            <div className="hero-badge anim-up">
+              <span className="pulse-dot" />
+              {shoppers} people shopping now
+            </div>
+            <h1 className="hero-title anim-up">
+              Find Your Signature <em>Scent.</em>
+            </h1>
+            <p className="hero-sub anim-up">
+              Premium fragrances that last 12+ hours. Crafted in India, inspired by the world.
+              From &#x20B9;1,499.
+            </p>
+            <div className="hero-btns anim-up">
+              <a href="/products" className="btn btn-dark">
+                Shop Now&ensp;&#x2192;
+              </a>
+              <a href="#process" className="btn btn-outline">Our Process</a>
+            </div>
+            <div className="hero-stats anim-up">
+              <div className="hero-stat">
+                <strong>50+</strong>
+                <small>Fragrances</small>
+              </div>
+              <div className="hero-stat">
+                <strong>12,000+</strong>
+                <small>Customers</small>
+              </div>
+              <div className="hero-stat">
+                <strong>4.9&#x2605;</strong>
+                <small>Rating</small>
+              </div>
+            </div>
           </div>
-          <div>
-            <p className="text-3xl font-bold text-[var(--text)]">12,000+</p>
-            <p className="text-sm text-[var(--text-3)] mt-1">Happy Customers</p>
-          </div>
-          <div>
-            <p className="text-3xl font-bold text-[var(--text)]">4.9 ★</p>
-            <p className="text-sm text-[var(--text-3)] mt-1">Average Rating</p>
-          </div>
-        </div>
-      </div>
 
-      {/* Floating cards (desktop) */}
-      <div className="hidden lg:block absolute right-12 top-1/2 -translate-y-1/2">
-        {/* Just sold card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-[var(--border-light)] px-5 py-4 mb-4 w-56 transition-all duration-300">
-          <strong className="text-xs text-[var(--green)]">Just sold</strong>
-          <p className="text-sm text-[var(--text)] mt-1">{soldProduct.name} — {soldProduct.time}</p>
-        </div>
-        {/* Review card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-[var(--border-light)] px-5 py-4 w-56 soft-float">
-          <div className="text-[var(--pop)] text-sm">★★★★★</div>
-          <p className="text-xs text-[var(--text-2)] mt-2 italic">&quot;Best fragrance I&apos;ve ever owned. Compliments all day.&quot;</p>
-          <p className="text-[.7rem] text-[var(--text-4)] mt-2">— Verified Buyer</p>
+          <div className="hero-visual">
+            <div className="hero-img-wrap">
+              <img
+                src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=80"
+                alt="RYVEN Perfume"
+              />
+            </div>
+            <div className="hero-float-card float-card-1">
+              <div className="float-card-dot" />
+              <div>
+                <small>Just sold</small>
+                <strong>{SOLD_PRODUCTS[soldIdx]}</strong>
+              </div>
+            </div>
+            <div className="hero-float-card float-card-2">
+              <span>&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</span>
+              <small>&ldquo;Best perfume I&rsquo;ve ever owned&rdquo;</small>
+            </div>
+          </div>
         </div>
       </div>
     </section>

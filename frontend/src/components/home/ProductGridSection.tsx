@@ -1,142 +1,78 @@
 "use client";
+import { useCallback } from "react";
 
-import Link from "next/link";
-import { useState } from "react";
-import { useCart } from "@/contexts/CartContext";
-import type { Product } from "@/types/product";
-
-const categories = [
-  { label: "All", filter: "all" },
-  { label: "Woody", filter: "woody" },
-  { label: "Fresh", filter: "fresh" },
-  { label: "Oriental", filter: "oriental" },
-  { label: "Sweet", filter: "sweet" },
+const products = [
+  { name: "Noir Velvet", cat: "woody", price: 3749, oldPrice: 4999, rating: 4.9, reviews: 2340, img: "photo-1523293182086-7651a899d37f", badge: "BESTSELLER" },
+  { name: "Rose Absolue", cat: "fresh", price: 2999, oldPrice: null, rating: 4.8, reviews: 890, img: "photo-1594035910387-fea081e66b42", badge: "NEW" },
+  { name: "Oud Royale", cat: "oriental", price: 4499, oldPrice: 5999, rating: 4.9, reviews: 1560, img: "photo-1590736704728-f4730bb30770", badge: "PREMIUM" },
+  { name: "Amber Eclipse", cat: "oriental", price: 2499, oldPrice: null, rating: 4.7, reviews: 670, img: "photo-1557170334-a9632e77c386", badge: null },
+  { name: "Midnight Saffron", cat: "woody", price: 3249, oldPrice: 3999, rating: 4.8, reviews: 430, img: "photo-1544735716-392fe2489ffa", badge: "LIMITED" },
+  { name: "Silver Mist", cat: "fresh", price: 1499, oldPrice: null, rating: 4.6, reviews: 1230, img: "photo-1595425964272-fc617fa7d836", badge: null },
 ];
 
-type ProductGridSectionProps = {
-  products: Product[];
-};
+const tabs = ["all", "woody", "fresh", "oriental", "sweet"];
 
-export function ProductGridSection({ products }: ProductGridSectionProps) {
-  const [active, setActive] = useState("all");
-  const [addedId, setAddedId] = useState<number | null>(null);
-  const { addToCart } = useCart();
+export function ProductGridSection() {
+  const handleFilter = useCallback((cat: string) => {
+    document.querySelectorAll(".filter-tab").forEach((t) => t.classList.remove("active"));
+    document.querySelector(`.filter-tab[data-cat="${cat}"]`)?.classList.add("active");
 
-  const formatPrice = (paise: number) =>
-    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(paise / 100);
-
-  const handleAdd = async (product: Product) => {
-    setAddedId(product.id);
-    try {
-      await addToCart({
-        product: {
-          id: product.id,
-          name: product.name,
-          slug: product.slug,
-          imageUrl: product.imageUrl,
-          pricePaise: product.pricePaise,
-          currency: "INR",
-        },
-        quantity: 1,
-      });
-    } catch {
-      // ignore
-    }
-    setTimeout(() => setAddedId(null), 1500);
-  };
-
-  // Filter by category if products have it
-  const filtered = active === "all"
-    ? products
-    : products.filter((p) => p.category?.toLowerCase() === active);
+    document.querySelectorAll<HTMLElement>(".product-card").forEach((card) => {
+      if (cat === "all" || card.dataset.cat === cat) {
+        card.classList.remove("hiding");
+        card.style.display = "";
+      } else {
+        card.classList.add("hiding");
+        setTimeout(() => { card.style.display = "none"; }, 300);
+      }
+    });
+  }, []);
 
   return (
-    <section id="shop" className="py-20 px-[var(--px)] bg-[var(--bg)]">
-      <div className="mx-auto max-w-[var(--max-w)]">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10">
-          <div className="anim-up">
-            <span className="section-tag">✦ Our Collection</span>
-            <h2 className="mt-5 text-[clamp(2rem,4vw,3rem)] font-bold text-[var(--text)]">Explore Fragrances</h2>
-          </div>
-          {/* Filter tabs */}
-          <div className="filter-tabs anim-up">
-            {categories.map((c) => (
-              <button
-                key={c.filter}
-                onClick={() => setActive(c.filter)}
-                className={`tab ${active === c.filter ? "active" : ""}`}
-              >
-                {c.label}
-              </button>
-            ))}
-          </div>
+    <section className="products" id="shop">
+      <div className="container">
+        <div className="section-top center">
+          <span className="overline anim-up">OUR COLLECTION</span>
+          <h2 className="section-title anim-up">Explore <em>Fragrances</em></h2>
+          <p className="section-sub anim-up">Each scent is meticulously crafted with premium ingredients for lasting impression.</p>
         </div>
 
-        {filtered.length === 0 ? (
-          <div className="rounded-2xl border border-[var(--border)] bg-white px-6 py-12 text-center">
-            <p className="text-sm text-[var(--text-2)]">No products found.</p>
-          </div>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((product) => (
-              <div
-                key={product.id}
-                className="group rounded-[var(--radius)] bg-white border border-[var(--border-light)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg anim-up"
-              >
-                {/* Image */}
-                <Link href={`/products/${product.slug}`} className="block aspect-[3/4] overflow-hidden bg-[var(--bg-warm)] relative">
-                  {product.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-4xl text-[var(--text-4)]">🌿</div>
-                  )}
-                  {product.category && (
-                    <span className="absolute top-3 left-3 bg-white/90 text-[.7rem] font-semibold text-[var(--text-2)] px-3 py-1 rounded-full uppercase tracking-wide">
-                      {product.category}
-                    </span>
-                  )}
-                </Link>
+        <div className="filter-tabs anim-up">
+          {tabs.map((t) => (
+            <button
+              key={t}
+              className={`filter-tab${t === "all" ? " active" : ""}`}
+              data-cat={t}
+              onClick={() => handleFilter(t)}
+            >
+              {t.charAt(0).toUpperCase() + t.slice(1)}
+            </button>
+          ))}
+        </div>
 
-                {/* Info */}
-                <div className="p-5">
-                  {product.notes && product.notes.length > 0 && (
-                    <div className="flex gap-1.5 mb-2 flex-wrap">
-                      {product.notes.slice(0, 3).map((note) => (
-                        <span key={note} className="text-[.68rem] bg-[var(--bg-warm)] text-[var(--text-3)] px-2 py-0.5 rounded-full">
-                          {note}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <Link href={`/products/${product.slug}`}>
-                    <h3 className="font-semibold text-[var(--text)] group-hover:text-[var(--pop)] transition-colors">{product.name}</h3>
-                  </Link>
-                  {product.shortDescription && (
-                    <p className="text-xs text-[var(--text-3)] mt-1 line-clamp-1">{product.shortDescription}</p>
-                  )}
-                  <p className="text-lg font-bold text-[var(--text)] mt-3">{formatPrice(product.pricePaise)}</p>
-                  <button
-                    onClick={() => handleAdd(product)}
-                    className="quick-add mt-3"
-                  >
-                    {addedId === product.id ? "✓ Added!" : "Add to Cart"}
-                  </button>
+        <div className="product-grid">
+          {products.map((p) => (
+            <a href="/products" className="product-card anim-up" data-cat={p.cat} key={p.name}>
+              <div className="product-img">
+                <img src={`https://images.unsplash.com/${p.img}?auto=format&fit=crop&w=500&q=80`} alt={p.name} loading="lazy" />
+                {p.badge && <span className="product-badge">{p.badge}</span>}
+              </div>
+              <div className="product-info">
+                <h3>{p.name}</h3>
+                <div className="product-rating">
+                  &#x2605; {p.rating} <small>({p.reviews.toLocaleString("en-IN")})</small>
+                </div>
+                <div className="product-price">
+                  <strong>&#x20B9;{p.price.toLocaleString("en-IN")}</strong>
+                  {p.oldPrice && <span>&#x20B9;{p.oldPrice.toLocaleString("en-IN")}</span>}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </a>
+          ))}
+        </div>
 
-        <div className="text-center mt-10 anim-up">
-          <Link href="/products" className="btn btn-outline">
-            View All Fragrances →
-          </Link>
+        <div className="section-cta anim-up">
+          <a href="/products" className="btn btn-outline">View All Fragrances &#x2192;</a>
         </div>
       </div>
     </section>
