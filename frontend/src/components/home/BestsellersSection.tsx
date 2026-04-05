@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 export function BestsellersSection() {
   return (
@@ -47,7 +48,7 @@ export function BestsellersSection() {
                 <span className="highlight-price">&#x20B9;3,749</span>
                 <span className="highlight-price-old">&#x20B9;4,999</span>
               </div>
-              <a href="#" className="btn btn-dark">Add to Cart</a>
+              <Link href="/products/noir-velvet" className="btn btn-dark">Add to Cart</Link>
             </div>
           </div>
         </div>
@@ -88,7 +89,7 @@ export function BestsellersSection() {
               <div>
                 <span className="highlight-price">&#x20B9;2,999</span>
               </div>
-              <a href="#" className="btn btn-dark">Add to Cart</a>
+              <Link href="/products/rose-absolue" className="btn btn-dark">Add to Cart</Link>
             </div>
           </div>
         </div>

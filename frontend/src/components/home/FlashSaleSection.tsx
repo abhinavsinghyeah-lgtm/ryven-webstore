@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export function FlashSaleSection() {
   const [hours, setHours] = useState(14);
@@ -42,7 +43,7 @@ export function FlashSaleSection() {
               <span className="flash-save">Save &#x20B9;2,400</span>
             </div>
             <span className="flash-scarcity">&#x1F525; Only 23 sets left</span>
-            <a href="#" className="btn btn-white">Grab This Deal</a>
+            <Link href="/products" className="btn btn-white">Grab This Deal</Link>
           </div>
           <div className="flash-visual">
             <img src="https://images.unsplash.com/photo-1563170351-be82bc888aa4?auto=format&fit=crop&w=800&q=80" alt="Signature Collection Set" loading="lazy" />
