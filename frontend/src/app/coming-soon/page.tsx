@@ -60,7 +60,7 @@ export default function ComingSoonPage() {
             <button type="button" className="cs-btn-primary" onClick={() => setShowAccess(true)}>
               Early Access
             </button>
-            <Link href="https://shop.ryven.in" className="cs-btn-outline">
+            <Link href="https://shopify.ryven.in" className="cs-btn-outline">
               Shop Now
             </Link>
           </div>
