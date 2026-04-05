@@ -2,11 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hideAnnounce, setHideAnnounce] = useState(false);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
+  /* Build section links: bare hash on homepage, /#hash elsewhere */
+  const s = (hash: string) => isHome ? `#${hash}` : `/#${hash}`;
 
   useEffect(() => {
     const onScroll = () => {
@@ -54,10 +60,10 @@ export function SiteHeader() {
         <div className="nav-inner">
           <Link href="/" className="logo">RYVEN</Link>
           <ul className="nav-links">
-            <li><a href="#shop">Shop</a></li>
+            <li><Link href={s("shop")}>Shop</Link></li>
             <li><Link href="/collections">Collections</Link></li>
-            <li><a href="#occasion">Occasions</a></li>
-            <li><a href="#bestsellers">Best Sellers</a></li>
+            <li><Link href={s("occasion")}>Occasions</Link></li>
+            <li><Link href={s("bestsellers")}>Best Sellers</Link></li>
             <li className="nav-dropdown">
               <button type="button">
                 More
@@ -68,14 +74,14 @@ export function SiteHeader() {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
                   About Us
                 </Link>
-                <a href="#process">
+                <Link href={s("process")}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
                   Our Process
-                </a>
-                <a href="#reviews">
+                </Link>
+                <Link href={s("reviews")}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
                   Reviews
-                </a>
+                </Link>
                 <Link href="/products">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg>
                   Full Catalog
@@ -115,16 +121,16 @@ export function SiteHeader() {
               Collections
               <svg className="mob-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
             </Link>
-            <a href="#bestsellers" onClick={closeMenu}>
+            <Link href={s("bestsellers")} onClick={closeMenu}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
               Best Sellers
               <svg className="mob-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
-            </a>
-            <a href="#occasion" onClick={closeMenu}>
+            </Link>
+            <Link href={s("occasion")} onClick={closeMenu}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></svg>
               Occasions
               <svg className="mob-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
-            </a>
+            </Link>
           </div>
 
           {/* Pages section */}
@@ -135,22 +141,22 @@ export function SiteHeader() {
               About Us
               <svg className="mob-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
             </Link>
-            <a href="#process" onClick={closeMenu}>
+            <Link href={s("process")} onClick={closeMenu}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
               Our Process
               <svg className="mob-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
-            </a>
-            <a href="#reviews" onClick={closeMenu}>
+            </Link>
+            <Link href={s("reviews")} onClick={closeMenu}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
               Reviews
               <svg className="mob-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
-            </a>
+            </Link>
           </div>
         </div>
 
         {/* CTA */}
         <div className="mobile-menu-cta">
-          <a href="#shop" className="btn btn-dark" onClick={closeMenu}>Shop the Sale &mdash; 25% Off</a>
+          <Link href={s("shop")} className="btn btn-dark" onClick={closeMenu}>Shop the Sale &mdash; 25% Off</Link>
           <Link href="/cart" className="btn btn-outline" onClick={closeMenu}>Open Cart</Link>
         </div>
       </div>

@@ -1,19 +1,57 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
-import { apiRequest } from "@/lib/api";
-import type { CollectionCatalogResponse } from "@/types/collection";
+export const metadata: Metadata = {
+  title: "Collections | RYVEN",
+  description: "Browse curated fragrance collections by occasion, mood, and season.",
+};
 
-async function getCollections() {
-  try {
-    return await apiRequest<CollectionCatalogResponse>("/collections?limit=40&page=1");
-  } catch {
-    return { collections: [], pagination: { page: 1, limit: 40, total: 0, totalPages: 1 } };
-  }
-}
+const staticCollections = [
+  {
+    slug: "summer-essentials",
+    name: "Summer Essentials",
+    desc: "Light, fresh, aquatic scents built for Indian summers. Stay cool, smell incredible.",
+    count: 8,
+    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
+  },
+  {
+    slug: "date-night",
+    name: "Date Night",
+    desc: "Rich orientals and warm woods that leave an impression. Designed for evenings out.",
+    count: 6,
+    img: "https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=800&auto=format&fit=crop",
+  },
+  {
+    slug: "office-ready",
+    name: "Office Ready",
+    desc: "Clean, sophisticated, never overpowering. Scents that earn compliments at work.",
+    count: 5,
+    img: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=800&auto=format&fit=crop",
+  },
+  {
+    slug: "gift-sets",
+    name: "Gift Sets",
+    desc: "Beautifully packaged duos and trios. The perfect fragrance gift for any occasion.",
+    count: 4,
+    img: "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?q=80&w=800&auto=format&fit=crop",
+  },
+  {
+    slug: "woody-collection",
+    name: "Woody Collection",
+    desc: "Cedarwood, sandalwood, oud &#x2014; earthy warmth for those who love depth.",
+    count: 7,
+    img: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=800&auto=format&fit=crop",
+  },
+  {
+    slug: "under-999",
+    name: "Under &#x20B9;999",
+    desc: "Premium quality doesn&#x2019;t have to break the bank. Our best picks under a thousand.",
+    count: 10,
+    img: "https://images.unsplash.com/photo-1595425964272-fc617fa71096?q=80&w=800&auto=format&fit=crop",
+  },
+];
 
-export default async function CollectionsPage() {
-  const data = await getCollections();
-
+export default function CollectionsPage() {
   return (
     <main className="collections-page">
       <div className="wrapper">
@@ -33,23 +71,17 @@ export default async function CollectionsPage() {
 
         {/* Grid */}
         <div className="collections-grid" style={{ marginTop: 28 }}>
-          {data.collections.length === 0 && (
-            <div className="catalog-empty">
-              <h3>No collections yet</h3>
-              <p>Collections will appear here once added from the admin dashboard.</p>
-            </div>
-          )}
-          {data.collections.map((collection) => (
-            <Link key={collection.id} href={`/collections/${collection.slug}`} className="coll-card">
+          {staticCollections.map((c) => (
+            <Link key={c.slug} href={`/collections/${c.slug}`} className="coll-card">
               <div className="coll-card-img">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={collection.imageUrl} alt={collection.name} />
+                <img src={c.img} alt={c.name} />
               </div>
               <div className="coll-card-body">
-                <h3>{collection.name}</h3>
-                <p>{collection.description}</p>
+                <h3 dangerouslySetInnerHTML={{ __html: c.name }} />
+                <p dangerouslySetInnerHTML={{ __html: c.desc }} />
                 <div className="coll-card-meta">
-                  <span className="coll-card-count">{collection.productCount} products</span>
+                  <span className="coll-card-count">{c.count} products</span>
                   <span className="coll-card-arrow">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
                   </span>
