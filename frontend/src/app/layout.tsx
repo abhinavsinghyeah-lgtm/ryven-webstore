@@ -3,6 +3,7 @@ import { DM_Sans } from "next/font/google";
 
 import { CartProvider } from "@/contexts/CartContext";
 import { RootShell } from "@/components/layout/RootShell";
+import PageTracker from "@/components/PageTracker";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -30,6 +31,7 @@ export default function RootLayout({
       </head>
       <body>
         <CartProvider>
+          <PageTracker />
           <RootShell>{children}</RootShell>
         </CartProvider>
       </body>

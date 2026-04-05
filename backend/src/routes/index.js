@@ -8,9 +8,11 @@ const settingsRoutes = require("./settings.routes");
 const checkoutRoutes = require("./checkout.routes");
 const dashboardRoutes = require("./dashboard.routes");
 const adminRoutes = require("./admin.routes");
+const trackRoutes = require("./track.routes");
 
 const router = express.Router();
 
+router.use(trackRoutes);
 router.use("/auth", authRoutes);
 router.use("/cart", cartRoutes);
 router.use("/checkout", checkoutRoutes);
