@@ -2,15 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type React from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 
 type OTPDialogProps = {
   open: boolean;
@@ -66,6 +57,12 @@ export default function OTPDialog({
     const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearTimeout(timer);
   }, [timeLeft, open]);
+
+  /* Prevent body scroll when modal open */
+  useEffect(() => {
+    if (open) document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
 
   const applyDigits = (startIndex: number, digits: string) => {
     if (!digits) return;
@@ -138,7 +135,7 @@ export default function OTPDialog({
 
   const handleVerify = async () => {
     if (otp.some((d) => d === "")) {
-      setMessage("⚠️ Please enter the complete OTP.");
+      setMessage("Please enter the complete code.");
       return;
     }
     setMessage("");
@@ -151,13 +148,11 @@ export default function OTPDialog({
     setOtp(Array.from({ length: otpLength }, () => ""));
     setTimeLeft(cooldownSeconds);
     setCanResend(false);
-    document.getElementById("otp-0")?.focus();
+    inputRefs.current[0]?.focus();
   };
 
   const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60)
-      .toString()
-      .padStart(2, "0");
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
     const s = (seconds % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   };
@@ -169,81 +164,67 @@ export default function OTPDialog({
     return "";
   }, [error, success, message]);
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="sm:max-w-sm !rounded-xl p-6"
-        onPointerDownOutside={(event) => event.preventDefault()}
-        onEscapeKeyDown={(event) => event.preventDefault()}
-      >
-        <DialogHeader className="text-center mb-4">
-          <DialogTitle className="text-lg font-semibold">OTP Verification</DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground mt-1">
-            Enter the {otpLength}-digit code sent to <strong>{identifierValue}</strong>.
-          </DialogDescription>
-        </DialogHeader>
+  if (!open) return null;
 
-        <div className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-neutral-50 px-3 py-2 text-xs text-neutral-500">
-          <span>Step 1 of 1: Verify your account</span>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="cursor-pointer font-medium text-neutral-700 underline underline-offset-4"
-          >
-            Hide for now
-          </button>
+  return (
+    <div className="otp-backdrop">
+      <div className="otp-modal">
+        <button type="button" className="otp-close" onClick={() => onOpenChange(false)}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+        </button>
+
+        <div className="otp-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2a4 4 0 00-4 4v2h8V6a4 4 0 00-4-4z" />
+            <rect x="5" y="10" width="14" height="12" rx="2" />
+            <circle cx="12" cy="16" r="1.5" />
+          </svg>
         </div>
 
-        <div className="flex justify-center gap-3 mb-4">
+        <h2 className="otp-title">Verify your identity</h2>
+        <p className="otp-desc">
+          Enter the {otpLength}-digit code sent to<br />
+          <strong>{identifierValue}</strong>
+        </p>
+
+        <div className="otp-inputs">
           {otp.map((digit, idx) => (
-            <Input
+            <input
               key={idx}
               id={`otp-${idx}`}
+              type="text"
+              inputMode="numeric"
+              maxLength={1}
+              autoComplete={idx === 0 ? "one-time-code" : undefined}
               value={digit}
               onChange={(e) => handleChange(e.target.value, idx)}
-              onKeyDown={(event) => handleKeyDown(event, idx)}
-              onPaste={(event) => handlePaste(event, idx)}
-              className="w-12 h-12 text-center text-lg font-medium rounded-md border border-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
-              maxLength={1}
-              inputMode="numeric"
-              autoComplete={idx === 0 ? "one-time-code" : undefined}
-              ref={(el) => {
-                inputRefs.current[idx] = el;
-              }}
+              onKeyDown={(e) => handleKeyDown(e, idx)}
+              onPaste={(e) => handlePaste(e, idx)}
+              className={`otp-digit${digit ? " filled" : ""}`}
+              ref={(el) => { inputRefs.current[idx] = el; }}
             />
           ))}
         </div>
 
-        {!canResend && (
-          <p className="text-center text-xs text-muted-foreground mb-2">
-            You can resend OTP in <strong>{formatTime(timeLeft)}</strong>
-          </p>
-        )}
-
-        <div className="flex flex-col gap-2">
-          <Button
-            className="w-full rounded-xl bg-neutral-900 text-white shadow-[0_10px_20px_rgba(15,23,42,0.2)] hover:bg-neutral-800"
-            onClick={handleVerify}
-            disabled={loading}
-          >
-            {loading ? "Verifying..." : "Verify OTP"}
-          </Button>
-
-          <Button
-            variant="outline"
-            className="w-full flex justify-between items-center rounded-xl border border-neutral-200 bg-white/70 text-neutral-800 hover:bg-white"
-            onClick={handleResend}
-            disabled={!canResend || loading}
-          >
-            {canResend ? "Send Again" : "Resend OTP"}
-            {!canResend && <span className="text-xs text-muted-foreground">{formatTime(timeLeft)}</span>}
-          </Button>
+        <div className="otp-timer">
+          {canResend
+            ? <button type="button" className="otp-resend-btn" onClick={handleResend} disabled={loading}>Resend Code</button>
+            : <span>Resend in <strong>{formatTime(timeLeft)}</strong></span>
+          }
         </div>
 
-        {feedback ? (
-          <p className={`mt-3 rounded-xl px-3 py-2 text-center text-sm ${error ? "bg-red-50 text-red-700" : success || message ? "bg-emerald-50 text-emerald-700" : "text-muted-foreground"}`}>{feedback}</p>
-        ) : null}
-      </DialogContent>
-    </Dialog>
+        <button type="button" className="otp-verify-btn" onClick={handleVerify} disabled={loading}>
+          {loading ? "Verifying..." : "Verify & Continue"}
+        </button>
+
+        <button type="button" className="otp-hide-btn" onClick={() => onOpenChange(false)}>
+          Hide for now
+        </button>
+
+        {feedback && (
+          <div className={`otp-feedback${error ? " error" : ""}`}>{feedback}</div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -34,98 +34,78 @@ export default function ComingSoonPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0b0c10] text-white">
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#1f2937_0%,transparent_45%),radial-gradient(circle_at_20%_30%,#111827_0%,transparent_50%),radial-gradient(circle_at_80%_20%,#0f172a_0%,transparent_50%)]" />
-        <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-10">
-          <header className="flex w-full items-center justify-between">
-            <span className="text-sm font-semibold tracking-[0.3em]">RYVEN</span>
-            <span className="text-xs uppercase tracking-[0.4em] text-white/60">Coming Soon</span>
-            <Link
-              href="https://shop.ryven.in"
-              className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/80 transition hover:border-white/30 hover:text-white"
-            >
-              Visit Shop
-            </Link>
-          </header>
-
-          <div className="flex flex-1 flex-col items-center justify-center text-center">
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-              Our new experience is almost ready.
-            </h1>
-            <p className="mt-5 max-w-2xl text-base text-white/70 sm:text-lg">
-            We are polishing the final details of the RYVEN store. Until then, you can shop the current collection on{" "}
-            <Link href="https://shop.ryven.in" className="font-semibold text-white underline decoration-white/50 underline-offset-4">
-              shop.ryven.in
-            </Link>
-            .
-            </p>
-
-            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => setShowAccess(true)}
-                className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#0b0c10] transition hover:bg-white/90"
-              >
-                Request Access
-              </button>
-              <Link
-                href="https://shop.ryven.in"
-                className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white/40 hover:text-white"
-              >
-                Visit Shopify Store
-              </Link>
-            </div>
-
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-xs uppercase tracking-[0.24em] text-white/40">
-              <span>Modern fragrance house</span>
-              <span>Launching soon</span>
-              <span>RYVEN</span>
-            </div>
-          </div>
-        </div>
+    <main className="cs-page">
+      <div className="cs-bg">
+        <div className="cs-blob cs-blob-1" />
+        <div className="cs-blob cs-blob-2" />
       </div>
 
-      {showAccess ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#0f1117] p-6 text-white shadow-2xl">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold">Private access</h2>
-              <button
-                type="button"
-                onClick={() => setShowAccess(false)}
-                className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-white/60"
-              >
-                Close
-              </button>
-            </div>
-            <p className="mt-2 text-sm text-white/60">
-              Enter the access code to preview the full website.
-            </p>
+      <div className="cs-container">
+        <header className="cs-header">
+          <Link href="/" className="cs-brand">RYVEN</Link>
+          <span className="cs-badge">Coming Soon</span>
+        </header>
 
-            <form onSubmit={handleSubmit} className="mt-5 space-y-3">
+        <div className="cs-hero">
+          <p className="cs-label">A NEW CHAPTER IN FRAGRANCE</p>
+          <h1 className="cs-title">
+            Something <em>extraordinary</em><br />is on its way.
+          </h1>
+          <p className="cs-desc">
+            We&rsquo;re crafting a new experience for RYVEN.
+            Until then, explore the current collection.
+          </p>
+
+          <div className="cs-actions">
+            <button type="button" className="cs-btn-primary" onClick={() => setShowAccess(true)}>
+              Early Access
+            </button>
+            <Link href="https://shop.ryven.in" className="cs-btn-outline">
+              Shop Now
+            </Link>
+          </div>
+        </div>
+
+        <footer className="cs-footer">
+          <span>RYVEN PERFUMES</span>
+          <span className="cs-dot" />
+          <span>Modern Fragrance House</span>
+        </footer>
+      </div>
+
+      {showAccess && (
+        <div className="cs-modal-backdrop" onClick={() => setShowAccess(false)}>
+          <div className="cs-modal" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="cs-modal-close" onClick={() => setShowAccess(false)}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+            </button>
+
+            <div className="cs-modal-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg>
+            </div>
+            <h2 className="cs-modal-title">Private Access</h2>
+            <p className="cs-modal-desc">Enter the access code to preview the full website.</p>
+
+            <form onSubmit={handleSubmit} className="cs-modal-form">
               <input
                 type="password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Access code"
-                className="h-12 w-full rounded-2xl border border-white/10 bg-black/40 px-4 text-sm text-white outline-none transition focus:border-white/40"
+                className="cs-modal-input"
+                autoFocus
               />
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="h-12 w-full rounded-2xl bg-white text-sm font-semibold text-[#0b0c10] transition hover:bg-white/90 disabled:opacity-60"
-              >
-                {status === "loading" ? "Checking..." : "Unlock Site"}
+              <button type="submit" className="cs-modal-submit" disabled={status === "loading"}>
+                {status === "loading" ? "Checking..." : "Unlock"}
               </button>
             </form>
 
-            {status === "error" && message ? (
-              <p className="mt-3 text-xs text-rose-200">{message}</p>
-            ) : null}
+            {status === "error" && message && (
+              <p className="cs-modal-error">{message}</p>
+            )}
           </div>
         </div>
-      ) : null}
+      )}
     </main>
   );
 }
