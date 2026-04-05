@@ -7,17 +7,9 @@ import { apiRequest } from "@/lib/api";
 
 export default function SetPasswordPage() {
   return (
-    <Suspense fallback={<SetPasswordLoading />}>
+    <Suspense fallback={<div className="set-pw-page"><p style={{ fontSize: 14, color: "var(--text-3)" }}>Loading...</p></div>}>
       <SetPasswordContent />
     </Suspense>
-  );
-}
-
-function SetPasswordLoading() {
-  return (
-    <main className="min-h-screen bg-[#f1f1ee] flex items-center justify-center px-4">
-      <p className="text-sm text-[#666]">Loading...</p>
-    </main>
   );
 }
 
@@ -35,12 +27,10 @@ function SetPasswordContent() {
 
   if (!token) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-center space-y-3">
-          <p className="text-[#111] font-semibold">Invalid or expired activation link.</p>
-          <Link href="/login" className="text-sm text-[#555] underline underline-offset-2">
-            Go to Login
-          </Link>
+      <main className="set-pw-page">
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontWeight: 600, color: "var(--text)" }}>Invalid or expired activation link.</p>
+          <Link href="/login" style={{ fontSize: 14, color: "var(--text-3)", textDecoration: "underline", marginTop: 12, display: "inline-block" }}>Go to Login</Link>
         </div>
       </main>
     );
@@ -57,15 +47,11 @@ function SetPasswordContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-
     setLoading(true);
     setApiError(null);
 
     try {
-      await apiRequest("/auth/set-password", {
-        method: "POST",
-        body: { token, password },
-      });
+      await apiRequest("/auth/set-password", { method: "POST", body: { token, password } });
       setSuccess(true);
       setTimeout(() => router.push("/login"), 2500);
     } catch (err) {
@@ -76,88 +62,41 @@ function SetPasswordContent() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f1f1ee] flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <Link href="/" className="text-xl font-bold tracking-[0.2em] text-[#111] uppercase">
-            RYVEN
-          </Link>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-sm border border-[#e8e8e4] p-7 space-y-6">
+    <main className="set-pw-page">
+      <div className="set-pw-wrap">
+        <div className="set-pw-logo"><Link href="/">RYVEN</Link></div>
+        <div className="set-pw-card">
           {success ? (
-            <div className="text-center space-y-3 py-4">
-              <div className="w-14 h-14 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mx-auto text-2xl">
-                ✓
-              </div>
-              <h2 className="text-lg font-semibold text-[#111]">Password Set!</h2>
-              <p className="text-sm text-[#666]">Redirecting you to login…</p>
+            <div className="set-pw-success">
+              <div className="set-pw-success-icon">✓</div>
+              <h2>Password Set!</h2>
+              <p>Redirecting you to login…</p>
             </div>
           ) : (
             <>
-              <div>
-                <h1 className="text-2xl font-bold text-[#111] mb-1">Activate your account</h1>
-                <p className="text-sm text-[#666]">Choose a password to secure your RYVEN account.</p>
-              </div>
+              <h1>Activate your account</h1>
+              <p>Choose a secure password to get started.</p>
 
-              {apiError && (
-                <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-                  {apiError}
+              {apiError ? <div className="acct-alert acct-alert-error">{apiError}</div> : null}
+
+              <form className="acct-form" onSubmit={handleSubmit}>
+                <div className="acct-form-field">
+                  <label>New password</label>
+                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Minimum 8 characters" required />
+                  {errors.password ? <span style={{ fontSize: 12, color: "#b91c1c", marginTop: 4, display: "block" }}>{errors.password}</span> : null}
                 </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-[#333] mb-1.5">
-                    New Password
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    autoComplete="new-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={`w-full px-4 py-3 rounded-xl border bg-white text-[#111] placeholder:text-[#bbb] transition-all outline-none focus:ring-2 focus:ring-[#111]/20 ${
-                      errors.password ? "border-red-400 ring-1 ring-red-200" : "border-[#ddd]"
-                    }`}
-                    placeholder="Minimum 8 characters"
-                  />
-                  {errors.password && <p className="mt-1.5 text-xs text-red-500">{errors.password}</p>}
+                <div className="acct-form-field">
+                  <label>Confirm password</label>
+                  <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Repeat password" required />
+                  {errors.confirm ? <span style={{ fontSize: 12, color: "#b91c1c", marginTop: 4, display: "block" }}>{errors.confirm}</span> : null}
                 </div>
-
-                <div>
-                  <label htmlFor="confirm" className="block text-sm font-medium text-[#333] mb-1.5">
-                    Confirm Password
-                  </label>
-                  <input
-                    id="confirm"
-                    type="password"
-                    autoComplete="new-password"
-                    value={confirm}
-                    onChange={(e) => setConfirm(e.target.value)}
-                    className={`w-full px-4 py-3 rounded-xl border bg-white text-[#111] placeholder:text-[#bbb] transition-all outline-none focus:ring-2 focus:ring-[#111]/20 ${
-                      errors.confirm ? "border-red-400 ring-1 ring-red-200" : "border-[#ddd]"
-                    }`}
-                    placeholder="Repeat password"
-                  />
-                  {errors.confirm && <p className="mt-1.5 text-xs text-red-500">{errors.confirm}</p>}
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3.5 px-6 bg-[#111] text-white font-semibold rounded-xl hover:bg-[#333] transition-colors text-sm tracking-wide disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {loading ? "Setting password…" : "Activate Account →"}
+                <button type="submit" className="acct-form-submit" disabled={loading}>
+                  {loading ? "Setting password..." : "Set Password & Activate"}
                 </button>
               </form>
 
-              <p className="text-center text-xs text-[#aaa]">
-                Already have a password?{" "}
-                <Link href="/login" className="text-[#555] underline underline-offset-2">
-                  Log in
-                </Link>
+              <p style={{ textAlign: "center", fontSize: 13, color: "var(--text-3)", marginTop: 20 }}>
+                Already activated? <Link href="/login" style={{ fontWeight: 600, color: "var(--text)", textDecoration: "underline" }}>Sign in</Link>
               </p>
             </>
           )}

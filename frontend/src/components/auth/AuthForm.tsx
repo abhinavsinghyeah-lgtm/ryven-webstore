@@ -10,14 +10,9 @@ import { authStorage } from "@/lib/auth";
 import { syncGuestCartAfterLogin } from "@/lib/cart-sync";
 import type { AuthResponse } from "@/types/auth";
 import OTPDialog from "@/components/ui/otpdialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 type Mode = "login" | "signup";
-
-type AuthFormProps = {
-  mode: Mode;
-};
+type AuthFormProps = { mode: Mode };
 
 type RequestOtpResponse = {
   status: string;
@@ -132,84 +127,46 @@ export function AuthForm({ mode }: AuthFormProps) {
   };
 
   return (
-    <div className="w-full">
-      <form
-        onSubmit={handleRequestOtp}
-        className="space-y-5 rounded-[28px] border border-white/80 bg-white/90 p-7 shadow-[0_30px_70px_rgba(15,23,42,0.18)] backdrop-blur"
-      >
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-neutral-900 text-white shadow-[0_12px_30px_rgba(15,23,42,0.2)]">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <path d="M12 5v14" />
-              <path d="M6 11l6 6 6-6" />
-            </svg>
-          </div>
-          <p className="text-xs uppercase tracking-[0.28em] text-neutral-500">
-            {isSignup ? "Create account" : "Welcome back"}
-          </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
-            {isSignup ? "Sign up with OTP" : "Sign in with OTP"}
-          </h1>
-          <p className="text-sm text-neutral-600">
+    <div className="auth-card-wrap">
+      <div className="auth-card">
+        <div className="auth-logo">
+          <Link href="/">RYVEN</Link>
+        </div>
+
+        <div className="auth-heading">
+          <h1>{isSignup ? "Create your account" : "Welcome back"}</h1>
+          <p>
             {isSignup
-              ? "We’ll send a one-time code to create your account."
-              : "We’ll send a one-time code to sign you in securely."}
+              ? "We'll send a one-time code to verify your identity."
+              : "Sign in with a one-time code sent to your email."}
           </p>
         </div>
 
-        {isSignup ? (
-          <>
-            <Field
-              label="Full name"
-              placeholder="Aarav Sharma"
-              value={fullName}
-              onChange={(value) => setFullName(value)}
-              icon="user"
-            />
-            <Field
-              label="Email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(value) => setEmail(value)}
-              type="email"
-              icon="mail"
-            />
-            <Field
-              label="Mobile number"
-              placeholder="+91 9876543210"
-              value={phone}
-              onChange={(value) => setPhone(value)}
-              type="tel"
-              icon="phone"
-            />
-          </>
-        ) : (
-          <Field
-            label="Email or mobile number"
-            placeholder="you@example.com or +91 9876543210"
-            value={identifier}
-            onChange={(value) => setIdentifier(value)}
-            icon="mail"
-          />
-        )}
+        <form onSubmit={handleRequestOtp} className="auth-form">
+          {isSignup ? (
+            <>
+              <AuthField label="Full name" placeholder="Aarav Sharma" value={fullName} onChange={setFullName} icon="user" />
+              <AuthField label="Email" placeholder="you@example.com" value={email} onChange={setEmail} type="email" icon="mail" />
+              <AuthField label="Mobile number" placeholder="+91 9876543210" value={phone} onChange={setPhone} type="tel" icon="phone" />
+            </>
+          ) : (
+            <AuthField label="Email or mobile number" placeholder="you@example.com or +91 9876543210" value={identifier} onChange={setIdentifier} icon="mail" />
+          )}
 
-        {error ? <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+          {error ? <div className="auth-error">{error}</div> : null}
 
-        <Button
-          type="submit"
-          className="w-full rounded-xl bg-neutral-900 text-white shadow-[0_14px_30px_rgba(15,23,42,0.25)] hover:bg-neutral-800"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Sending..." : "Continue"}
-        </Button>
+          <button type="submit" className="auth-submit" disabled={isSubmitting}>
+            {isSubmitting ? "Sending..." : "Continue"}
+          </button>
 
-        <p className="text-sm text-neutral-600">
-          {isSignup ? "Already registered? " : "New to RYVEN? "}
-          <Link href={isSignup ? "/login" : "/signup"} className="font-semibold text-neutral-900 underline decoration-2 underline-offset-4">
-            {isSignup ? "Sign in" : "Create account"}
-          </Link>
-        </p>
-      </form>
+          <p className="auth-switch">
+            {isSignup ? "Already registered? " : "New to RYVEN? "}
+            <Link href={isSignup ? "/login" : "/signup"}>
+              {isSignup ? "Sign in" : "Create account"}
+            </Link>
+          </p>
+        </form>
+      </div>
 
       <OTPDialog
         open={otpOpen}
@@ -225,30 +182,17 @@ export function AuthForm({ mode }: AuthFormProps) {
       />
 
       {otpIdentifier && !otpOpen ? (
-        <div className="mt-4 rounded-2xl border border-neutral-200 bg-white/80 p-4 text-sm text-neutral-600 shadow-[0_14px_30px_rgba(15,23,42,0.08)]">
-          <p className="font-medium text-neutral-900">OTP session active for {otpIdentifier}</p>
-          <p className="mt-1">If the OTP box was closed by mistake, reopen it and continue without requesting a new code.</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setOtpError(null);
-                setOtpOpen(true);
-              }}
-              className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white"
-            >
+        <div className="auth-otp-banner">
+          <p>OTP session active for {otpIdentifier}</p>
+          <p>If the OTP box was closed by mistake, reopen it and continue without requesting a new code.</p>
+          <div className="auth-otp-actions">
+            <button type="button" className="otp-continue" onClick={() => { setOtpError(null); setOtpOpen(true); }}>
               Continue OTP
             </button>
             <button
               type="button"
-              onClick={() => {
-                setOtpOpen(false);
-                setOtpIdentifier("");
-                setOtpCooldownUntil(null);
-                setOtpError(null);
-                setOtpSuccess(null);
-              }}
-              className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700"
+              className="otp-switch"
+              onClick={() => { setOtpOpen(false); setOtpIdentifier(""); setOtpCooldownUntil(null); setOtpError(null); setOtpSuccess(null); }}
             >
               Use another account
             </button>
@@ -259,19 +203,11 @@ export function AuthForm({ mode }: AuthFormProps) {
   );
 }
 
-function Field({
-  label,
-  placeholder,
-  value,
-  onChange,
-  type = "text",
-  icon = "mail",
+function AuthField({
+  label, placeholder, value, onChange, type = "text", icon = "mail",
 }: {
-  label: string;
-  placeholder: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: "text" | "email" | "tel";
+  label: string; placeholder: string; value: string;
+  onChange: (value: string) => void; type?: "text" | "email" | "tel";
   icon?: "mail" | "phone" | "user";
 }) {
   const iconPath =
@@ -282,23 +218,22 @@ function Field({
       : "M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm2.2.8 5.6 4.2a2 2 0 0 0 2.4 0l5.6-4.2";
 
   return (
-    <label className="block space-y-2">
-      <span className="text-sm font-medium text-neutral-800">{label}</span>
-      <div className="relative">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <div className="auth-field">
+      <label>{label}</label>
+      <div className="auth-field-input">
+        <span className="auth-field-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
             <path d={iconPath} />
           </svg>
         </span>
-        <Input
+        <input
           type={type}
           value={value}
-          onChange={(event) => onChange(event.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           required
           placeholder={placeholder}
-          className="h-11 rounded-xl bg-white pl-9 text-neutral-900 placeholder:text-neutral-400"
         />
       </div>
-    </label>
+    </div>
   );
 }
