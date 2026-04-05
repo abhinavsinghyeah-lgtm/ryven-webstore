@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -8,68 +7,130 @@ export const metadata: Metadata = {
     "Learn about RYVEN's perfume philosophy, ingredient sourcing, and our story of building modern fragrances for youth culture.",
 };
 
-const values = [
-  {
-    title: "Modern Perfumery",
-    text: "We design clean, expressive fragrances made for daily movement and real city life, not just occasion wear.",
-  },
-  {
-    title: "Better Ingredients",
-    text: "From neroli and tea accords to woods and musks, we blend high-impact notes with skin-friendly longevity.",
-  },
-  {
-    title: "Transparent Pricing",
-    text: "No inflated luxury markups. You pay for fragrance quality, not for heavy retail overhead.",
-  },
-];
-
 export default function AboutPage() {
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
-      <section className="grid gap-8 rounded-3xl border border-neutral-300 bg-white/70 p-6 sm:p-10 lg:grid-cols-[1.1fr_0.9fr]">
-        <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-neutral-500">Our Story</p>
-          <h1 className="mt-3 text-4xl font-semibold leading-tight tracking-tight text-neutral-900 sm:text-5xl">
-            Crafted for a generation that moves fast.
-          </h1>
-          <p className="mt-5 max-w-2xl text-base text-neutral-700 sm:text-lg">
-            RYVEN was built to make contemporary perfumery feel personal again. We obsess over scent architecture,
-            skin behavior in Indian weather, and packaging that feels elevated without shouting for attention.
-          </p>
-          <p className="mt-4 max-w-2xl text-base text-neutral-700">
-            The goal is simple: signature fragrances that people remember, prices that still make sense, and an online
-            shopping experience that is direct, beautiful, and trustworthy.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/products" className="rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white">
-              Explore collections
-            </Link>
-            <Link href="/signup" className="rounded-full border border-neutral-400 px-5 py-2.5 text-sm font-semibold text-neutral-900">
-              Join RYVEN
-            </Link>
+    <main className="about-page">
+      <div className="wrapper">
+        {/* Hero */}
+        <div className="about-hero">
+          <div className="about-hero-content">
+            <p className="overline">Our Story</p>
+            <h1>Crafted for a generation that moves fast.</h1>
+            <p>
+              RYVEN was built to make contemporary perfumery feel personal again.
+              We obsess over scent architecture, skin behaviour in Indian weather,
+              and packaging that feels elevated without shouting for attention.
+            </p>
+            <p>
+              The goal is simple: signature fragrances that people remember, prices
+              that still make sense, and an online shopping experience that is
+              direct, beautiful, and trustworthy.
+            </p>
+            <div className="about-hero-btns">
+              <Link href="/products" className="btn btn--primary">Explore Catalog</Link>
+              <Link href="/signup" className="btn btn--outline">Join RYVEN</Link>
+            </div>
+          </div>
+          <div className="about-hero-img">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=1400&auto=format&fit=crop"
+              alt="RYVEN studio fragrance composition"
+            />
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl border border-neutral-300">
-          <Image
-            src="https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=1400&auto=format&fit=crop"
-            alt="RYVEN studio fragrance composition"
-            fill
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 45vw"
-            priority
-          />
+        {/* Values */}
+        <div className="about-values">
+          <div className="about-value">
+            <div className="about-value-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
+            </div>
+            <h3>Modern Perfumery</h3>
+            <p>We design clean, expressive fragrances made for daily movement and real city life &#x2014; not just occasion wear.</p>
+          </div>
+          <div className="about-value">
+            <div className="about-value-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+            </div>
+            <h3>Better Ingredients</h3>
+            <p>From neroli and tea accords to woods and musks &#x2014; we blend high-impact notes with skin-friendly longevity.</p>
+          </div>
+          <div className="about-value">
+            <div className="about-value-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M16 8l-8 8M8 8l8 8" /></svg>
+            </div>
+            <h3>Transparent Pricing</h3>
+            <p>No inflated luxury markups. You pay for fragrance quality, not for heavy retail overhead.</p>
+          </div>
         </div>
-      </section>
 
-      <section className="mt-8 grid gap-4 sm:grid-cols-3">
-        {values.map((value) => (
-          <article key={value.title} className="rounded-2xl border border-neutral-300 bg-white/80 p-5">
-            <h2 className="text-lg font-semibold text-neutral-900">{value.title}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-neutral-700">{value.text}</p>
-          </article>
-        ))}
-      </section>
+        {/* Story / Numbers */}
+        <div className="about-story">
+          <p className="overline">The Numbers</p>
+          <h2>Built different, priced fair</h2>
+          <p>Every bottle goes through months of development, testing across climates,
+            and feedback from real people before it ships.</p>
+          <div className="about-numbers">
+            <div className="about-number">
+              <strong>50+</strong>
+              <span>Scent Iterations</span>
+            </div>
+            <div className="about-number">
+              <strong>8&#x2013;12hr</strong>
+              <span>Avg. Longevity</span>
+            </div>
+            <div className="about-number">
+              <strong>100%</strong>
+              <span>Cruelty Free</span>
+            </div>
+            <div className="about-number">
+              <strong>&#x20B9;499</strong>
+              <span>Starting Price</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Promise cards */}
+        <div className="about-promise">
+          <div className="about-promise-card">
+            <div className="about-promise-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" /><path d="M9 12l2 2 4-4" /></svg>
+            </div>
+            <div>
+              <h3>Quality Guaranteed</h3>
+              <p>Every product undergoes rigorous quality checks before it leaves our facility.</p>
+            </div>
+          </div>
+          <div className="about-promise-card">
+            <div className="about-promise-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="1" y="3" width="15" height="13" rx="2" /><path d="M16 8h4l3 3v5h-7V8z" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>
+            </div>
+            <div>
+              <h3>Fast Shipping</h3>
+              <p>Pan-India delivery in 3&#x2013;5 business days. Your fragrance arrives safe, sealed, and on time.</p>
+            </div>
+          </div>
+          <div className="about-promise-card">
+            <div className="about-promise-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+            </div>
+            <div>
+              <h3>Secure Payments</h3>
+              <p>Razorpay-powered checkout with full encryption. UPI, cards, netbanking supported.</p>
+            </div>
+          </div>
+          <div className="about-promise-card">
+            <div className="about-promise-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" /></svg>
+            </div>
+            <div>
+              <h3>Real Support</h3>
+              <p>Have a question? Our team replies within hours, not days. Real people, real answers.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }

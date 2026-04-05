@@ -15,24 +15,50 @@ export default async function CollectionsPage() {
   const data = await getCollections();
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-12">
-      <section className="rounded-[28px] border border-black/5 bg-white p-6 shadow-sm">
-        <p className="text-xs uppercase tracking-[0.26em] text-neutral-500">Collections</p>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-neutral-900 sm:text-5xl">Browse by collection</h1>
-        <p className="mt-3 text-sm text-neutral-600">Explore grouped edits like occasion, size, freshness, or gifting.</p>
-      </section>
+    <main className="collections-page">
+      <div className="wrapper">
+        {/* Hero */}
+        <div className="page-hero">
+          <div className="page-hero-inner">
+            <nav className="page-breadcrumb">
+              <Link href="/">Home</Link>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+              <span>Collections</span>
+            </nav>
+            <p className="overline">Collections</p>
+            <h1>Browse by Collection</h1>
+            <p>Curated edits grouped by occasion, mood, season &#x2014; find your signature faster.</p>
+          </div>
+        </div>
 
-      <section className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {data.collections.map((collection) => (
-          <Link key={collection.id} href={`/collections/${collection.slug}`} className="rounded-[24px] border border-black/5 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={collection.imageUrl} alt={collection.name} className="h-72 w-full rounded-[20px] object-cover" />
-            <h2 className="mt-4 text-2xl font-semibold text-neutral-900">{collection.name}</h2>
-            <p className="mt-2 line-clamp-2 text-sm text-neutral-600">{collection.description}</p>
-            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500">{collection.productCount} products</p>
-          </Link>
-        ))}
-      </section>
+        {/* Grid */}
+        <div className="collections-grid" style={{ marginTop: 28 }}>
+          {data.collections.length === 0 && (
+            <div className="catalog-empty">
+              <h3>No collections yet</h3>
+              <p>Collections will appear here once added from the admin dashboard.</p>
+            </div>
+          )}
+          {data.collections.map((collection) => (
+            <Link key={collection.id} href={`/collections/${collection.slug}`} className="coll-card">
+              <div className="coll-card-img">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={collection.imageUrl} alt={collection.name} />
+              </div>
+              <div className="coll-card-body">
+                <h3>{collection.name}</h3>
+                <p>{collection.description}</p>
+                <div className="coll-card-meta">
+                  <span className="coll-card-count">{collection.productCount} products</span>
+                  <span className="coll-card-arrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
     </main>
   );
 }

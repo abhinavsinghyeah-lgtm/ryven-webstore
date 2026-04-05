@@ -23,40 +23,53 @@ export default async function ProductsPage({
   const catalog = await getCatalog(q);
 
   return (
-    <main className="page-rise mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-12">
-      <section className="rounded-[28px] border border-black/5 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.26em] text-neutral-500">Catalog</p>
-            <h1 className="mt-2 font-display text-4xl font-semibold text-neutral-900 sm:text-5xl">Fragrance line-up</h1>
+    <main className="catalog-page">
+      <div className="wrapper">
+        {/* Hero */}
+        <div className="page-hero">
+          <div className="page-hero-inner">
+            <nav className="page-breadcrumb">
+              <Link href="/">Home</Link>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+              <span>Catalog</span>
+            </nav>
+            <p className="overline">Catalog</p>
+            <h1>Fragrance Line-up</h1>
             {q ? (
-              <p className="mt-2 text-sm text-neutral-600">Filtered by: {q}</p>
+              <p>Showing results for &#x201C;{q}&#x201D;</p>
             ) : (
-              <p className="mt-2 text-sm text-neutral-600">Discover modern scents crafted for everyday luxury.</p>
+              <p>Discover modern scents crafted for everyday luxury.</p>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/" className="rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-neutral-700 hover:border-black/20">
-              Back to home
-            </Link>
-            <Link href="/cart" className="rounded-full bg-neutral-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-sm transition hover:bg-neutral-800">
-              Open cart
-            </Link>
-          </div>
         </div>
-      </section>
 
-      {catalog.products.length === 0 ? (
-        <section className="mt-8 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-          <p className="text-neutral-700">No products found yet. Add products from admin dashboard.</p>
-        </section>
-      ) : (
-        <section className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {catalog.products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </section>
-      )}
+        {/* Toolbar */}
+        <div className="catalog-toolbar">
+          <span className="catalog-count">
+            {catalog.products.length} product{catalog.products.length !== 1 && "s"}
+          </span>
+          <form action="/products" method="GET" className="catalog-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
+            <input type="text" name="q" placeholder="Search fragrances..." defaultValue={q} />
+          </form>
+        </div>
+
+        {/* Grid */}
+        {catalog.products.length === 0 ? (
+          <div className="catalog-grid">
+            <div className="catalog-empty">
+              <h3>No products found</h3>
+              <p>{q ? "Try a different search term." : "Products will appear here once added from the admin dashboard."}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="catalog-grid">
+            {catalog.products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
+      </div>
     </main>
   );
 }

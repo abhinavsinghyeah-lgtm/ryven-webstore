@@ -13,61 +13,58 @@ const fallbackImage =
   "https://images.unsplash.com/photo-1563170351-be82bc888aa4?q=80&w=1200&auto=format&fit=crop";
 
 export function ProductCard({ product }: ProductCardProps) {
-  const notes = Array.isArray(product.notes) ? product.notes.filter((note) => note.trim().length > 1).slice(0, 3) : [];
+  const notes = Array.isArray(product.notes)
+    ? product.notes.filter((note) => note.trim().length > 1).slice(0, 3)
+    : [];
 
   return (
-    <article className="group overflow-hidden rounded-[24px] border border-black/5 bg-white shadow-sm transition hover:-translate-y-1 hover:border-black/10 hover:shadow-md">
-      <Link href={`/products/${product.slug}`} className="block">
-        <div className="relative aspect-[3/4] overflow-hidden bg-neutral-100">
+    <article className="pcard">
+      <Link href={`/products/${product.slug}`}>
+        <div className="pcard-img">
           <Image
             src={product.imageUrl || fallbackImage}
             alt={product.name}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover transition duration-500 group-hover:scale-[1.04]"
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            style={{ objectFit: "cover" }}
           />
-          <span className="absolute left-4 top-4 rounded-full border border-black/5 bg-white/90 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-neutral-700">
-            {product.category}
-          </span>
+          {product.category && (
+            <span className="pcard-tag">{product.category}</span>
+          )}
         </div>
       </Link>
 
-      <div className="space-y-4 p-5">
-        <Link href={`/products/${product.slug}`} className="block">
-          <h3 className="text-lg font-semibold tracking-tight text-neutral-900">{product.name}</h3>
-          <p className="mt-2 line-clamp-2 break-words text-sm text-neutral-600">{product.shortDescription}</p>
+      <div className="pcard-body">
+        <Link href={`/products/${product.slug}`}>
+          <span className="pcard-cat">{product.category}</span>
+          <h3>{product.name}</h3>
+          <p className="pcard-desc">{product.shortDescription}</p>
         </Link>
 
-        {notes.length ? (
-          <div className="flex flex-wrap gap-2">
+        {notes.length > 0 && (
+          <div className="pcard-notes">
             {notes.map((note) => (
-              <span key={note} className="rounded-full border border-black/5 bg-neutral-100 px-3 py-1 text-[0.7rem] font-medium text-neutral-600">
-                {note}
-              </span>
+              <span key={note} className="pcard-note">{note}</span>
             ))}
           </div>
-        ) : null}
+        )}
 
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-lg font-semibold text-neutral-900">
+        <div className="pcard-bottom">
+          <span className="pcard-price">
             {formatPricePaise(product.pricePaise, product.currency)}
-          </p>
-          <Link href={`/products/${product.slug}`} className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 hover:text-neutral-900">
-            View
-          </Link>
+          </span>
+          <AnimatedAddToCartButton
+            className="pcard-action"
+            product={{
+              id: product.id,
+              name: product.name,
+              slug: product.slug,
+              imageUrl: product.imageUrl || fallbackImage,
+              pricePaise: product.pricePaise,
+              currency: product.currency,
+            }}
+          />
         </div>
-
-        <AnimatedAddToCartButton
-          className="product-card-btn"
-          product={{
-            id: product.id,
-            name: product.name,
-            slug: product.slug,
-            imageUrl: product.imageUrl || fallbackImage,
-            pricePaise: product.pricePaise,
-            currency: product.currency,
-          }}
-        />
       </div>
     </article>
   );

@@ -26,35 +26,46 @@ export default async function CollectionDetailPage({
   }
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-12">
-      <section className="overflow-hidden rounded-[32px] border border-black/5 bg-white shadow-sm">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={data.collection.imageUrl} alt={data.collection.name} className="h-[360px] w-full object-cover sm:h-[420px]" />
-        <div className="p-6 sm:p-8">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.26em] text-neutral-500">Collection</p>
-              <h1 className="mt-2 text-4xl font-semibold tracking-tight text-neutral-900 sm:text-5xl">{data.collection.name}</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-600">{data.collection.description}</p>
-            </div>
-            <Link href="/collections" className="rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-neutral-700 hover:border-black/20">
-              All collections
-            </Link>
+    <main className="collections-page">
+      <div className="wrapper">
+        {/* Breadcrumb */}
+        <nav className="page-breadcrumb" style={{ paddingTop: 32 }}>
+          <Link href="/">Home</Link>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+          <Link href="/collections">Collections</Link>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+          <span>{data.collection.name}</span>
+        </nav>
+
+        {/* Hero banner with image overlay */}
+        <div className="coll-detail-hero">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="coll-detail-hero-img"
+            src={data.collection.imageUrl}
+            alt={data.collection.name}
+          />
+          <div className="coll-detail-hero-overlay">
+            <span className="coll-detail-count">{data.products.length} products</span>
+            <h1>{data.collection.name}</h1>
+            <p>{data.collection.description}</p>
           </div>
         </div>
-      </section>
 
-      {data.products.length === 0 ? (
-        <section className="mt-8 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-          <p className="text-neutral-700">No products are linked to this collection yet.</p>
-        </section>
-      ) : (
-        <section className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {data.products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </section>
-      )}
+        {/* Products grid */}
+        {data.products.length === 0 ? (
+          <div className="catalog-empty">
+            <h3>No products yet</h3>
+            <p>Products will appear here once they are added to this collection.</p>
+          </div>
+        ) : (
+          <div className="catalog-grid">
+            {data.products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
+      </div>
     </main>
   );
 }
