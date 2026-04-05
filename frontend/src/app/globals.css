@@ -2725,7 +2725,6 @@ em { font-family: 'Instrument Serif', serif; font-style: italic; }
 /* ---- Main area ---- */
 .adm-main {
   flex: 1; min-width: 0; padding: 24px;
-  max-width: 1200px;
 }
 @media (min-width: 1024px) { .adm-main { padding: 28px 40px; } }
 
