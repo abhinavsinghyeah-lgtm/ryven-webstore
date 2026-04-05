@@ -1,62 +1,109 @@
-const reviews = [
-  { name: "Rahul M.", city: "Mumbai", rating: 5, date: "2 weeks ago", text: "Noir Velvet is INSANE. Got more compliments in one week than I did all last year. My girlfriend keeps stealing it.", product: "Noir Velvet", verified: true },
-  { name: "Priya S.", city: "Delhi", rating: 5, date: "1 month ago", text: "Rose Absolue is my everyday scent now. Lasts from morning meeting to dinner date. Worth every rupee.", product: "Rose Absolue", verified: true },
-  { name: "Ananya K.", city: "Bangalore", rating: 5, date: "3 weeks ago", text: "Took the quiz and got matched with Amber Eclipse. It\u0027s literally perfect for me. The longevity is unreal.", product: "Amber Eclipse", verified: true },
-  { name: "Dev P.", city: "Pune", rating: 4, date: "1 week ago", text: "Oud Royale is sophisticated and long-lasting. The projection could be a bit more for the price, but the scent itself is 10/10.", product: "Oud Royale", verified: true },
-];
-
-const bars = [
-  { stars: 5, pct: 82 },
-  { stars: 4, pct: 12 },
-  { stars: 3, pct: 4 },
-  { stars: 2, pct: 1 },
-  { stars: 1, pct: 1 },
-];
+import React from "react";
 
 export function ReviewsSection() {
   return (
     <section className="reviews" id="reviews">
       <div className="container">
         <div className="section-top center">
-          <span className="overline anim-up">REAL REVIEWS</span>
-          <h2 className="section-title anim-up">What Our Customers <em>Say</em></h2>
+          <span className="overline anim-up">WHAT PEOPLE SAY</span>
+          <h2 className="section-title anim-up">12,000+ Happy <em>Customers</em></h2>
+          <p className="section-sub anim-up">Real reviews from real people. No filters, no fakes.</p>
         </div>
-
         <div className="reviews-summary anim-up">
-          <div className="reviews-big-rating">
-            <span className="big-num">4.9</span>
-            <div>
-              <div className="stars-row">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
-              <small>Based on 4,280+ reviews</small>
-            </div>
+          <div className="review-big-rating">
+            <strong>4.9</strong>
+            <div className="review-big-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
+            <span>Based on 4,820 reviews</span>
           </div>
-          <div className="reviews-bars">
-            {bars.map((b) => (
-              <div className="review-bar-row" key={b.stars}>
-                <span>{b.stars}&#x2605;</span>
-                <div className="review-bar"><div className="review-bar-fill" style={{ "--w": `${b.pct}%` } as React.CSSProperties}></div></div>
-                <span>{b.pct}%</span>
-              </div>
-            ))}
+          <div className="review-bars">
+            <div className="review-bar-row">
+              <span>5&#x2605;</span>
+              <div className="review-bar"><div className="review-bar-fill" style={{ "--w": "82%" } as React.CSSProperties}></div></div>
+              <span>82%</span>
+            </div>
+            <div className="review-bar-row">
+              <span>4&#x2605;</span>
+              <div className="review-bar"><div className="review-bar-fill" style={{ "--w": "12%" } as React.CSSProperties}></div></div>
+              <span>12%</span>
+            </div>
+            <div className="review-bar-row">
+              <span>3&#x2605;</span>
+              <div className="review-bar"><div className="review-bar-fill" style={{ "--w": "4%" } as React.CSSProperties}></div></div>
+              <span>4%</span>
+            </div>
+            <div className="review-bar-row">
+              <span>2&#x2605;</span>
+              <div className="review-bar"><div className="review-bar-fill" style={{ "--w": "1%" } as React.CSSProperties}></div></div>
+              <span>1%</span>
+            </div>
+            <div className="review-bar-row">
+              <span>1&#x2605;</span>
+              <div className="review-bar"><div className="review-bar-fill" style={{ "--w": "1%" } as React.CSSProperties}></div></div>
+              <span>1%</span>
+            </div>
           </div>
         </div>
-
         <div className="reviews-grid">
-          {reviews.map((r, i) => (
-            <div className="review-card anim-up" key={i}>
-              <div className="review-header">
-                <div className="review-avatar">{r.name.charAt(0)}</div>
+          <div className="review-card anim-up">
+            <div className="review-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
+            <h4>&ldquo;Better than the original&rdquo;</h4>
+            <p>Bought Noir Velvet as an alternative to Tom Ford &mdash; honestly it lasts longer. My wife thought I was wearing the real thing. At this price? No brainer.</p>
+            <div className="review-bottom">
+              <div className="review-author">
+                <span className="review-avatar">R</span>
                 <div>
-                  <strong>{r.name}</strong>
-                  <small>{r.city} &#xB7; {r.date}</small>
+                  <strong>Rahul M.</strong>
+                  <small>Mumbai &middot; Verified Buyer</small>
                 </div>
-                {r.verified && <span className="verified-badge">&#x2713; Verified</span>}
               </div>
-              <div className="review-stars">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</div>
-              <p>{r.text}</p>
-              <small className="review-product">Purchased: {r.product}</small>
+              <span className="review-helpful">&#x1F44D; 124 helpful</span>
             </div>
-          ))}
+          </div>
+          <div className="review-card anim-up">
+            <div className="review-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
+            <h4>&ldquo;Compliment magnet&rdquo;</h4>
+            <p>I wear Rose Absolue to work and I get asked about my perfume at least twice a week. The sillage is incredible for the price. Already ordered my second bottle.</p>
+            <div className="review-bottom">
+              <div className="review-author">
+                <span className="review-avatar">P</span>
+                <div>
+                  <strong>Priya S.</strong>
+                  <small>Delhi &middot; Verified Buyer</small>
+                </div>
+              </div>
+              <span className="review-helpful">&#x1F44D; 89 helpful</span>
+            </div>
+          </div>
+          <div className="review-card anim-up">
+            <div className="review-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
+            <h4>&ldquo;Gift that impressed&rdquo;</h4>
+            <p>Got the Signature Collection as a gift for my husband. The packaging felt premium, the scents are amazing. Oud Royale is his new signature. Worth every rupee.</p>
+            <div className="review-bottom">
+              <div className="review-author">
+                <span className="review-avatar">A</span>
+                <div>
+                  <strong>Ananya K.</strong>
+                  <small>Bangalore &middot; Verified Buyer</small>
+                </div>
+              </div>
+              <span className="review-helpful">&#x1F44D; 67 helpful</span>
+            </div>
+          </div>
+          <div className="review-card anim-up">
+            <div className="review-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2606;</div>
+            <h4>&ldquo;Lasts all day long&rdquo;</h4>
+            <p>Midnight Saffron is incredible &mdash; sprayed at 8am and still getting whiffs at 10pm. Only giving 4 stars because I wish there were more size options. But the quality? 10/10.</p>
+            <div className="review-bottom">
+              <div className="review-author">
+                <span className="review-avatar">D</span>
+                <div>
+                  <strong>Dev P.</strong>
+                  <small>Pune &middot; Verified Buyer</small>
+                </div>
+              </div>
+              <span className="review-helpful">&#x1F44D; 52 helpful</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>

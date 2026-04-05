@@ -15,7 +15,7 @@ export function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       {!hideChrome && <SiteHeader />}
-      <div className="flex-1" style={!hideChrome ? { paddingTop: "calc(var(--nav-h) + var(--announce-h))" } : undefined}>
+      <div style={!hideChrome ? { paddingTop: "calc(var(--nav-h) + var(--announce-h))" } : undefined}>
         {children}
       </div>
       {!hideChrome && <SiteFooter />}

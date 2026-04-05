@@ -1,32 +1,49 @@
-const notes = [
-  { family: "Woody", emoji: "\uD83E\uDEB5", count: 14, desc: "Warm, grounding, sophisticated" },
-  { family: "Floral", emoji: "\uD83C\uDF39", count: 11, desc: "Elegant, romantic, timeless" },
-  { family: "Oriental", emoji: "\uD83D\uDD25", count: 9, desc: "Rich, spicy, mysterious" },
-  { family: "Fresh", emoji: "\uD83C\uDF3F", count: 12, desc: "Clean, crisp, energizing" },
-  { family: "Aquatic", emoji: "\uD83C\uDF0A", count: 7, desc: "Cool, oceanic, breezy" },
-  { family: "Citrus", emoji: "\uD83C\uDF4A", count: 8, desc: "Bright, zesty, uplifting" },
-];
-
 export function NotesExplorer() {
   return (
     <section className="notes-explorer">
       <div className="container">
         <div className="section-top center">
-          <span className="overline anim-up">EXPLORE BY NOTES</span>
-          <h2 className="section-title anim-up">Find Your <em>Note Family</em></h2>
-          <p className="section-sub anim-up">Not sure what you like? Start with a note family and discover fragrances that match your vibe.</p>
+          <span className="overline anim-up">FRAGRANCE FAMILIES</span>
+          <h2 className="section-title anim-up">Explore by <em>Notes</em></h2>
+          <p className="section-sub anim-up">Discover the note families that define each RYVEN fragrance.</p>
         </div>
         <div className="notes-grid">
-          {notes.map((n) => (
-            <a href={`/products?notes=${n.family.toLowerCase()}`} className="note-card anim-up" key={n.family}>
-              <div className="note-visual">
-                <span className="note-emoji">{n.emoji}</span>
-              </div>
-              <h3>{n.family}</h3>
-              <p>{n.desc}</p>
-              <span className="note-count">{n.count} fragrances</span>
-            </a>
-          ))}
+          <a href="#shop" className="note-card anim-up">
+            <div className="note-visual"><span className="note-emoji">&#x1FAB5;</span></div>
+            <h3>Woody</h3>
+            <p>Cedar, Sandalwood, Oud</p>
+            <span className="note-count">18 fragrances</span>
+          </a>
+          <a href="#shop" className="note-card anim-up">
+            <div className="note-visual"><span className="note-emoji">&#x1F339;</span></div>
+            <h3>Floral</h3>
+            <p>Rose, Jasmine, Peony</p>
+            <span className="note-count">12 fragrances</span>
+          </a>
+          <a href="#shop" className="note-card anim-up">
+            <div className="note-visual"><span className="note-emoji">&#x1F525;</span></div>
+            <h3>Oriental</h3>
+            <p>Amber, Saffron, Incense</p>
+            <span className="note-count">14 fragrances</span>
+          </a>
+          <a href="#shop" className="note-card anim-up">
+            <div className="note-visual"><span className="note-emoji">&#x1F33F;</span></div>
+            <h3>Fresh</h3>
+            <p>Bergamot, Mint, Green Tea</p>
+            <span className="note-count">10 fragrances</span>
+          </a>
+          <a href="#shop" className="note-card anim-up">
+            <div className="note-visual"><span className="note-emoji">&#x1F30A;</span></div>
+            <h3>Aquatic</h3>
+            <p>Sea Salt, Marine, Ozone</p>
+            <span className="note-count">8 fragrances</span>
+          </a>
+          <a href="#shop" className="note-card anim-up">
+            <div className="note-visual"><span className="note-emoji">&#x1F34A;</span></div>
+            <h3>Citrus</h3>
+            <p>Lemon, Grapefruit, Neroli</p>
+            <span className="note-count">9 fragrances</span>
+          </a>
         </div>
       </div>
     </section>

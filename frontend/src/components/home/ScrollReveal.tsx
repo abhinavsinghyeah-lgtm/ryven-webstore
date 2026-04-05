@@ -1,86 +1,42 @@
 "use client";
+
 import { useEffect } from "react";
 
 export function ScrollReveal() {
   useEffect(() => {
-    // Reveal .anim-up elements on scroll
-    const io = new IntersectionObserver(
+    const revealObserver = new IntersectionObserver(
       (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add("show");
-            io.unobserve(e.target);
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("show");
+            revealObserver.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.15 }
     );
+    document.querySelectorAll(".anim-up").forEach((el) => revealObserver.observe(el));
 
-    document.querySelectorAll(".anim-up").forEach((el) => io.observe(el));
-
-    // Longevity bar fill animation
-    const longevityIO = new IntersectionObserver(
+    const barObserver = new IntersectionObserver(
       (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            const el = e.target as HTMLElement;
-            const w = el.style.getPropertyValue("--w");
+        entries.forEach(({ target, isIntersecting }) => {
+          if (isIntersecting) {
+            const el = target as HTMLElement;
+            const w = getComputedStyle(el).getPropertyValue("--w");
             if (w) el.style.width = w;
-            longevityIO.unobserve(el);
+            barObserver.unobserve(target);
           }
         });
       },
-      { threshold: 0.5 }
+      { threshold: 0.3 }
     );
-
-    document.querySelectorAll(".longevity-fill").forEach((el) => longevityIO.observe(el));
-
-    // Review bar fill animation
-    const reviewIO = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            const el = e.target as HTMLElement;
-            const w = el.style.getPropertyValue("--w");
-            if (w) el.style.width = w;
-            reviewIO.unobserve(el);
-          }
-        });
-      },
-      { threshold: 0.5 }
+    document.querySelectorAll(".longevity-fill, .review-bar-fill").forEach((b) =>
+      barObserver.observe(b)
     );
-
-    document.querySelectorAll(".review-bar-fill").forEach((el) => reviewIO.observe(el));
-
-    // Lazy image fade-in
-    const imgIO = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            const img = e.target as HTMLImageElement;
-            img.style.opacity = "1";
-            imgIO.unobserve(img);
-          }
-        });
-      },
-      { rootMargin: "100px" }
-    );
-
-    document.querySelectorAll<HTMLImageElement>("img[loading=\"lazy\"]").forEach((img) => {
-      img.style.opacity = "0";
-      img.style.transition = "opacity .5s ease";
-      if (img.complete) {
-        img.style.opacity = "1";
-      } else {
-        imgIO.observe(img);
-      }
-    });
 
     return () => {
-      io.disconnect();
-      longevityIO.disconnect();
-      reviewIO.disconnect();
-      imgIO.disconnect();
+      revealObserver.disconnect();
+      barObserver.disconnect();
     };
   }, []);
 
