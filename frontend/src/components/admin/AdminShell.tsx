@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ReactNode, CSSProperties, useMemo, useState } from "react";
+import React, { ReactNode, CSSProperties, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { authStorage } from "@/lib/auth";
 
@@ -14,16 +14,28 @@ type AdminShellProps = {
 };
 
 const navItems = [
-  { href: "/admin", label: "Dashboard", description: "Overview & KPIs" },
-  { href: "/admin/control", label: "Control", description: "Systems & logs" },
-  { href: "/admin/system", label: "System", description: "VPS & service health" },
-  { href: "/admin/engagement", label: "Engagement", description: "Live activity" },
-  { href: "/admin/notifications", label: "Notifications", description: "Events & alerts" },
-  { href: "/admin/users", label: "Users", description: "Accounts & access" },
-  { href: "/admin/products", label: "Products", description: "Catalog & pricing" },
-  { href: "/admin/orders", label: "Orders", description: "Fulfillment flow" },
-  { href: "/admin/settings", label: "Settings", description: "Brand + hero" },
+  { href: "/admin", label: "Dashboard", icon: "grid" },
+  { href: "/admin/products", label: "Products", icon: "box" },
+  { href: "/admin/orders", label: "Orders", icon: "truck" },
+  { href: "/admin/users", label: "Customers", icon: "users" },
+  { href: "/admin/engagement", label: "Analytics", icon: "chart" },
+  { href: "/admin/notifications", label: "Activity", icon: "bell" },
+  { href: "/admin/control", label: "Control", icon: "shield" },
+  { href: "/admin/system", label: "System", icon: "server" },
+  { href: "/admin/settings", label: "Settings", icon: "gear" },
 ];
+
+const NAV_ICONS: Record<string, React.ReactElement> = {
+  grid: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>,
+  box: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>,
+  truck: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M16 3H1v13h15V3z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+  users: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>,
+  chart: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>,
+  bell: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>,
+  shield: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  server: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>,
+  gear: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>,
+};
 
 const isActiveRoute = (pathname: string | null, href: string) => {
   if (!pathname) return false;
@@ -32,13 +44,14 @@ const isActiveRoute = (pathname: string | null, href: string) => {
 };
 
 export const adminButtonClasses = {
-  primary: "admin-btn admin-btn-primary",
-  ghost: "admin-btn admin-btn-ghost",
-  soft: "admin-btn admin-btn-soft",
+  primary: "adm-btn adm-btn-primary",
+  ghost: "adm-btn adm-btn-ghost",
+  soft: "adm-btn adm-btn-soft",
+  danger: "adm-btn adm-btn-danger",
 };
 
-export const adminInputClasses = "admin-input";
-export const adminTextareaClasses = "admin-textarea";
+export const adminInputClasses = "adm-input";
+export const adminTextareaClasses = "adm-textarea";
 
 export function AdminShell({ title, subtitle, eyebrow = "Admin", actions, children }: AdminShellProps) {
   const pathname = usePathname();
@@ -50,141 +63,138 @@ export function AdminShell({ title, subtitle, eyebrow = "Admin", actions, childr
   const results = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return [];
-    return navItems.filter((item) => `${item.label} ${item.description}`.toLowerCase().includes(query)).slice(0, 5);
+    return navItems.filter((item) => item.label.toLowerCase().includes(query)).slice(0, 5);
   }, [search]);
 
   const logout = () => { authStorage.clear(); router.push("/"); };
 
   const sidebarContent = (onNav?: () => void) => (
     <>
-      <div className="admin-sidebar-brand">
-        <div className="admin-sidebar-brand-icon">R</div>
+      <div className="adm-sidebar-brand">
+        <span className="adm-sidebar-logo">R</span>
         <div>
-          <p>Ryven</p>
-          <p>Admin Studio</p>
+          <p className="adm-sidebar-name">RYVEN</p>
+          <p className="adm-sidebar-role">Admin Studio</p>
         </div>
       </div>
 
-      <div className="admin-sidebar-label">Pages</div>
-      <nav className="admin-sidebar-nav">
+      <nav className="adm-sidebar-nav">
         {navItems.map((item) => (
-          <Link key={item.href} href={item.href} className={isActiveRoute(pathname, item.href) ? "active" : ""} onClick={onNav}>
-            <span className="nav-dot">●</span>
-            <div>
-              <span>{item.label}</span>
-              <span>{item.description}</span>
-            </div>
+          <Link key={item.href} href={item.href} className={`adm-nav-item${isActiveRoute(pathname, item.href) ? " active" : ""}`} onClick={onNav}>
+            <span className="adm-nav-icon">{NAV_ICONS[item.icon]}</span>
+            <span>{item.label}</span>
           </Link>
         ))}
       </nav>
 
-      <div className="admin-sidebar-status">
-        <p>Status</p>
-        <p>All systems ready for action.</p>
+      <div className="adm-sidebar-footer">
+        <Link href="/" className="adm-nav-item">
+          <span className="adm-nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+          </span>
+          <span>Back to store</span>
+        </Link>
       </div>
     </>
   );
 
   return (
-    <main className="admin-layout">
+    <main className="adm-layout">
       {/* Mobile toggle */}
-      <button type="button" className="admin-mobile-toggle" onClick={() => setMobileOpen((v) => !v)} aria-label="Toggle admin menu">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+      <button type="button" className="adm-mobile-toggle" onClick={() => setMobileOpen((v) => !v)} aria-label="Toggle menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
 
       {/* Desktop sidebar */}
-      <aside className="admin-sidebar">{sidebarContent()}</aside>
+      <aside className="adm-sidebar">{sidebarContent()}</aside>
 
       {/* Mobile sidebar */}
-      {mobileOpen ? <button type="button" aria-label="Close" onClick={() => setMobileOpen(false)} className="admin-sidebar-backdrop" /> : null}
-      <aside className={`admin-sidebar-mobile${mobileOpen ? " open" : ""}`}>{sidebarContent(() => setMobileOpen(false))}</aside>
+      {mobileOpen && <button type="button" aria-label="Close" onClick={() => setMobileOpen(false)} className="adm-sidebar-backdrop" />}
+      <aside className={`adm-sidebar-mobile${mobileOpen ? " open" : ""}`}>{sidebarContent(() => setMobileOpen(false))}</aside>
 
-      <section className="admin-main">
+      <section className="adm-main">
         {/* Top bar */}
-        <div className="admin-topbar">
-          <Link href="/" className="admin-topbar-home">
-            <span>🏠</span>
-            Home
-          </Link>
-          <div className="admin-topbar-right">
-            <div style={{ position: "relative" }}>
-              <form
-                className="admin-search-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const target = results[0]?.href || "/admin";
-                  setSearch("");
-                  router.push(target);
+        <div className="adm-topbar">
+          <div className="adm-topbar-left">
+            <div className="adm-search-wrap">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search pages..."
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const target = results[0]?.href || "/admin";
+                    setSearch("");
+                    router.push(target);
+                  }
                 }}
-              >
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search" />
-                <span className="admin-search-kbd">⌘K</span>
-              </form>
-              {results.length ? (
-                <div className="admin-search-results">
+              />
+              {results.length > 0 && (
+                <div className="adm-search-results">
                   {results.map((item) => (
                     <button key={item.href} type="button" onClick={() => { setSearch(""); router.push(item.href); }}>
+                      <span className="adm-nav-icon">{NAV_ICONS[item.icon]}</span>
                       <span>{item.label}</span>
-                      <span>{item.description}</span>
                     </button>
                   ))}
                 </div>
-              ) : null}
+              )}
             </div>
-            <Link href="/admin/notifications" className="admin-profile-btn" style={{ background: "rgba(255,255,255,.06)", fontSize: 12 }} aria-label="Notifications">🔔</Link>
+          </div>
+
+          <div className="adm-topbar-right">
+            <Link href="/admin/notifications" className="adm-topbar-icon" aria-label="Notifications">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+            </Link>
             <div style={{ position: "relative" }}>
-              <button type="button" className="admin-profile-btn" onClick={() => setProfileOpen((v) => !v)} aria-label="Profile">A</button>
-              {profileOpen ? (
-                <div className="admin-profile-dropdown">
+              <button type="button" className="adm-topbar-avatar" onClick={() => setProfileOpen((v) => !v)} aria-label="Profile">A</button>
+              {profileOpen && (
+                <div className="adm-profile-dropdown">
                   <Link href="/admin/settings" onClick={() => setProfileOpen(false)}>Settings</Link>
-                  <Link href="/" onClick={() => setProfileOpen(false)}>View storefront</Link>
-                  <button type="button" onClick={logout} style={{ color: "#fda4af" }}>Logout</button>
+                  <Link href="/" onClick={() => setProfileOpen(false)}>View store</Link>
+                  <button type="button" onClick={logout}>Logout</button>
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
         </div>
 
         {/* Header */}
-        <div className="admin-header">
-          <p className="admin-header-eyebrow">{eyebrow}</p>
-          <h1>{title}</h1>
-          {subtitle ? <p>{subtitle}</p> : null}
-          {actions ? <div className="admin-header-actions">{actions}</div> : null}
+        <div className="adm-header">
+          <div>
+            <p className="adm-header-eyebrow">{eyebrow}</p>
+            <h1>{title}</h1>
+            {subtitle && <p className="adm-header-sub">{subtitle}</p>}
+          </div>
+          {actions && <div className="adm-header-actions">{actions}</div>}
         </div>
 
         {/* Content */}
-        <div style={{ marginTop: 24 }}>{children}</div>
+        <div className="adm-content">{children}</div>
       </section>
     </main>
   );
 }
 
 export function AdminCard({ children, className = "", style }: { children: ReactNode; className?: string; style?: CSSProperties }) {
-  return <section className={`admin-card ${className}`} style={style}>{children}</section>;
+  return <section className={`adm-card ${className}`} style={style}>{children}</section>;
 }
 
 export function StatusBanner({ tone = "info", title, description }: { tone?: "success" | "info" | "warning" | "error"; title: string; description?: string }) {
-  const colors: Record<string, { bg: string; border: string; color: string }> = {
-    success: { bg: "rgba(16,185,129,.1)", border: "rgba(16,185,129,.25)", color: "#a7f3d0" },
-    info: { bg: "rgba(14,165,233,.1)", border: "rgba(14,165,233,.25)", color: "#bae6fd" },
-    warning: { bg: "rgba(245,158,11,.1)", border: "rgba(245,158,11,.25)", color: "#fde68a" },
-    error: { bg: "rgba(244,63,94,.1)", border: "rgba(244,63,94,.25)", color: "#fecdd3" },
-  };
-  const c = colors[tone] || colors.info;
   return (
-    <div style={{ padding: "12px 16px", borderRadius: 14, background: c.bg, border: `1px solid ${c.border}`, color: c.color, fontSize: 14 }}>
-      <p style={{ fontWeight: 600 }}>{title}</p>
-      {description ? <p style={{ marginTop: 4, opacity: .8 }}>{description}</p> : null}
+    <div className={`adm-banner adm-banner-${tone}`}>
+      <p className="adm-banner-title">{title}</p>
+      {description && <p className="adm-banner-desc">{description}</p>}
     </div>
   );
 }
 
 export function AdminLoader() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: "40px 0" }}>
-      <span className="acct-spinner" style={{ borderColor: "rgba(255,255,255,.15)", borderTopColor: "#fff" }} />
-      <span style={{ fontSize: 13, color: "rgba(255,255,255,.5)" }}>Loading...</span>
+    <div className="adm-loader">
+      <span className="adm-spinner" />
+      <span>Loading...</span>
     </div>
   );
 }

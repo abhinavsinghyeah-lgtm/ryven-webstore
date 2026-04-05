@@ -11,11 +11,11 @@ import {
   AdminCard,
   AdminShell,
   StatusBanner,
+  AdminLoader,
   adminButtonClasses,
   adminInputClasses,
   adminTextareaClasses,
 } from "@/components/admin/AdminShell";
-import { AdminLoader } from "@/components/admin/AdminLoader";
 import type { AdminProductDetailResponse, Product, ProductCatalogResponse } from "@/types/product";
 
 const initialForm = {
@@ -33,23 +33,13 @@ function validateForm(form: typeof initialForm): string | null {
   if (form.shortDescription.trim().length < 8) return "Short description must be at least 8 characters.";
   if (form.description.trim().length < 20) return "Description must be at least 20 characters.";
   if (!Number.isFinite(Number(form.priceRupees)) || Number(form.priceRupees) <= 0) return "Price must be greater than 0.";
-  try {
-    new URL(form.imageUrl.trim());
-  } catch {
-    return "Image URL must be a valid URL.";
-  }
+  try { new URL(form.imageUrl.trim()); } catch { return "Image URL must be a valid URL."; }
   if (form.category.trim().length < 2) return "Category must be at least 2 characters.";
   return null;
 }
 
-function formatMoney(pricePaise: number) {
-  return `INR ${(pricePaise / 100).toFixed(2)}`;
-}
-
-function formatDate(value?: string | null) {
-  if (!value) return "—";
-  return new Date(value).toLocaleString();
-}
+function formatMoney(pricePaise: number) { return `INR ${(pricePaise / 100).toFixed(2)}`; }
+function formatDate(value?: string | null) { if (!value) return "—"; return new Date(value).toLocaleString(); }
 
 export default function AdminProductsPage() {
   const router = useRouter();
@@ -87,102 +77,47 @@ export default function AdminProductsPage() {
   useEffect(() => {
     const token = authStorage.getToken();
     const user = authStorage.getUser();
-    if (!token || !user) {
-      router.replace("/login");
-      return;
-    }
-
-    if (user.role !== "admin") {
-      router.replace("/account");
-      return;
-    }
-
+    if (!token || !user) { router.replace("/login"); return; }
+    if (user.role !== "admin") { router.replace("/account"); return; }
     loadProducts();
   }, [router]);
 
-  const openCreate = () => {
-    setPageError(null);
-    setComposerError(null);
-    setFeedback(null);
-    setEditingProductId(null);
-    setForm(initialForm);
-    setShowComposer(true);
-  };
+  const openCreate = () => { setPageError(null); setComposerError(null); setFeedback(null); setEditingProductId(null); setForm(initialForm); setShowComposer(true); };
 
   const openEdit = (product: Product) => {
-    setPageError(null);
-    setComposerError(null);
-    setFeedback(null);
+    setPageError(null); setComposerError(null); setFeedback(null);
     setEditingProductId(product.id);
     setForm({
-      name: product.name,
-      shortDescription: product.shortDescription,
-      description: product.description,
-      priceRupees: String((product.pricePaise / 100).toFixed(2)),
-      imageUrl: product.imageUrl,
-      notes: product.notes.join(", "),
-      category: product.category,
+      name: product.name, shortDescription: product.shortDescription, description: product.description,
+      priceRupees: String((product.pricePaise / 100).toFixed(2)), imageUrl: product.imageUrl,
+      notes: product.notes.join(", "), category: product.category,
     });
     setShowComposer(true);
   };
 
-  const closeComposer = () => {
-    setShowComposer(false);
-    setEditingProductId(null);
-    setComposerError(null);
-    setForm(initialForm);
-  };
+  const closeComposer = () => { setShowComposer(false); setEditingProductId(null); setComposerError(null); setForm(initialForm); };
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const token = authStorage.getToken();
     if (!token) return;
-
     const validationError = validateForm(form);
-    if (validationError) {
-      setComposerError(validationError);
-      return;
-    }
+    if (validationError) { setComposerError(validationError); return; }
 
-    const slug = form.name
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-");
-
-    const notes = form.notes
-      .split(",")
-      .map((item) => item.trim())
-      .filter((item) => item.length >= 2)
-      .slice(0, 8);
-
+    const slug = form.name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
+    const notes = form.notes.split(",").map((s) => s.trim()).filter((s) => s.length >= 2).slice(0, 8);
     const payload = {
-      name: form.name.trim(),
-      slug,
-      shortDescription: form.shortDescription.trim(),
-      description: form.description.trim(),
-      pricePaise: Math.round(Number(form.priceRupees) * 100),
-      currency: "INR",
-      imageUrl: form.imageUrl.trim(),
-      notes,
-      category: form.category.trim(),
-      isActive: true,
+      name: form.name.trim(), slug, shortDescription: form.shortDescription.trim(), description: form.description.trim(),
+      pricePaise: Math.round(Number(form.priceRupees) * 100), currency: "INR", imageUrl: form.imageUrl.trim(),
+      notes, category: form.category.trim(), isActive: true,
     };
 
-    setPageError(null);
-    setComposerError(null);
-    setFeedback(null);
-    setIsSaving(true);
-
+    setPageError(null); setComposerError(null); setFeedback(null); setIsSaving(true);
     try {
       const isEditing = editingProductId !== null;
       const response = await apiRequest<{ product: Product }>(isEditing ? `/admin/products/${editingProductId}` : "/admin/products", {
-        method: isEditing ? "PUT" : "POST",
-        token,
-        body: payload,
+        method: isEditing ? "PUT" : "POST", token, body: payload,
       });
-
       if (isEditing) {
         setProducts((prev) => prev.map((item) => (item.id === response.product.id ? { ...item, ...response.product } : item)));
         setFeedback("Product updated.");
@@ -190,7 +125,6 @@ export default function AdminProductsPage() {
         setProducts((prev) => [{ ...response.product, orderCount: 0, unitsSold: 0, revenuePaise: 0 }, ...prev]);
         setFeedback("Product created.");
       }
-
       closeComposer();
     } catch (err) {
       setComposerError(err instanceof Error ? err.message : editingProductId ? "Could not update product" : "Could not create product");
@@ -203,20 +137,11 @@ export default function AdminProductsPage() {
     const token = authStorage.getToken();
     if (!token) return;
     if (!window.confirm(`Delete ${product.name}? It will be hidden from the storefront but preserved in order history.`)) return;
-
-    setDeletingId(product.id);
-    setPageError(null);
-    setFeedback(null);
+    setDeletingId(product.id); setPageError(null); setFeedback(null);
     try {
-      await apiRequest<{ product: Product }>(`/admin/products/${product.id}`, {
-        method: "DELETE",
-        token,
-      });
+      await apiRequest<{ product: Product }>(`/admin/products/${product.id}`, { method: "DELETE", token });
       setProducts((prev) => prev.filter((item) => item.id !== product.id));
-      if (selectedProductId === product.id) {
-        setSelectedProductId(null);
-        setProductDetail(null);
-      }
+      if (selectedProductId === product.id) { setSelectedProductId(null); setProductDetail(null); }
       setFeedback("Product deleted from the live catalog.");
     } catch (err) {
       setPageError(err instanceof Error ? err.message : "Could not delete product");
@@ -228,10 +153,7 @@ export default function AdminProductsPage() {
   const openDetails = async (productId: number) => {
     const token = authStorage.getToken();
     if (!token) return;
-    setSelectedProductId(productId);
-    setProductDetail(null);
-    setDetailLoading(true);
-    setDetailError(null);
+    setSelectedProductId(productId); setProductDetail(null); setDetailLoading(true); setDetailError(null);
     try {
       const detail = await apiRequest<AdminProductDetailResponse>(`/admin/products/${productId}`, { token });
       setProductDetail(detail);
@@ -245,458 +167,236 @@ export default function AdminProductsPage() {
   const filteredProducts = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return products;
-    return products.filter((product) =>
-      `${product.name} ${product.category} ${product.slug} ${product.shortDescription}`.toLowerCase().includes(query),
-    );
+    return products.filter((p) => `${p.name} ${p.category} ${p.slug} ${p.shortDescription}`.toLowerCase().includes(query));
   }, [products, search]);
 
   return (
     <AdminShell
       title="Product Studio"
-      subtitle="Manage the catalog like a proper storefront: spotlight products, inspect order history, and control what goes live."
+      subtitle="Manage the catalog: spotlight products, inspect order history, and control what goes live."
       actions={
         <>
-          <button type="button" className={adminButtonClasses.ghost} onClick={() => loadProducts(search.trim())}>
-            Refresh
-          </button>
-          <button type="button" className={adminButtonClasses.primary} onClick={openCreate}>
-            Create product
-          </button>
+          <button type="button" className={adminButtonClasses.ghost} onClick={() => loadProducts(search.trim())}>Refresh</button>
+          <button type="button" className={adminButtonClasses.primary} onClick={openCreate}>Create product</button>
         </>
       }
     >
-      {pageError ? <StatusBanner tone="error" title="Product issue" description={pageError} /> : null}
-      {feedback ? <StatusBanner tone="success" title="Product updated" description={feedback} /> : null}
+      {pageError && <StatusBanner tone="error" title="Product issue" description={pageError} />}
+      {feedback && <StatusBanner tone="success" title="Product updated" description={feedback} />}
 
+      {/* Search toolbar */}
       <AdminCard>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
           <div>
-            <p className="text-sm font-semibold text-white">Catalog control</p>
-            <p className="mt-1 text-sm text-white/60">Search, review performance, and jump into a product’s order trail instantly.</p>
+            <p className="adm-section-label">Catalog control</p>
+            <p className="adm-section-sub">Search, review performance, and jump into a product's order trail.</p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search products, categories, or slugs"
-              className={`${adminInputClasses} min-w-[280px]`}
-            />
-            <button type="button" className={adminButtonClasses.soft} onClick={() => loadProducts(search.trim())}>
-              Search live
-            </button>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products, categories, or slugs" className={adminInputClasses} style={{ minWidth: 280 }} />
+            <button type="button" className={adminButtonClasses.soft} onClick={() => loadProducts(search.trim())}>Search live</button>
           </div>
         </div>
       </AdminCard>
 
       {loading ? (
-        <AdminLoader label="Loading product catalog..." />
+        <AdminLoader />
       ) : filteredProducts.length === 0 ? (
-        <AdminCard>
-          <p className="text-sm font-semibold text-white">No products found</p>
-          <p className="mt-2 text-sm text-white/60">Start with a fresh product or try another search term.</p>
-          <div className="mt-4">
-            <button type="button" className={adminButtonClasses.primary} onClick={openCreate}>
-              Create first product
-            </button>
+        <div className="adm-empty">
+          <p>📦</p>
+          <p>No products found</p>
+          <p>Start with a fresh product or try another search term.</p>
+          <div style={{ marginTop: 16 }}>
+            <button type="button" className={adminButtonClasses.primary} onClick={openCreate}>Create first product</button>
           </div>
-        </AdminCard>
+        </div>
       ) : (
-        <section className="grid gap-5 xl:grid-cols-2 2xl:grid-cols-3">
-          {filteredProducts.map((product) => {
-            const reviewCount = 6 + (product.id % 5);
-            const reviewScore = (4.6 + ((product.id % 4) * 0.1)).toFixed(1);
-            return (
-              <article
-                key={product.id}
-                className="group overflow-hidden rounded-[24px] border border-white/6 bg-[#151c26] shadow-[0_18px_38px_rgba(6,10,16,0.42)] transition hover:-translate-y-1 hover:border-white/12"
-              >
-                <button type="button" className="block w-full cursor-pointer text-left" onClick={() => openDetails(product.id)}>
-                  <div className="relative aspect-[16/11] overflow-hidden bg-[#0f1722]">
-                    <Image
-                      src={product.imageUrl}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      className="object-cover transition duration-300 group-hover:scale-[1.03]"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0b111a] via-[#0b111a]/10 to-transparent" />
-                    <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-                      <span className="rounded-full border border-white/10 bg-black/35 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white">
-                        {product.category}
-                      </span>
-                      <span
-                        className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] ${
-                          product.isActive
-                            ? "border border-emerald-400/30 bg-emerald-400/15 text-emerald-200"
-                            : "border border-rose-400/25 bg-rose-400/15 text-rose-200"
-                        }`}
-                      >
-                        {product.isActive ? "Live" : "Hidden"}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-                      <div>
-                        <p className="text-[11px] uppercase tracking-[0.3em] text-white/60">Created</p>
-                        <p className="mt-1 text-sm font-medium text-white">{formatDate(product.createdAt)}</p>
-                      </div>
-                      <span className="rounded-full border border-white/10 bg-black/35 px-4 py-2 text-sm font-semibold text-white">
-                        {formatMoney(product.pricePaise)}
-                      </span>
-                    </div>
+        <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fill,minmax(360px,1fr))" }}>
+          {filteredProducts.map((product) => (
+            <article key={product.id} className="adm-card fade-up" style={{ padding: 0, overflow: "hidden" }}>
+              <button type="button" style={{ display: "block", width: "100%", cursor: "pointer", textAlign: "left", border: "none", background: "none" }} onClick={() => openDetails(product.id)}>
+                <div style={{ position: "relative", aspectRatio: "16/11", overflow: "hidden", background: "var(--bg-warm)" }}>
+                  <Image src={product.imageUrl} alt={product.name} fill sizes="(max-width: 768px) 100vw, 33vw" style={{ objectFit: "cover", transition: "transform .3s" }} />
+                  <div style={{ position: "absolute", left: 12, top: 12, display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    <span className="adm-badge adm-badge-gray">{product.category}</span>
+                    <span className={`adm-badge ${product.isActive ? "adm-badge-green" : "adm-badge-red"}`}>
+                      {product.isActive ? "Live" : "Hidden"}
+                    </span>
                   </div>
-                </button>
-
-                <div className="space-y-4 p-5">
-                  <div>
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h2 className="text-xl font-semibold text-white">{product.name}</h2>
-                        <p className="mt-1 text-xs uppercase tracking-[0.24em] text-white/35">/{product.slug}</p>
-                      </div>
-                      <button type="button" className={adminButtonClasses.soft} onClick={() => openEdit(product)}>
-                        Edit
-                      </button>
-                    </div>
-                    <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/65">{product.shortDescription}</p>
-                  </div>
-
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <MetricPill label="Orders" value={String(product.orderCount ?? 0)} />
-                    <MetricPill label="Units sold" value={String(product.unitsSold ?? 0)} />
-                    <MetricPill label="Reviews" value={`${reviewScore} · ${reviewCount}`} />
-                  </div>
-
-                  <div className="grid gap-3 rounded-[20px] border border-white/6 bg-white/[0.03] p-4 md:grid-cols-2">
-                    <InfoRow label="Revenue" value={formatMoney(product.revenuePaise ?? 0)} />
-                    <InfoRow label="Last ordered" value={formatDate(product.lastOrderedAt)} />
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <button type="button" className={adminButtonClasses.primary} onClick={() => openDetails(product.id)}>
-                      View product
-                    </button>
-                    <Link href={`/products/${product.slug}`} target="_blank" className={adminButtonClasses.ghost}>
-                      Open live page
-                    </Link>
-                    <button
-                      type="button"
-                      className={adminButtonClasses.ghost}
-                      onClick={() => onDelete(product)}
-                      disabled={deletingId === product.id}
-                    >
-                      {deletingId === product.id ? "Deleting..." : "Delete"}
-                    </button>
+                  <div style={{ position: "absolute", bottom: 12, right: 12 }}>
+                    <span className="adm-badge adm-badge-pop">{formatMoney(product.pricePaise)}</span>
                   </div>
                 </div>
-              </article>
-            );
-          })}
-        </section>
+              </button>
+
+              <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                  <div>
+                    <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--text)" }}>{product.name}</h2>
+                    <p style={{ fontSize: 11, letterSpacing: ".2em", color: "var(--text-4)", marginTop: 2 }}>/{product.slug}</p>
+                  </div>
+                  <button type="button" className={adminButtonClasses.soft} onClick={() => openEdit(product)}>Edit</button>
+                </div>
+
+                <p style={{ fontSize: 13, color: "var(--text-3)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  {product.shortDescription}
+                </p>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
+                  <MetricPill label="Orders" value={String(product.orderCount ?? 0)} />
+                  <MetricPill label="Units" value={String(product.unitsSold ?? 0)} />
+                  <MetricPill label="Revenue" value={formatMoney(product.revenuePaise ?? 0)} />
+                </div>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  <button type="button" className={adminButtonClasses.primary} onClick={() => openDetails(product.id)}>View</button>
+                  <Link href={`/products/${product.slug}`} target="_blank" className={adminButtonClasses.ghost}>Live page</Link>
+                  <button type="button" className={adminButtonClasses.danger} onClick={() => onDelete(product)} disabled={deletingId === product.id}>
+                    {deletingId === product.id ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
       )}
 
-      {showComposer ? (
-        <Overlay onClose={closeComposer}>
-          <div className="w-full max-w-3xl rounded-[28px] border border-white/10 bg-[#111821] p-6 shadow-[0_28px_80px_rgba(3,8,14,0.65)]">
-            <div className="flex items-start justify-between gap-4">
+      {/* Composer modal */}
+      {showComposer && (
+        <div className="adm-modal-backdrop" onClick={closeComposer}>
+          <div className="adm-modal" style={{ maxWidth: 640 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
               <div>
-                <p className="text-xs uppercase tracking-[0.28em] text-white/40">{editingProductId ? "Edit product" : "Create product"}</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">
-                  {editingProductId ? "Update this catalog item" : "Launch a new catalog item"}
-                </h2>
-                <p className="mt-2 text-sm text-white/60">
-                  Keep this closed until you need it, then open the composer and make the update cleanly.
-                </p>
+                <p className="adm-modal-title">{editingProductId ? "Update product" : "Create product"}</p>
+                <p className="adm-modal-desc">{editingProductId ? "Edit this catalog item." : "Launch a new catalog item."}</p>
               </div>
-              <button type="button" className={adminButtonClasses.ghost} onClick={closeComposer}>
-                Close
-              </button>
+              <button type="button" className={adminButtonClasses.ghost} onClick={closeComposer}>Close</button>
             </div>
 
-            {composerError ? (
-              <div className="mt-4">
-                <StatusBanner tone="error" title="Form issue" description={composerError} />
-              </div>
-            ) : null}
+            {composerError && <div style={{ marginTop: 14 }}><StatusBanner tone="error" title="Form issue" description={composerError} /></div>}
 
-            <form onSubmit={onSubmit} className="mt-6 grid gap-4 md:grid-cols-2">
-              <Input label="Name" value={form.name} onChange={(value) => setForm((prev) => ({ ...prev, name: value }))} required />
-              <Input label="Category" value={form.category} onChange={(value) => setForm((prev) => ({ ...prev, category: value }))} required />
-              <Input
-                label="Short description"
-                value={form.shortDescription}
-                onChange={(value) => setForm((prev) => ({ ...prev, shortDescription: value }))}
-                required
-              />
-              <Input
-                label="Price (INR)"
-                type="number"
-                min={1}
-                step="0.01"
-                value={form.priceRupees}
-                onChange={(value) => setForm((prev) => ({ ...prev, priceRupees: value }))}
-                required
-              />
-              <div className="md:col-span-2">
-                <Input
-                  label="Image URL"
-                  value={form.imageUrl}
-                  onChange={(value) => setForm((prev) => ({ ...prev, imageUrl: value }))}
-                  required
-                />
-              </div>
-              <div className="md:col-span-2">
-                <Textarea
-                  label="Description"
-                  value={form.description}
-                  onChange={(value) => setForm((prev) => ({ ...prev, description: value }))}
-                  required
-                />
-              </div>
-              <div className="md:col-span-2">
-                <Input
-                  label="Notes (comma separated)"
-                  value={form.notes}
-                  onChange={(value) => setForm((prev) => ({ ...prev, notes: value }))}
-                />
-              </div>
-
-              <div className="flex flex-wrap gap-3 md:col-span-2">
-                <button type="submit" disabled={isSaving} className={adminButtonClasses.primary}>
-                  {isSaving ? "Saving..." : editingProductId ? "Update product" : "Create product"}
-                </button>
-                <button type="button" className={adminButtonClasses.ghost} onClick={closeComposer}>
-                  Cancel
-                </button>
+            <form onSubmit={onSubmit} style={{ marginTop: 20, display: "grid", gap: 14, gridTemplateColumns: "1fr 1fr" }}>
+              <div className="adm-form-group"><label className="adm-form-label">Name</label><input className={adminInputClasses} required value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} /></div>
+              <div className="adm-form-group"><label className="adm-form-label">Category</label><input className={adminInputClasses} required value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))} /></div>
+              <div className="adm-form-group"><label className="adm-form-label">Short description</label><input className={adminInputClasses} required value={form.shortDescription} onChange={(e) => setForm((p) => ({ ...p, shortDescription: e.target.value }))} /></div>
+              <div className="adm-form-group"><label className="adm-form-label">Price (INR)</label><input className={adminInputClasses} type="number" min={1} step="0.01" required value={form.priceRupees} onChange={(e) => setForm((p) => ({ ...p, priceRupees: e.target.value }))} /></div>
+              <div className="adm-form-group" style={{ gridColumn: "1/-1" }}><label className="adm-form-label">Image URL</label><input className={adminInputClasses} required value={form.imageUrl} onChange={(e) => setForm((p) => ({ ...p, imageUrl: e.target.value }))} /></div>
+              <div className="adm-form-group" style={{ gridColumn: "1/-1" }}><label className="adm-form-label">Description</label><textarea className={adminTextareaClasses} rows={4} required value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} /></div>
+              <div className="adm-form-group" style={{ gridColumn: "1/-1" }}><label className="adm-form-label">Notes (comma separated)</label><input className={adminInputClasses} value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} /></div>
+              <div style={{ gridColumn: "1/-1", display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <button type="submit" disabled={isSaving} className={adminButtonClasses.primary}>{isSaving ? "Saving..." : editingProductId ? "Update product" : "Create product"}</button>
+                <button type="button" className={adminButtonClasses.ghost} onClick={closeComposer}>Cancel</button>
               </div>
             </form>
           </div>
-        </Overlay>
-      ) : null}
+        </div>
+      )}
 
-      {selectedProductId ? (
-        <Overlay onClose={() => setSelectedProductId(null)} align="right">
-          <div className="ml-auto flex h-full w-full max-w-2xl flex-col overflow-hidden border-l border-white/10 bg-[#111821] shadow-[-24px_0_60px_rgba(3,8,14,0.55)]">
-            <div className="flex items-start justify-between gap-4 border-b border-white/6 px-6 py-5">
+      {/* Details slide-over */}
+      {selectedProductId && (
+        <div className="adm-modal-backdrop" onClick={() => setSelectedProductId(null)}>
+          <div className="adm-modal" style={{ maxWidth: 640, maxHeight: "90vh", overflowY: "auto" }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 20 }}>
               <div>
-                <p className="text-xs uppercase tracking-[0.28em] text-white/40">Product detail</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">
-                  {productDetail?.product.name || "Loading product..."}
-                </h2>
+                <p className="adm-modal-title">{productDetail?.product.name || "Loading..."}</p>
+                <p className="adm-modal-desc">Product detail</p>
               </div>
-              <button type="button" className={adminButtonClasses.ghost} onClick={() => setSelectedProductId(null)}>
-                Close
-              </button>
+              <button type="button" className={adminButtonClasses.ghost} onClick={() => setSelectedProductId(null)}>Close</button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-6">
-              {detailLoading ? (
-                <AdminLoader label="Loading product detail..." />
-              ) : detailError ? (
-                <StatusBanner tone="error" title="Detail error" description={detailError} />
-              ) : productDetail ? (
-                <div className="space-y-6">
-                  <div className="overflow-hidden rounded-[24px] border border-white/6 bg-[#151c26]">
-                    <div className="relative aspect-[16/10] bg-[#0f1722]">
-                      <Image src={productDetail.product.imageUrl} alt={productDetail.product.name} fill className="object-cover" sizes="50vw" />
+            {detailLoading ? <AdminLoader /> : detailError ? <StatusBanner tone="error" title="Detail error" description={detailError} /> : productDetail ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid var(--border-light)" }}>
+                  <div style={{ position: "relative", aspectRatio: "16/10", background: "var(--bg-warm)" }}>
+                    <Image src={productDetail.product.imageUrl} alt={productDetail.product.name} fill style={{ objectFit: "cover" }} sizes="50vw" />
+                  </div>
+                  <div style={{ padding: 20 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                      <div>
+                        <span className="adm-badge adm-badge-gray" style={{ marginBottom: 8 }}>{productDetail.product.category}</span>
+                        <h3 style={{ fontSize: 22, fontWeight: 700, color: "var(--text)", marginTop: 4 }}>{productDetail.product.name}</h3>
+                      </div>
+                      <span className={`adm-badge ${productDetail.product.isActive ? "adm-badge-green" : "adm-badge-red"}`}>
+                        {productDetail.product.isActive ? "Live now" : "Hidden"}
+                      </span>
                     </div>
-                    <div className="space-y-4 p-5">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <p className="text-xs uppercase tracking-[0.25em] text-white/40">{productDetail.product.category}</p>
-                          <h3 className="mt-2 text-2xl font-semibold text-white">{productDetail.product.name}</h3>
-                        </div>
-                        <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-200">
-                          {productDetail.product.isActive ? "Live now" : "Hidden"}
-                        </span>
-                      </div>
-                      <p className="text-sm leading-6 text-white/70">{productDetail.product.description}</p>
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <InfoCard label="Revenue generated" value={formatMoney(productDetail.product.revenuePaise ?? 0)} />
-                        <InfoCard label="Orders placed" value={String(productDetail.product.orderCount ?? 0)} />
-                        <InfoCard label="Units sold" value={String(productDetail.product.unitsSold ?? 0)} />
-                        <InfoCard label="Created at" value={formatDate(productDetail.product.createdAt)} />
-                      </div>
+                    <p style={{ fontSize: 13, color: "var(--text-3)", lineHeight: 1.7, marginTop: 12 }}>{productDetail.product.description}</p>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
+                      <InfoCard label="Revenue" value={formatMoney(productDetail.product.revenuePaise ?? 0)} />
+                      <InfoCard label="Orders" value={String(productDetail.product.orderCount ?? 0)} />
+                      <InfoCard label="Units sold" value={String(productDetail.product.unitsSold ?? 0)} />
+                      <InfoCard label="Created" value={formatDate(productDetail.product.createdAt)} />
                     </div>
                   </div>
-
-                  <AdminCard className="p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-white">Review preview</p>
-                        <p className="mt-1 text-sm text-white/55">Hardcoded for now so the layout is ready when reviews go live.</p>
-                      </div>
-                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.24em] text-white/55">
-                        Coming soon
-                      </span>
-                    </div>
-                    <div className="mt-4 space-y-3">
-                      {productDetail.reviews.map((review) => (
-                        <div key={review.id} className="rounded-[18px] border border-white/6 bg-white/[0.03] p-4">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <p className="text-sm font-semibold text-white">{review.title}</p>
-                            <span className="text-sm text-amber-300">{Array.from({ length: review.rating }, () => "★").join("")}</span>
-                          </div>
-                          <p className="mt-2 text-sm leading-6 text-white/65">{review.body}</p>
-                          <p className="mt-3 text-xs uppercase tracking-[0.22em] text-white/35">
-                            {review.customerName} · {formatDate(review.createdAt)}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </AdminCard>
-
-                  <AdminCard className="p-5">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-white">Order trail</p>
-                        <p className="mt-1 text-sm text-white/55">Exact timestamp, buyer, and order amount for every purchase of this product.</p>
-                      </div>
-                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.24em] text-white/55">
-                        {productDetail.product.orderHistory.length} entries
-                      </span>
-                    </div>
-                    <div className="mt-4 space-y-3">
-                      {productDetail.product.orderHistory.length ? (
-                        productDetail.product.orderHistory.map((entry) => (
-                          <div key={`${entry.orderId}-${entry.userId}-${entry.orderedAt}`} className="rounded-[18px] border border-white/6 bg-white/[0.03] p-4">
-                            <div className="flex flex-wrap items-start justify-between gap-3">
-                              <div>
-                                <p className="text-sm font-semibold text-white">Order #{entry.orderId}</p>
-                                <p className="mt-1 text-sm text-white/60">
-                                  Qty {entry.quantity} · {formatMoney(entry.lineTotalPaise)} · {entry.status}
-                                </p>
-                              </div>
-                              <p className="text-xs uppercase tracking-[0.22em] text-white/35">{formatDate(entry.orderedAt)}</p>
-                            </div>
-                            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-white/70">
-                              <span>Bought by</span>
-                              <Link href={`/admin/users/${entry.userId}`} className="font-semibold text-emerald-300 hover:text-emerald-200">
-                                {entry.fullName}
-                              </Link>
-                              <span className="text-white/35">·</span>
-                              <span>{entry.email}</span>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="rounded-[18px] border border-white/6 bg-white/[0.03] p-4 text-sm text-white/55">
-                          No orders for this product yet.
-                        </div>
-                      )}
-                    </div>
-                  </AdminCard>
                 </div>
-              ) : null}
-            </div>
-          </div>
-        </Overlay>
-      ) : null}
-    </AdminShell>
-  );
-}
 
-function Overlay({
-  children,
-  onClose,
-  align = "center",
-}: {
-  children: ReactNode;
-  onClose: () => void;
-  align?: "center" | "right";
-}) {
-  return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" onClick={onClose}>
-      <div
-        className={`flex h-full w-full ${align === "right" ? "justify-end" : "items-center justify-center p-5"}`}
-        onClick={(event) => event.stopPropagation()}
-      >
-        {children}
-      </div>
-    </div>
+                {/* Reviews */}
+                <AdminCard>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <p className="adm-section-label">Review preview</p>
+                    <span className="adm-badge adm-badge-gray">Coming soon</span>
+                  </div>
+                  <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+                    {productDetail.reviews.map((review) => (
+                      <div key={review.id} style={{ padding: 16, border: "1px solid var(--border-light)", borderRadius: 12 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{review.title}</p>
+                          <span style={{ color: "#d97706" }}>{"★".repeat(review.rating)}</span>
+                        </div>
+                        <p style={{ fontSize: 13, color: "var(--text-3)", marginTop: 6, lineHeight: 1.6 }}>{review.body}</p>
+                        <p style={{ fontSize: 11, color: "var(--text-4)", marginTop: 8, letterSpacing: ".12em" }}>{review.customerName} · {formatDate(review.createdAt)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </AdminCard>
+
+                {/* Order trail */}
+                <AdminCard>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <p className="adm-section-label">Order trail</p>
+                    <span className="adm-badge adm-badge-gray">{productDetail.product.orderHistory.length} entries</span>
+                  </div>
+                  <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+                    {productDetail.product.orderHistory.length ? productDetail.product.orderHistory.map((entry) => (
+                      <div key={`${entry.orderId}-${entry.userId}-${entry.orderedAt}`} style={{ padding: 16, border: "1px solid var(--border-light)", borderRadius: 12 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <div>
+                            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>Order #{entry.orderId}</p>
+                            <p style={{ fontSize: 13, color: "var(--text-3)", marginTop: 4 }}>Qty {entry.quantity} · {formatMoney(entry.lineTotalPaise)} · {entry.status}</p>
+                          </div>
+                          <p style={{ fontSize: 11, color: "var(--text-4)", letterSpacing: ".12em" }}>{formatDate(entry.orderedAt)}</p>
+                        </div>
+                        <p style={{ fontSize: 13, color: "var(--text-3)", marginTop: 8 }}>
+                          Bought by <Link href={`/admin/users/${entry.userId}`} style={{ fontWeight: 600, color: "var(--pop)" }}>{entry.fullName}</Link> · {entry.email}
+                        </p>
+                      </div>
+                    )) : (
+                      <p style={{ fontSize: 13, color: "var(--text-3)", padding: 16, border: "1px solid var(--border-light)", borderRadius: 12 }}>No orders for this product yet.</p>
+                    )}
+                  </div>
+                </AdminCard>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
+    </AdminShell>
   );
 }
 
 function MetricPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[18px] border border-white/6 bg-white/[0.03] px-4 py-3">
-      <p className="text-[11px] uppercase tracking-[0.24em] text-white/38">{label}</p>
-      <p className="mt-2 text-base font-semibold text-white">{value}</p>
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-[11px] uppercase tracking-[0.24em] text-white/38">{label}</p>
-      <p className="mt-2 text-sm font-medium text-white">{value}</p>
+    <div style={{ padding: "10px 14px", border: "1px solid var(--border-light)", borderRadius: 10, background: "var(--bg)" }}>
+      <p style={{ fontSize: 10, letterSpacing: ".18em", color: "var(--text-4)", textTransform: "uppercase" }}>{label}</p>
+      <p style={{ fontSize: 15, fontWeight: 700, color: "var(--text)", marginTop: 4 }}>{value}</p>
     </div>
   );
 }
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[18px] border border-white/6 bg-white/[0.03] p-4">
-      <p className="text-[11px] uppercase tracking-[0.24em] text-white/38">{label}</p>
-      <p className="mt-2 text-base font-semibold text-white">{value}</p>
+    <div style={{ padding: 14, border: "1px solid var(--border-light)", borderRadius: 10 }}>
+      <p style={{ fontSize: 10, letterSpacing: ".18em", color: "var(--text-4)", textTransform: "uppercase" }}>{label}</p>
+      <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)", marginTop: 4 }}>{value}</p>
     </div>
-  );
-}
-
-function Input({
-  label,
-  value,
-  onChange,
-  required,
-  type = "text",
-  min,
-  step,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  required?: boolean;
-  type?: string;
-  min?: number;
-  step?: string;
-}) {
-  return (
-    <label className="block space-y-1.5">
-      <span className="text-sm text-white/70">{label}</span>
-      <input
-        type={type}
-        required={required}
-        min={min}
-        step={step}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className={adminInputClasses}
-      />
-    </label>
-  );
-}
-
-function Textarea({
-  label,
-  value,
-  onChange,
-  required,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  required?: boolean;
-}) {
-  return (
-    <label className="block space-y-1.5">
-      <span className="text-sm text-white/70">{label}</span>
-      <textarea
-        required={required}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        rows={5}
-        className={adminTextareaClasses}
-      />
-    </label>
   );
 }

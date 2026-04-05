@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { AdminCard, AdminShell, StatusBanner, adminButtonClasses } from "@/components/admin/AdminShell";
-import { AdminLoader } from "@/components/admin/AdminLoader";
+import { AdminCard, AdminShell, StatusBanner, AdminLoader, adminButtonClasses, adminInputClasses } from "@/components/admin/AdminShell";
 import { authStorage } from "@/lib/auth";
 import { apiRequest } from "@/lib/api";
 import type { AdminUsersResponse, AdminUsersListItem } from "@/types/dashboard";
@@ -23,17 +22,10 @@ export default function AdminUsersPage() {
   useEffect(() => {
     const token = authStorage.getToken();
     const user = authStorage.getUser();
-    if (!token || !user) {
-      router.replace("/login");
-      return;
-    }
-    if (user.role !== "admin") {
-      router.replace("/account");
-      return;
-    }
+    if (!token || !user) { router.replace("/login"); return; }
+    if (user.role !== "admin") { router.replace("/account"); return; }
 
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     apiRequest<AdminUsersResponse>("/admin/users?limit=30&offset=0", { token })
       .then((data) => setUsers(data.users))
       .catch((err) => setError(err instanceof Error ? err.message : "Unable to load users"))
@@ -45,11 +37,7 @@ export default function AdminUsersPage() {
     if (!token) return;
     setActionMessage(null);
     try {
-      await apiRequest(`/admin/users/${userId}/role`, {
-        method: "PATCH",
-        token,
-        body: { role },
-      });
+      await apiRequest(`/admin/users/${userId}/role`, { method: "PATCH", token, body: { role } });
       setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role } : u)));
       setActionMessage("User role updated.");
     } catch (err) {
@@ -62,11 +50,7 @@ export default function AdminUsersPage() {
     if (!token) return;
     setActionMessage(null);
     try {
-      await apiRequest(`/admin/users/${userId}/status`, {
-        method: "PATCH",
-        token,
-        body: { isActive },
-      });
+      await apiRequest(`/admin/users/${userId}/status`, { method: "PATCH", token, body: { isActive } });
       setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, isActive } : u)));
       setActionMessage("User status updated.");
     } catch (err) {
@@ -77,17 +61,11 @@ export default function AdminUsersPage() {
   const sendMessage = async () => {
     const token = authStorage.getToken();
     if (!token || !messageUserId) return;
-    setError(null);
-    setActionMessage(null);
+    setError(null); setActionMessage(null);
     try {
-      await apiRequest(`/admin/users/${messageUserId}/notify`, {
-        method: "POST",
-        token,
-        body: messageForm,
-      });
+      await apiRequest(`/admin/users/${messageUserId}/notify`, { method: "POST", token, body: messageForm });
       setActionMessage("Message sent to user.");
-      setMessageUserId(null);
-      setMessageForm({ title: "", message: "" });
+      setMessageUserId(null); setMessageForm({ title: "", message: "" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to send message");
     }
@@ -97,131 +75,71 @@ export default function AdminUsersPage() {
     <AdminShell
       title="User Command"
       subtitle="Manage customer accounts, access levels, and audit trails."
-      actions={
-        <button type="button" className={adminButtonClasses.primary} onClick={() => setShowForm(true)}>
-          Add user
-        </button>
-      }
+      actions={<button type="button" className={adminButtonClasses.primary} onClick={() => setShowForm(true)}>Add user</button>}
     >
-      {error ? <StatusBanner tone="error" title="User error" description={error} /> : null}
-      {actionMessage ? <StatusBanner tone="success" title="User updated" description={actionMessage} /> : null}
+      {error && <StatusBanner tone="error" title="User error" description={error} />}
+      {actionMessage && <StatusBanner tone="success" title="User updated" description={actionMessage} />}
 
-      {loading ? (
-        <AdminLoader label="Loading users..." />
-      ) : (
+      {loading ? <AdminLoader /> : (
         <>
+          {/* Add user form */}
           <AdminCard>
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
               <div>
-                <p className="text-sm font-semibold text-white">Add new user</p>
-                <p className="mt-1 text-sm text-white/60">Create a user account directly from admin.</p>
+                <p className="adm-section-label">Add new user</p>
+                <p className="adm-section-sub">Create a user account directly from admin.</p>
               </div>
-              <button type="button" className={adminButtonClasses.soft} onClick={() => setShowForm((prev) => !prev)}>
-                {showForm ? "Hide form" : "Add user"}
-              </button>
+              <button type="button" className={adminButtonClasses.soft} onClick={() => setShowForm((p) => !p)}>{showForm ? "Hide form" : "Add user"}</button>
             </div>
 
-            {showForm ? (
+            {showForm && (
               <form
-                className="mt-4 grid gap-3 md:grid-cols-2"
-                onSubmit={async (event) => {
-                  event.preventDefault();
+                style={{ marginTop: 16, display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}
+                onSubmit={async (e) => {
+                  e.preventDefault();
                   const token = authStorage.getToken();
                   if (!token) return;
-                  setError(null);
-                  setActionMessage(null);
+                  setError(null); setActionMessage(null);
                   try {
-                    const response = await apiRequest<{ user: AdminUsersListItem }>("/admin/users", {
-                      method: "POST",
-                      token,
-                      body: newUser,
-                    });
+                    const response = await apiRequest<{ user: AdminUsersListItem }>("/admin/users", { method: "POST", token, body: newUser });
                     setUsers((prev) => [response.user, ...prev]);
                     setNewUser({ fullName: "", email: "", phone: "", role: "customer" });
-                    setActionMessage("User created.");
-                    setShowForm(false);
+                    setActionMessage("User created."); setShowForm(false);
                   } catch (err) {
                     setError(err instanceof Error ? err.message : "Unable to create user");
                   }
                 }}
               >
-                <input
-                  value={newUser.fullName}
-                  onChange={(event) => setNewUser((prev) => ({ ...prev, fullName: event.target.value }))}
-                  placeholder="Full name"
-                  className="h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none"
-                  required
-                />
-                <input
-                  value={newUser.email}
-                  onChange={(event) => setNewUser((prev) => ({ ...prev, email: event.target.value }))}
-                  placeholder="Email"
-                  className="h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none"
-                  required
-                />
-                <input
-                  value={newUser.phone}
-                  onChange={(event) => setNewUser((prev) => ({ ...prev, phone: event.target.value }))}
-                  placeholder="Phone (optional)"
-                  className="h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none"
-                />
-                <select
-                  value={newUser.role}
-                  onChange={(event) => setNewUser((prev) => ({ ...prev, role: event.target.value }))}
-                  className="h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none"
-                >
-                  <option value="customer">Customer</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <div className="md:col-span-2">
-                  <button type="submit" className={adminButtonClasses.primary}>
-                    Create user
-                  </button>
-                </div>
+                <div className="adm-form-group"><label className="adm-form-label">Full name</label><input className={adminInputClasses} required value={newUser.fullName} onChange={(e) => setNewUser((p) => ({ ...p, fullName: e.target.value }))} /></div>
+                <div className="adm-form-group"><label className="adm-form-label">Email</label><input className={adminInputClasses} required value={newUser.email} onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))} /></div>
+                <div className="adm-form-group"><label className="adm-form-label">Phone (optional)</label><input className={adminInputClasses} value={newUser.phone} onChange={(e) => setNewUser((p) => ({ ...p, phone: e.target.value }))} /></div>
+                <div className="adm-form-group"><label className="adm-form-label">Role</label><select className="adm-select" style={{ width: "100%" }} value={newUser.role} onChange={(e) => setNewUser((p) => ({ ...p, role: e.target.value }))}><option value="customer">Customer</option><option value="admin">Admin</option></select></div>
+                <div style={{ gridColumn: "1/-1" }}><button type="submit" className={adminButtonClasses.primary}>Create user</button></div>
               </form>
-            ) : null}
+            )}
 
-            {messageUserId ? (
-              <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-sm font-semibold text-white">Message user</p>
-                <div className="mt-3 grid gap-3">
-                  <input
-                    value={messageForm.title}
-                    onChange={(event) => setMessageForm((prev) => ({ ...prev, title: event.target.value }))}
-                    placeholder="Notification title"
-                    className="h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none"
-                  />
-                  <textarea
-                    value={messageForm.message}
-                    onChange={(event) => setMessageForm((prev) => ({ ...prev, message: event.target.value }))}
-                    placeholder="Write your message"
-                    className="min-h-[120px] rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white outline-none"
-                  />
-                  <div className="flex gap-2">
-                    <button type="button" className={adminButtonClasses.primary} onClick={sendMessage}>
-                      Send message
-                    </button>
-                    <button
-                      type="button"
-                      className={adminButtonClasses.ghost}
-                      onClick={() => {
-                        setMessageUserId(null);
-                        setMessageForm({ title: "", message: "" });
-                      }}
-                    >
-                      Cancel
-                    </button>
+            {/* Message form */}
+            {messageUserId && (
+              <div style={{ marginTop: 16, padding: 20, border: "1px solid var(--border-light)", borderRadius: 14 }}>
+                <p className="adm-section-label">Message user</p>
+                <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div className="adm-form-group"><label className="adm-form-label">Notification title</label><input className={adminInputClasses} value={messageForm.title} onChange={(e) => setMessageForm((p) => ({ ...p, title: e.target.value }))} /></div>
+                  <div className="adm-form-group"><label className="adm-form-label">Message</label><textarea className="adm-textarea" value={messageForm.message} onChange={(e) => setMessageForm((p) => ({ ...p, message: e.target.value }))} /></div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button type="button" className={adminButtonClasses.primary} onClick={sendMessage}>Send message</button>
+                    <button type="button" className={adminButtonClasses.ghost} onClick={() => { setMessageUserId(null); setMessageForm({ title: "", message: "" }); }}>Cancel</button>
                   </div>
                 </div>
               </div>
-            ) : null}
+            )}
           </AdminCard>
 
+          {/* User table */}
           <AdminCard>
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
               <div>
-                <p className="text-sm font-semibold text-white">User directory</p>
-                <p className="mt-1 text-sm text-white/60">Live user accounts and recent access history.</p>
+                <p className="adm-section-label">User directory</p>
+                <p className="adm-section-sub">Live user accounts and recent access history.</p>
               </div>
               <button
                 type="button"
@@ -229,119 +147,61 @@ export default function AdminUsersPage() {
                 onClick={async () => {
                   const token = authStorage.getToken();
                   if (!token) return;
-                  const response = await fetch("/api/v1/admin/users/export", {
-                    headers: { Authorization: `Bearer ${token}` },
-                  });
+                  const response = await fetch("/api/v1/admin/users/export", { headers: { Authorization: `Bearer ${token}` } });
                   const blob = await response.blob();
                   const url = URL.createObjectURL(blob);
                   const link = document.createElement("a");
-                  link.href = url;
-                  link.download = "users.csv";
-                  link.click();
+                  link.href = url; link.download = "users.csv"; link.click();
                   URL.revokeObjectURL(url);
                 }}
-              >
-                Export list
-              </button>
+              >Export list</button>
             </div>
 
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full min-w-[980px] text-sm">
+            <div className="adm-table-wrap" style={{ marginTop: 16 }}>
+              <table className="adm-table">
                 <thead>
-                  <tr className="border-b border-white/10 text-left text-xs uppercase tracking-[0.24em] text-white/50">
-                    <th className="py-3 pr-4 font-medium">User</th>
-                    <th className="py-3 pr-4 font-medium">Email</th>
-                    <th className="py-3 pr-4 font-medium">Role</th>
-                    <th className="py-3 pr-4 font-medium">Status</th>
-                    <th className="py-3 pr-4 font-medium">Last Seen</th>
-                    <th className="py-3 pr-4 font-medium">IP</th>
-                    <th className="py-3 pr-4 font-medium">Actions</th>
+                  <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Last Seen</th>
+                    <th>IP</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.length ? (
-                    users.map((entry) => (
-                      <tr key={entry.id} className="border-b border-white/5 text-white/70">
-                        <td className="py-4 pr-4 font-semibold text-white">{entry.fullName}</td>
-                        <td className="py-4 pr-4">{entry.email}</td>
-                        <td className="py-4 pr-4">{entry.role}</td>
-                        <td className="py-4 pr-4">{entry.isActive ? "Active" : "Disabled"}</td>
-                        <td className="py-4 pr-4">
-                          {entry.lastSeen ? new Date(entry.lastSeen).toLocaleString() : "—"}
-                        </td>
-                        <td className="py-4 pr-4">{entry.lastIp || "—"}</td>
-                        <td className="py-4 pr-4">
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              type="button"
-                              className={adminButtonClasses.soft}
-                              onClick={() => updateRole(entry.id, entry.role === "admin" ? "customer" : "admin")}
-                            >
-                              Make {entry.role === "admin" ? "Customer" : "Admin"}
-                            </button>
-                            <button
-                              type="button"
-                              className={adminButtonClasses.ghost}
-                              onClick={() => updateStatus(entry.id, !entry.isActive)}
-                            >
-                              {entry.isActive ? "Disable" : "Enable"}
-                            </button>
-                            <button
-                              type="button"
-                              className={adminButtonClasses.ghost}
-                              onClick={() => {
-                                setMessageUserId(entry.id);
-                                setMessageForm({
-                                  title: `Message for ${entry.fullName}`,
-                                  message: "",
-                                });
-                              }}
-                            >
-                              Message
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td className="py-4 pr-4 text-white/50" colSpan={7}>
-                        No users found yet.
+                  {users.length ? users.map((entry) => (
+                    <tr key={entry.id}>
+                      <td style={{ fontWeight: 600 }}>{entry.fullName}</td>
+                      <td>{entry.email}</td>
+                      <td><span className={`adm-badge ${entry.role === "admin" ? "adm-badge-pop" : "adm-badge-gray"}`}>{entry.role}</span></td>
+                      <td><span className={`adm-badge ${entry.isActive ? "adm-badge-green" : "adm-badge-red"}`}>{entry.isActive ? "Active" : "Disabled"}</span></td>
+                      <td>{entry.lastSeen ? new Date(entry.lastSeen).toLocaleString() : "—"}</td>
+                      <td>{entry.lastIp || "—"}</td>
+                      <td>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                          <button type="button" className={adminButtonClasses.soft} onClick={() => updateRole(entry.id, entry.role === "admin" ? "customer" : "admin")}>
+                            Make {entry.role === "admin" ? "Customer" : "Admin"}
+                          </button>
+                          <button type="button" className={adminButtonClasses.ghost} onClick={() => updateStatus(entry.id, !entry.isActive)}>
+                            {entry.isActive ? "Disable" : "Enable"}
+                          </button>
+                          <button type="button" className={adminButtonClasses.ghost} onClick={() => { setMessageUserId(entry.id); setMessageForm({ title: `Message for ${entry.fullName}`, message: "" }); }}>
+                            Message
+                          </button>
+                        </div>
                       </td>
                     </tr>
+                  )) : (
+                    <tr><td colSpan={7} style={{ color: "var(--text-3)" }}>No users found yet.</td></tr>
                   )}
                 </tbody>
               </table>
             </div>
           </AdminCard>
-
-          <section className="grid gap-6 lg:grid-cols-2">
-            <AdminCard>
-              <p className="text-sm font-semibold text-white">Audit timeline</p>
-              <div className="mt-4 space-y-3">
-                <TimelineRow title="Access logs" detail="Live sessions are visible in Engagement." />
-                <TimelineRow title="Role changes" detail="Every role update is applied instantly." />
-              </div>
-            </AdminCard>
-
-            <AdminCard>
-              <p className="text-sm font-semibold text-white">Bulk actions</p>
-              <p className="mt-2 text-sm text-white/60">
-                Bulk controls are available in phase 2. For now, manage users directly in the table above.
-              </p>
-            </AdminCard>
-          </section>
         </>
       )}
     </AdminShell>
-  );
-}
-
-function TimelineRow({ title, detail }: { title: string; detail: string }) {
-  return (
-    <div className="rounded-2xl border border-white/5 bg-white/5 p-4">
-      <p className="text-sm font-semibold text-white">{title}</p>
-      <p className="mt-1 text-sm text-white/60">{detail}</p>
-    </div>
   );
 }
