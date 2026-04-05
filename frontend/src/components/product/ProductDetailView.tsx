@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 
 import { ProductPurchaseActions } from "@/components/product/ProductPurchaseActions";
+import { formatPricePaise } from "@/lib/format";
+import type { Product } from "@/types/product";
 
 /* ── Shared star SVG ── */
 function StarIcon({ size = 14 }: { size?: number }) {
@@ -14,21 +16,9 @@ function StarIcon({ size = 14 }: { size?: number }) {
   );
 }
 
-/* ── Types ── */
-export type StaticProduct = {
-  slug: string;
-  name: string;
-  category: string;
-  shortDescription: string;
-  description: string;
-  price: string;
-  oldPrice?: string;
-  savePercent?: string;
-  badge?: string;
-  badgeType?: "sale" | "new";
-  img: string;
+/* ── Enrichment types ── */
+export type ProductEnrichment = {
   thumbs?: string[];
-  notes: string[];
   details: { title: string; body: string }[];
   reviews: {
     avg: number;
@@ -46,15 +36,18 @@ export type StaticProduct = {
 };
 
 type ProductDetailViewProps = {
-  product: StaticProduct;
+  product: Product;
+  enrichment: ProductEnrichment;
   related: { slug: string; name: string; price: string; img: string; category: string }[];
 };
 
-export function ProductDetailView({ product, related }: ProductDetailViewProps) {
+export function ProductDetailView({ product, enrichment, related }: ProductDetailViewProps) {
   const [activeThumb, setActiveThumb] = useState(0);
   const [openDetails, setOpenDetails] = useState<Set<number>>(new Set([0]));
 
-  const images = [product.img, ...(product.thumbs || [])];
+  const images = [product.imageUrl, ...(enrichment.thumbs || [])];
+  const comparePricePaise = Math.round(product.pricePaise * 1.25);
+  const savePercent = Math.round((1 - product.pricePaise / comparePricePaise) * 100);
 
   const toggleDetail = (idx: number) => {
     setOpenDetails((prev) => {
@@ -75,11 +68,6 @@ export function ProductDetailView({ product, related }: ProductDetailViewProps) 
             <div className="pdp-img-main">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={images[activeThumb]} alt={product.name} />
-              {product.badge && (
-                <span className={`pdp-badge pdp-badge--${product.badgeType || "sale"}`}>
-                  {product.badge}
-                </span>
-              )}
             </div>
             {images.length > 1 && (
               <div className="pdp-thumbs">
@@ -109,7 +97,7 @@ export function ProductDetailView({ product, related }: ProductDetailViewProps) 
               <span>{product.name}</span>
             </nav>
 
-            <p className="pdp-category" dangerouslySetInnerHTML={{ __html: product.category }} />
+            <p className="pdp-category">{product.category}</p>
             <h1 className="pdp-title">{product.name}</h1>
             <p className="pdp-subtitle">{product.shortDescription}</p>
 
@@ -121,45 +109,47 @@ export function ProductDetailView({ product, related }: ProductDetailViewProps) 
                 ))}
               </div>
               <span className="pdp-rating-text">
-                {product.reviews.avg} · {product.reviews.total} reviews
+                {enrichment.reviews.avg} · {enrichment.reviews.total} reviews
               </span>
             </div>
 
             {/* Pricing */}
             <div className="pdp-pricing">
-              <span className="pdp-price">{product.price}</span>
-              {product.oldPrice && <span className="pdp-price-old">{product.oldPrice}</span>}
-              {product.savePercent && <span className="pdp-price-save">Save {product.savePercent}</span>}
+              <span className="pdp-price">{formatPricePaise(product.pricePaise, product.currency)}</span>
+              <span className="pdp-price-old">{formatPricePaise(comparePricePaise, product.currency)}</span>
+              <span className="pdp-price-save">Save {savePercent}%</span>
             </div>
 
             {/* Purchase actions */}
             <ProductPurchaseActions
               product={{
-                id: product.slug.charCodeAt(0),
+                id: product.id,
                 name: product.name,
                 slug: product.slug,
-                imageUrl: product.img,
-                pricePaise: parseInt(product.price.replace(/[^\d]/g, "")) * 100,
-                currency: "INR",
+                imageUrl: product.imageUrl,
+                pricePaise: product.pricePaise,
+                currency: product.currency,
               }}
             />
 
             {/* Notes */}
-            <div className="pdp-notes-section">
-              <p className="pdp-notes-label">Fragrance Notes</p>
-              <div className="pdp-notes-list">
-                {product.notes.map((n) => (
-                  <span key={n} className="pdp-note-tag">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z" /><path d="M12 8v4m0 4h.01" /></svg>
-                    {n}
-                  </span>
-                ))}
+            {product.notes.length > 0 && (
+              <div className="pdp-notes-section">
+                <p className="pdp-notes-label">Fragrance Notes</p>
+                <div className="pdp-notes-list">
+                  {product.notes.map((n) => (
+                    <span key={n} className="pdp-note-tag">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z" /><path d="M12 8v4m0 4h.01" /></svg>
+                      {n}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Details accordion */}
             <div className="pdp-details">
-              {product.details.map((d, i) => (
+              {enrichment.details.map((d, i) => (
                 <div key={i} className={`pdp-detail-block${openDetails.has(i) ? " open" : ""}`}>
                   <button className="pdp-detail-header" onClick={() => toggleDetail(i)}>
                     {d.title}
@@ -200,7 +190,7 @@ export function ProductDetailView({ product, related }: ProductDetailViewProps) 
             <div>
               <h2>Customer Reviews</h2>
               <div className="pdp-reviews-summary" style={{ marginTop: 12 }}>
-                <span className="pdp-reviews-big">{product.reviews.avg}</span>
+                <span className="pdp-reviews-big">{enrichment.reviews.avg}</span>
                 <div className="pdp-reviews-meta">
                   <div className="pdp-stars" style={{ marginBottom: 4 }}>
                     {Array.from({ length: 5 }, (_, i) => (
@@ -208,7 +198,7 @@ export function ProductDetailView({ product, related }: ProductDetailViewProps) 
                     ))}
                   </div>
                   <span style={{ fontSize: 13, color: "var(--text-2)" }}>
-                    Based on {product.reviews.total} reviews
+                    Based on {enrichment.reviews.total} reviews
                   </span>
                 </div>
               </div>
@@ -218,16 +208,16 @@ export function ProductDetailView({ product, related }: ProductDetailViewProps) 
                 <div key={star} className="pdp-reviews-bar-row">
                   <span>{star}★</span>
                   <div className="pdp-reviews-bar">
-                    <span style={{ width: `${product.reviews.bars[i]}%` }} />
+                    <span style={{ width: `${enrichment.reviews.bars[i]}%` }} />
                   </div>
-                  <span>{product.reviews.bars[i]}%</span>
+                  <span>{enrichment.reviews.bars[i]}%</span>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="pdp-reviews-grid">
-            {product.reviews.list.map((r, i) => (
+            {enrichment.reviews.list.map((r, i) => (
               <div key={i} className="pdp-review-card">
                 <div className="pdp-review-top">
                   <div className="pdp-review-stars">
