@@ -12,15 +12,28 @@ import { GuaranteesSection } from "@/components/home/GuaranteesSection";
 import { NewsletterCTA } from "@/components/home/NewsletterCTA";
 import { MobileStickyBar } from "@/components/home/MobileStickyBar";
 import { ScrollReveal } from "@/components/home/ScrollReveal";
+import { apiRequest } from "@/lib/api";
+import type { ProductCatalogResponse } from "@/types/product";
 
-export default function Home() {
+async function getProducts() {
+  try {
+    return await apiRequest<ProductCatalogResponse>("/products?limit=12");
+  } catch {
+    return null;
+  }
+}
+
+export default async function Home() {
+  const data = await getProducts();
+  const products = data?.products ?? [];
+
   return (
     <main>
       <HeroSection />
       <BrandMarquee />
       <OccasionGridSection />
       <FlashSaleSection />
-      <ProductGridSection />
+      <ProductGridSection products={products} />
       <ProcessTimeline />
       <NotesExplorer />
       <BestsellersSection />

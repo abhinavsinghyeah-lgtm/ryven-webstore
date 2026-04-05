@@ -44,16 +44,6 @@ function SidebarContent({ pathname, initial, userName, userEmail, onNavigate }: 
 }) {
   return (
     <>
-      <div className="acct-sidebar-brand">
-        <div className="acct-sidebar-brand-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M7 9h10l-1 10H8L7 9Z" /><path d="M9 9V7a3 3 0 0 1 6 0v2" /></svg>
-        </div>
-        <div className="acct-sidebar-brand-text">
-          <p>RYVEN</p>
-          <p>Customer space</p>
-        </div>
-      </div>
-
       <div className="acct-sidebar-user">
         <div className="acct-sidebar-user-avatar">{initial}</div>
         <div>

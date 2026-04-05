@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
 import { AnimatedAddToCartButton } from "@/components/ui/AnimatedAddToCartButton";
-import { apiRequest } from "@/lib/api";
 import { formatPricePaise } from "@/lib/format";
 import type { Product } from "@/types/product";
 
@@ -14,15 +13,8 @@ const fallbackImage =
 
 const CATEGORIES = ["All", "Woody", "Floral", "Fresh", "Oriental"];
 
-export function ProductGridSection() {
-  const [products, setProducts] = useState<Product[]>([]);
+export function ProductGridSection({ products }: { products: Product[] }) {
   const [active, setActive] = useState("All");
-
-  useEffect(() => {
-    apiRequest<{ products: Product[] }>("/products?limit=12")
-      .then((res) => setProducts(res.products))
-      .catch(() => {});
-  }, []);
 
   const visible =
     active === "All"
