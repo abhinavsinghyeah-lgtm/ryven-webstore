@@ -52,6 +52,51 @@ em { font-family: 'Instrument Serif', serif; font-style: italic; }
 
 .container { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--px); }
 
+/* ---- RYVEN LOADER ---- */
+.ryven-loader {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 24px; padding: 40px 20px;
+  animation: loaderFadeIn .4s ease-out;
+}
+.ryven-loader--fs { min-height: 80vh; }
+.ryven-loader__brand {
+  display: flex; gap: 6px;
+}
+.ryven-loader__letter {
+  font-size: 28px; font-weight: 800; letter-spacing: .28em;
+  color: var(--text); opacity: 0;
+  animation: letterReveal .5s ease forwards;
+}
+.ryven-loader__letter:nth-child(1) { animation-delay: .05s; }
+.ryven-loader__letter:nth-child(2) { animation-delay: .12s; }
+.ryven-loader__letter:nth-child(3) { animation-delay: .19s; }
+.ryven-loader__letter:nth-child(4) { animation-delay: .26s; }
+.ryven-loader__letter:nth-child(5) { animation-delay: .33s; }
+
+.ryven-loader__bar {
+  width: 120px; height: 2px; background: var(--border);
+  border-radius: 2px; overflow: hidden;
+}
+.ryven-loader__fill {
+  height: 100%; width: 30%; background: var(--pop);
+  border-radius: 2px;
+  animation: barSlide 1.2s ease-in-out infinite;
+}
+
+@keyframes loaderFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes letterReveal {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes barSlide {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(250%); }
+  100% { transform: translateX(-100%); }
+}
+
 /* ---- BUTTONS ---- */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -1440,6 +1485,7 @@ em { font-family: 'Instrument Serif', serif; font-style: italic; }
 /* ================================================================
    CATALOG / PRODUCTS PAGE
    ================================================================ */
+.wrapper { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 .catalog-page { padding: 0 0 80px; }
 
 /* --- Hero --- */
@@ -2711,9 +2757,12 @@ em { font-family: 'Instrument Serif', serif; font-style: italic; }
 .chk-card-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .chk-card-desc { font-size: 13px; color: var(--text-2); margin-bottom: 0; }
 
+/* Form containers */
+.chk-form { display: flex; flex-direction: column; gap: 18px; }
+.chk-sidebar { display: flex; flex-direction: column; gap: 20px; }
+
 /* Form inputs */
-.chk-field { margin-bottom: 18px; }
-.chk-field:last-child { margin-bottom: 0; }
+.chk-field { margin-bottom: 0; }
 .chk-label {
   display: block; font-size: 13px; font-weight: 500;
   color: var(--text-2); margin-bottom: 6px;
@@ -2765,6 +2814,7 @@ em { font-family: 'Instrument Serif', serif; font-style: italic; }
 }
 .chk-back:hover { color: var(--text); }
 
+/* Shipping radio options */
 /* Shipping radio options */
 .chk-shipping-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
 .chk-shipping-option {

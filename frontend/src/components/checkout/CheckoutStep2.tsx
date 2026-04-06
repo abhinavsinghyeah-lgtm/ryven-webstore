@@ -76,7 +76,7 @@ export default function CheckoutStep2({ cartItems, shippingOption, onShippingCha
         </div>
 
         {/* Shipping option picker */}
-        <div className="chk-card" style={{ marginBottom: 20 }}>
+        <div className="chk-card" style={{ marginBottom: 24 }}>
           <p className="chk-card-title">Choose a delivery service</p>
           <p className="chk-card-desc">Select the speed that works best for you.</p>
 
@@ -116,7 +116,7 @@ export default function CheckoutStep2({ cartItems, shippingOption, onShippingCha
         </div>
 
         {/* Address form */}
-        <div className="chk-card-warm" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div className="chk-card-warm chk-form">
           <div className="chk-field">
             <label htmlFor="line" className="chk-label">Street Address</label>
             <input
@@ -175,25 +175,23 @@ export default function CheckoutStep2({ cartItems, shippingOption, onShippingCha
         </div>
       </section>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        <div className="chk-card">
+      <section className="chk-sidebar">
+        <div className="chk-card chk-form">
           <button type="submit" disabled={paying} className="chk-btn chk-btn-pay">
             {paying ? "Processing..." : "Place Order"}
           </button>
-          <p className="chk-summary-note" style={{ marginTop: 12 }}>
+          <p className="chk-summary-note">
             By placing your order, you agree to our company privacy policy and conditions of use.
           </p>
-
-          <div style={{ marginTop: 20 }}>
-            <OrderSummary
-              items={cartItems}
-              subtotalPaise={subtotalPaise}
-              shippingPaise={shippingPaise}
-              shippingLabel={`${SHIPPING_OPTIONS[shippingOption].label} \u00B7 ${SHIPPING_OPTIONS[shippingOption].description}`}
-              totalPaise={totalPaise}
-            />
-          </div>
         </div>
+
+        <OrderSummary
+          items={cartItems}
+          subtotalPaise={subtotalPaise}
+          shippingPaise={shippingPaise}
+          shippingLabel={`${SHIPPING_OPTIONS[shippingOption].label} \u00B7 ${SHIPPING_OPTIONS[shippingOption].description}`}
+          totalPaise={totalPaise}
+        />
 
         <p className="chk-summary-note" style={{ textAlign: "center" }}>Secured by Razorpay &middot; 256-bit SSL encryption</p>
       </section>

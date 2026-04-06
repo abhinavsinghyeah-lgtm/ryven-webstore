@@ -57,7 +57,7 @@ export default function CheckoutStep1({ initialData, onNext, cartItems, shipping
           <p>We&apos;ll use this email and number for order updates and payment confirmation.</p>
         </div>
 
-        <div className="chk-card-warm" style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        <div className="chk-card-warm chk-form">
           <div className="chk-field">
             <label htmlFor="fullName" className="chk-label">Full Name</label>
             <input
@@ -110,7 +110,7 @@ export default function CheckoutStep1({ initialData, onNext, cartItems, shipping
         </div>
       </section>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <section className="chk-sidebar">
         <div className="chk-card-warm">
           <p className="chk-card-title">Customer Summary</p>
           <p className="chk-card-desc">

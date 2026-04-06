@@ -4,23 +4,20 @@ type PerfumeBottleLoaderProps = {
 };
 
 export function PerfumeBottleLoader({
-  label = "Loading experience...",
   fullscreen = false,
 }: PerfumeBottleLoaderProps) {
   return (
-    <div className={fullscreen ? "flex min-h-[60vh] flex-col items-center justify-center gap-5" : "flex flex-col items-center justify-center gap-4 py-10"}>
-      <div className="perfume-loader" aria-hidden="true">
-        <div className="perfume-loader__cap" />
-        <div className="perfume-loader__neck" />
-        <div className="perfume-loader__body">
-          <div className="perfume-loader__shine" />
-          <div className="perfume-loader__liquid" />
-          <div className="perfume-loader__spray perfume-loader__spray--one" />
-          <div className="perfume-loader__spray perfume-loader__spray--two" />
-          <div className="perfume-loader__spray perfume-loader__spray--three" />
-        </div>
+    <div className={`ryven-loader${fullscreen ? " ryven-loader--fs" : ""}`}>
+      <div className="ryven-loader__brand" aria-hidden="true">
+        <span className="ryven-loader__letter">R</span>
+        <span className="ryven-loader__letter">Y</span>
+        <span className="ryven-loader__letter">V</span>
+        <span className="ryven-loader__letter">E</span>
+        <span className="ryven-loader__letter">N</span>
       </div>
-      <p className="text-sm font-medium tracking-[0.08em] text-neutral-600">{label}</p>
+      <div className="ryven-loader__bar">
+        <div className="ryven-loader__fill" />
+      </div>
     </div>
   );
 }
