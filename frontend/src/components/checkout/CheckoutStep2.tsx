@@ -176,6 +176,14 @@ export default function CheckoutStep2({ cartItems, shippingOption, onShippingCha
       </section>
 
       <section className="chk-sidebar">
+        <OrderSummary
+          items={cartItems}
+          subtotalPaise={subtotalPaise}
+          shippingPaise={shippingPaise}
+          shippingLabel={`${SHIPPING_OPTIONS[shippingOption].label} \u00B7 ${SHIPPING_OPTIONS[shippingOption].description}`}
+          totalPaise={totalPaise}
+        />
+
         <div className="chk-card chk-form">
           <button type="submit" disabled={paying} className="chk-btn chk-btn-pay">
             {paying ? "Processing..." : "Place Order"}
@@ -184,14 +192,6 @@ export default function CheckoutStep2({ cartItems, shippingOption, onShippingCha
             By placing your order, you agree to our company privacy policy and conditions of use.
           </p>
         </div>
-
-        <OrderSummary
-          items={cartItems}
-          subtotalPaise={subtotalPaise}
-          shippingPaise={shippingPaise}
-          shippingLabel={`${SHIPPING_OPTIONS[shippingOption].label} \u00B7 ${SHIPPING_OPTIONS[shippingOption].description}`}
-          totalPaise={totalPaise}
-        />
 
         <p className="chk-summary-note" style={{ textAlign: "center" }}>Secured by Razorpay &middot; 256-bit SSL encryption</p>
       </section>

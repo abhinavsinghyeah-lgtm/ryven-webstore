@@ -2715,14 +2715,21 @@ em { font-family: 'Instrument Serif', serif; font-style: italic; }
 /* Layout */
 .chk-page { min-height: 100vh; background: var(--bg); padding: 32px 20px 60px; }
 .chk-container { max-width: 1060px; margin: 0 auto; }
-.chk-logo { text-align: center; margin-bottom: 8px; }
+
+/* Top bar: logo + progress */
+.chk-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 32px; padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+.chk-logo { margin-bottom: 0; }
 .chk-logo a {
   font-size: 18px; font-weight: 800; letter-spacing: .22em;
   color: var(--text); text-decoration: none; text-transform: uppercase;
 }
 
 /* Progress bar */
-.chk-progress { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 32px; }
+.chk-progress { display: flex; align-items: center; gap: 10px; }
 .chk-dot {
   width: 10px; height: 10px; border-radius: 50%;
   background: var(--border); transition: background .2s;
@@ -2733,17 +2740,17 @@ em { font-family: 'Instrument Serif', serif; font-style: italic; }
 .chk-step-label.active { color: var(--pop); font-weight: 600; }
 
 /* Header */
-.chk-header { margin-bottom: 28px; }
+.chk-header { margin-bottom: 24px; }
 .chk-header-eyebrow {
   font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
   color: var(--text-3); margin-bottom: 6px;
 }
-.chk-header h1 { font-size: 28px; font-weight: 700; color: var(--text); }
+.chk-header h1 { font-size: 26px; font-weight: 700; color: var(--text); }
 .chk-header p { font-size: 14px; color: var(--text-2); margin-top: 4px; }
 
 /* Grid */
 .chk-grid { display: grid; gap: 28px; }
-@media (min-width: 768px) { .chk-grid { grid-template-columns: 1.1fr .9fr; gap: 36px; } }
+@media (min-width: 768px) { .chk-grid { grid-template-columns: 1fr 380px; gap: 32px; align-items: start; } }
 
 /* Cards */
 .chk-card {
@@ -2759,7 +2766,7 @@ em { font-family: 'Instrument Serif', serif; font-style: italic; }
 
 /* Form containers */
 .chk-form { display: flex; flex-direction: column; gap: 18px; }
-.chk-sidebar { display: flex; flex-direction: column; gap: 20px; }
+.chk-sidebar { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 24px; }
 
 /* Form inputs */
 .chk-field { margin-bottom: 0; }
@@ -2838,7 +2845,7 @@ em { font-family: 'Instrument Serif', serif; font-style: italic; }
 .chk-shipping-price { font-size: 13px; font-weight: 600; color: var(--pop); margin-top: 6px; }
 
 /* Order summary */
-.chk-summary { position: sticky; top: 24px; }
+.chk-summary { position: relative; top: auto; }
 .chk-summary-title {
   font-size: 11px; font-weight: 600; letter-spacing: .18em;
   text-transform: uppercase; color: var(--text-3); margin-bottom: 14px;

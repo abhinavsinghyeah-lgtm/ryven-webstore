@@ -217,8 +217,8 @@ export default function CheckoutPage() {
   return (
     <main className="chk-page">
       <div className="chk-container">
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+        {/* Top bar */}
+        <div className="chk-topbar">
           <div className="chk-logo">
             <Link href="/">RYVEN</Link>
           </div>
