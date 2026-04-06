@@ -64,16 +64,17 @@ export default function CheckoutSuccessPage() {
 
   if (!data) {
     return (
-      <main className="min-h-screen bg-[#f1f1ee] flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md rounded-2xl border border-[#e8e8e4] bg-white p-8 text-center shadow-sm">
-          <h1 className="text-xl font-semibold text-[#111]">Order status unavailable</h1>
-          <p className="mt-2 text-sm text-[#555]">We couldn&apos;t find the latest order details. Please return home and try again.</p>
-          <Link
-            href="/"
-            className="mt-5 inline-flex items-center justify-center rounded-xl bg-[#111] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#333]"
-          >
-            Back to home
-          </Link>
+      <main className="chk-success">
+        <div className="chk-success-container" style={{ textAlign: "center" }}>
+          <div className="chk-card" style={{ padding: 32 }}>
+            <h1 style={{ fontSize: 20, fontWeight: 600, color: "var(--text)" }}>Order status unavailable</h1>
+            <p style={{ fontSize: 14, color: "var(--text-2)", marginTop: 8 }}>
+              We couldn&apos;t find the latest order details. Please return home and try again.
+            </p>
+            <Link href="/" className="chk-btn chk-btn-primary" style={{ width: "auto", display: "inline-flex", marginTop: 16 }}>
+              Back to home
+            </Link>
+          </div>
         </div>
       </main>
     );
@@ -142,74 +143,70 @@ export default function CheckoutSuccessPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f1f1ee] flex items-start justify-center px-4 py-12">
-      <div className="w-full max-w-lg space-y-6">
+    <main className="chk-success">
+      <div className="chk-success-container">
         {/* Logo */}
-        <div className="text-center mb-2">
-          <Link href="/" className="text-xl font-bold tracking-[0.2em] text-[#111] uppercase">
-            RYVEN
-          </Link>
+        <div className="chk-logo" style={{ marginBottom: 20 }}>
+          <Link href="/">RYVEN</Link>
         </div>
 
         {/* Hero card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-[#e8e8e4] p-8 text-center space-y-3">
-          <div className="w-16 h-16 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mx-auto text-3xl">
-            ✓
-          </div>
-          <h1 className="text-2xl font-bold text-[#111]">Order Confirmed!</h1>
-          <p className="text-[#555] text-sm leading-relaxed">
+        <div className="chk-success-hero">
+          <div className="chk-success-icon">&#10003;</div>
+          <h1>Order Confirmed!</h1>
+          <p>
             Thank you{order.shippingName ? `, ${order.shippingName.split(" ")[0]}` : ""}. We&apos;ve received your order and
             will send you an email confirmation shortly.
           </p>
-          <p className="text-xs text-[#aaa] tracking-wider uppercase">
+          <p className="chk-order-id">
             Order #{String(order.id).padStart(6, "0")}
           </p>
         </div>
 
         {/* New user banner */}
         {isNew && (
-          <div className="bg-[#111] text-white rounded-2xl p-5 space-y-2">
-            <p className="font-semibold text-sm">✅ Account created</p>
-            <p className="text-xs text-white/70 leading-relaxed">
+          <div className="chk-new-user-banner">
+            <p>&#9989; Account created</p>
+            <p>
               We created an account for you using your email and phone. Verify OTP below to access your dashboard.
             </p>
           </div>
         )}
 
         {/* Order summary */}
-        <div className="bg-white rounded-2xl shadow-sm border border-[#e8e8e4] p-6 space-y-4">
-          <h2 className="text-sm font-semibold text-[#111] uppercase tracking-wider">Your Items</h2>
+        <div className="chk-card" style={{ marginTop: 16 }}>
+          <p className="chk-summary-title">Your Items</p>
           {orderItems.length === 0 ? (
-            <p className="text-sm text-[#555]">No items found on this order.</p>
+            <p style={{ fontSize: 14, color: "var(--text-2)" }}>No items found on this order.</p>
           ) : (
-            <ul className="space-y-3">
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {orderItems.map((item, index) => (
-                <li key={`${item.productId ?? "item"}-${index}`} className="flex items-center justify-between text-sm">
-                  <span className="text-[#333]">
+                <div key={`${item.productId ?? "item"}-${index}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14 }}>
+                  <span style={{ color: "var(--text)" }}>
                     {item.productName}{" "}
-                    <span className="text-[#aaa] font-normal">× {item.quantity}</span>
+                    <span style={{ color: "var(--text-3)", fontWeight: 400 }}>&times; {item.quantity}</span>
                   </span>
-                  <span className="font-semibold text-[#111]">
+                  <span style={{ fontWeight: 600, color: "var(--text)" }}>
                     {formatSafe(item.lineTotalPaise, item.currency)}
                   </span>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
 
-          <div className="border-t border-[#eee] pt-3 space-y-1.5 text-sm">
-            <div className="flex justify-between text-[#555]">
+          <div className="chk-summary-totals">
+            <div className="chk-summary-row">
               <span>Subtotal</span>
               <span>{formatSafe(order.subtotalPaise)}</span>
             </div>
-            <div className="flex justify-between text-[#555]">
+            <div className="chk-summary-row">
               <span>Shipping</span>
               <span>{order.shippingPaise === 0 ? "Free" : formatSafe(order.shippingPaise)}</span>
             </div>
             {order.shippingService ? (
-              <p className="text-xs text-[#888]">Service: {order.shippingService}</p>
+              <p className="chk-summary-note">Service: {order.shippingService}</p>
             ) : null}
-            <div className="flex justify-between font-bold text-[#111] text-base pt-1">
+            <div className="chk-summary-row total">
               <span>Total Paid</span>
               <span>{formatSafe(order.totalPaise)}</span>
             </div>
@@ -217,11 +214,11 @@ export default function CheckoutSuccessPage() {
         </div>
 
         {/* OTP access card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-[#e8e8e4] p-6 space-y-4">
+        <div className="chk-otp-card">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#888]">Access Your Dashboard</p>
-            <h3 className="mt-2 text-lg font-semibold text-[#111]">Track orders with OTP</h3>
-            <p className="mt-2 text-sm text-[#555]">
+            <p className="chk-summary-title">Access Your Dashboard</p>
+            <h3>Track orders with OTP</h3>
+            <p style={{ fontSize: 14, color: "var(--text-2)", marginTop: 8 }}>
               {isNew
                 ? "We created an account for you. Verify OTP to access your dashboard."
                 : "Verify OTP to view your orders and manage your account."}
@@ -229,81 +226,74 @@ export default function CheckoutSuccessPage() {
           </div>
 
           {otpStep === "request" ? (
-            <div className="space-y-3">
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
               <input
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
                 placeholder="Email or mobile number"
-                className="w-full rounded-xl border border-[#ddd] px-4 py-3 text-sm outline-none focus:border-[#111]"
+                className="chk-input"
               />
               <button
                 type="button"
                 onClick={sendOtp}
                 disabled={otpLoading}
-                className="w-full rounded-xl bg-[#111] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#333] disabled:opacity-60"
+                className="chk-btn chk-btn-primary"
               >
                 {otpLoading ? "Sending..." : "Send OTP"}
               </button>
             </div>
           ) : otpStep === "verify" ? (
-            <div className="space-y-3">
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
               <input
                 value={otp}
                 onChange={(event) => setOtp(event.target.value.replace(/\D/g, "").slice(0, 6))}
                 placeholder="Enter OTP"
-                className="w-full rounded-xl border border-[#ddd] px-4 py-3 text-sm outline-none focus:border-[#111]"
+                className="chk-input"
               />
               <button
                 type="button"
                 onClick={verifyOtp}
                 disabled={otpLoading}
-                className="w-full rounded-xl bg-[#111] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#333] disabled:opacity-60"
+                className="chk-btn chk-btn-primary"
               >
                 {otpLoading ? "Verifying..." : "Verify & Continue"}
               </button>
               <button
                 type="button"
                 onClick={() => setOtpStep("request")}
-                className="text-xs font-semibold text-[#555] underline decoration-2 underline-offset-4"
+                style={{ fontSize: 13, color: "var(--text-3)", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
               >
                 Change details
               </button>
             </div>
           ) : (
-            <Link
-              href="/account"
-              className="inline-flex w-full items-center justify-center rounded-xl bg-[#111] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#333]"
-            >
-              View Dashboard
-            </Link>
+            <div style={{ marginTop: 14 }}>
+              <Link href="/account" className="chk-btn chk-btn-primary">
+                View Dashboard
+              </Link>
+            </div>
           )}
 
-          {otpError ? <p className="text-xs text-red-600">{otpError}</p> : null}
-          {otpSuccess ? <p className="text-xs text-emerald-600">{otpSuccess}</p> : null}
+          {otpError ? <p className="chk-error" style={{ marginTop: 10 }}>{otpError}</p> : null}
+          {otpSuccess ? <p style={{ fontSize: 12, color: "var(--green)", marginTop: 10 }}>{otpSuccess}</p> : null}
         </div>
 
         {/* Shipping address */}
-        <div className="bg-white rounded-2xl shadow-sm border border-[#e8e8e4] p-5 space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Delivering To</p>
-          <p className="text-sm text-[#111] font-medium">{order.shippingName}</p>
-          <p className="text-sm text-[#555]">{order.shippingAddress}</p>
-          <p className="text-sm text-[#555]">
-            {order.shippingCity}, {order.shippingState} — {order.shippingPincode}
+        <div className="chk-card" style={{ marginTop: 16 }}>
+          <p className="chk-summary-title" style={{ marginBottom: 8 }}>Delivering To</p>
+          <p style={{ fontSize: 14, fontWeight: 500, color: "var(--text)" }}>{order.shippingName}</p>
+          <p style={{ fontSize: 14, color: "var(--text-2)" }}>{order.shippingAddress}</p>
+          <p style={{ fontSize: 14, color: "var(--text-2)" }}>
+            {order.shippingCity}, {order.shippingState} &mdash; {order.shippingPincode}
           </p>
-          <p className="text-sm text-[#555]">{order.shippingCountry}</p>
+          <p style={{ fontSize: 14, color: "var(--text-2)" }}>{order.shippingCountry}</p>
         </div>
 
-        <div className="flex gap-3">
-          <Link
-            href="/products"
-            className="flex-1 py-3 px-4 border border-[#ddd] rounded-xl text-sm font-semibold text-[#333] text-center hover:border-[#bbb] hover:bg-[#fafaf8] transition-colors"
-          >
+        <div className="chk-success-actions">
+          <Link href="/products" className="chk-btn chk-btn-ghost">
             Continue Shopping
           </Link>
-          <Link
-            href="/"
-            className="flex-1 py-3 px-4 bg-[#111] text-white rounded-xl text-sm font-semibold text-center hover:bg-[#333] transition-colors"
-          >
+          <Link href="/" className="chk-btn chk-btn-primary" style={{ flex: 1 }}>
             Back to Home
           </Link>
         </div>

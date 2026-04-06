@@ -24,42 +24,42 @@ export default function OrderSummary({
   const displayedTotalPaise = isPending ? subtotalPaise : totalPaise;
 
   return (
-    <div className="rounded-[1.5rem] border border-neutral-200 bg-[#fafaf8] p-5 space-y-4">
-      <h3 className="text-sm font-semibold text-[#111] uppercase tracking-wider">Order Summary</h3>
+    <div className="chk-card-warm chk-summary">
+      <p className="chk-summary-title">Order Summary</p>
 
-      <ul className="space-y-3">
+      <div className="chk-summary-items">
         {items.map((item) => (
-          <li key={item.productId} className="flex items-center gap-3 rounded-2xl bg-white p-3">
-            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-[#f0f0ec]">
+          <div key={item.productId} className="chk-summary-item">
+            <div className="chk-summary-img">
               {item.product.imageUrl ? (
                 <Image
                   src={item.product.imageUrl}
                   alt={item.product.name}
                   fill
-                  sizes="56px"
+                  sizes="52px"
                   className="object-cover"
                 />
               ) : (
-                <div className="h-full w-full flex items-center justify-center text-xl">🧴</div>
+                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🧴</div>
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[#111] truncate">{item.product.name}</p>
-              <p className="text-xs text-[#888]">Qty {item.quantity}</p>
+            <div className="chk-summary-item-info">
+              <p className="chk-summary-item-name">{item.product.name}</p>
+              <p className="chk-summary-item-qty">Qty {item.quantity}</p>
             </div>
-            <p className="text-sm font-semibold text-[#111] shrink-0">
+            <p className="chk-summary-item-price">
               {formatPricePaise(item.lineTotalPaise, currency)}
             </p>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
 
-      <div className="border-t border-[#e8e8e4] pt-3 space-y-1.5">
-        <div className="flex justify-between text-sm text-[#555]">
+      <div className="chk-summary-totals">
+        <div className="chk-summary-row">
           <span>Subtotal</span>
           <span>{formatPricePaise(subtotalPaise, currency)}</span>
         </div>
-        <div className="flex justify-between text-sm text-[#555]">
+        <div className="chk-summary-row">
           <span>Shipping</span>
           <span>
             {isPending
@@ -70,14 +70,14 @@ export default function OrderSummary({
           </span>
         </div>
         {shippingLabel && !isPending ? (
-          <p className="text-xs text-[#888]">{shippingLabel}</p>
+          <p className="chk-summary-note">{shippingLabel}</p>
         ) : null}
-        <div className="flex justify-between text-base font-bold text-[#111] pt-1">
+        <div className="chk-summary-row total">
           <span>Total</span>
           <span>{formatPricePaise(displayedTotalPaise, currency)}</span>
         </div>
         {isPending ? (
-          <p className="text-xs text-[#888]">Total excludes shipping cost until you select a delivery option.</p>
+          <p className="chk-summary-note">Total excludes shipping until you select a delivery option.</p>
         ) : null}
       </div>
     </div>
