@@ -63,137 +63,125 @@ export default function CheckoutStep2({ cartItems, shippingOption, onShippingCha
     if (validate()) onPay(address);
   };
 
+  const field = (
+    id: keyof AddressData,
+    label: string,
+    placeholder: string,
+    props?: React.InputHTMLAttributes<HTMLInputElement>,
+  ) => (
+    <div>
+      <label htmlFor={id} className="block text-sm font-medium text-[#333] mb-1.5">
+        {label}
+      </label>
+      <input
+        id={id}
+        value={address[id]}
+        onChange={(e) => setAddress((a) => ({ ...a, [id]: e.target.value }))}
+        className={`w-full px-4 py-3 rounded-xl border bg-white text-[#111] placeholder:text-[#bbb] transition-all outline-none focus:ring-2 focus:ring-[#111]/20 ${
+          errors[id] ? "border-red-400 ring-1 ring-red-200" : "border-[#ddd] hover:border-[#bbb]"
+        }`}
+        placeholder={placeholder}
+        {...props}
+      />
+      {errors[id] && <p className="mt-1.5 text-xs text-red-500">{errors[id]}</p>}
+    </div>
+  );
+
   return (
-    <form onSubmit={handleSubmit} className="chk-grid" noValidate>
+    <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]" noValidate>
       <section>
-        <button type="button" onClick={onBack} className="chk-back">
-          &#8592; Back
+        <button type="button" onClick={onBack} className="mb-5 flex items-center gap-1.5 text-sm text-[#666] transition-colors hover:text-[#111]">
+          ← Back
         </button>
+        <p className="text-xs uppercase tracking-[0.24em] text-neutral-500">Step 2 of 2</p>
+        <h2 className="mt-3 text-3xl font-semibold text-[#111]">Shipping Details</h2>
 
-        <div className="chk-header">
-          <p className="chk-header-eyebrow">Step 2 of 2</p>
-          <h1>Shipping Details</h1>
-        </div>
+        <div className="mt-6 rounded-[1.5rem] border border-neutral-200 bg-white p-5 sm:p-6">
+          <p className="text-sm font-semibold text-[#111]">Choose a delivery service</p>
+          <p className="mt-2 text-sm text-neutral-600">Select the speed that works best for you.</p>
 
-        {/* Shipping option picker */}
-        <div className="chk-card" style={{ marginBottom: 24 }}>
-          <p className="chk-card-title">Choose a delivery service</p>
-          <p className="chk-card-desc">Select the speed that works best for you.</p>
-
-          <div className="chk-shipping-options">
-            <label className={`chk-shipping-option${shippingOption === "basic" ? " selected" : ""}`}>
+          <div className="mt-4 radio-inputs">
+            <label>
               <input
+                className="radio-input"
                 type="radio"
                 name="shipping"
                 value="basic"
                 checked={shippingOption === "basic"}
                 onChange={() => onShippingChange("basic")}
               />
-              <div className="chk-shipping-icon">
-                <svg viewBox="0 0 24 24"><path d="M3 7h11v10H3V7zm12 1h3l3 4v5h-6V8zm-8 9a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" /></svg>
+              <div className="radio-tile">
+                <span className="radio-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M3 7h11v10H3V7zm12 1h3l3 4v5h-6V8zm-8 9a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
+                  </svg>
+                </span>
+                <span className="radio-label">Basic</span>
+                <span className="radio-subtext">Delivery in 4-5 days</span>
+                <span className="radio-price">₹60 flat</span>
               </div>
-              <p className="chk-shipping-name">Basic</p>
-              <p className="chk-shipping-desc">Delivery in 4-5 days</p>
-              <p className="chk-shipping-price">{"\u20B9"}60 flat</p>
             </label>
 
-            <label className={`chk-shipping-option${shippingOption === "express" ? " selected" : ""}`}>
+            <label>
               <input
+                className="radio-input"
                 type="radio"
                 name="shipping"
                 value="express"
                 checked={shippingOption === "express"}
                 onChange={() => onShippingChange("express")}
               />
-              <div className="chk-shipping-icon">
-                <svg viewBox="0 0 24 24"><path d="M2 12l19-8-5 18-4-6-10-4z" /></svg>
+              <div className="radio-tile">
+                <span className="radio-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M2 12l19-8-5 18-4-6-10-4z" />
+                  </svg>
+                </span>
+                <span className="radio-label">Express AIR</span>
+                <span className="radio-subtext">Delivers in 1-2 days</span>
+                <span className="radio-price">₹120 flat</span>
               </div>
-              <p className="chk-shipping-name">Express AIR</p>
-              <p className="chk-shipping-desc">Delivers in 1-2 days</p>
-              <p className="chk-shipping-price">{"\u20B9"}120 flat</p>
             </label>
           </div>
         </div>
 
-        {/* Address form */}
-        <div className="chk-card-warm chk-form">
-          <div className="chk-field">
-            <label htmlFor="line" className="chk-label">Street Address</label>
-            <input
-              id="line"
-              value={address.line}
-              onChange={(e) => setAddress((a) => ({ ...a, line: e.target.value }))}
-              className={`chk-input${errors.line ? " error" : ""}`}
-              placeholder="123, Rose Lane, MG Road"
-            />
-            {errors.line && <p className="chk-error">{errors.line}</p>}
+        <div className="mt-8 space-y-4 rounded-[1.5rem] border border-neutral-200 bg-[#fafaf8] p-5 sm:p-6">
+          {field("line", "Street Address", "123, Rose Lane, MG Road")}
+
+          <div className="grid grid-cols-2 gap-4">
+            {field("city", "City", "Mumbai")}
+            {field("state", "State", "Maharashtra")}
           </div>
 
-          <div className="chk-row">
-            <div className="chk-field">
-              <label htmlFor="city" className="chk-label">City</label>
-              <input
-                id="city"
-                value={address.city}
-                onChange={(e) => setAddress((a) => ({ ...a, city: e.target.value }))}
-                className={`chk-input${errors.city ? " error" : ""}`}
-                placeholder="Mumbai"
-              />
-              {errors.city && <p className="chk-error">{errors.city}</p>}
-            </div>
-            <div className="chk-field">
-              <label htmlFor="state" className="chk-label">State</label>
-              <input
-                id="state"
-                value={address.state}
-                onChange={(e) => setAddress((a) => ({ ...a, state: e.target.value }))}
-                className={`chk-input${errors.state ? " error" : ""}`}
-                placeholder="Maharashtra"
-              />
-              {errors.state && <p className="chk-error">{errors.state}</p>}
-            </div>
-          </div>
-
-          <div className="chk-row">
-            <div className="chk-field">
-              <label htmlFor="pincode" className="chk-label">PIN Code</label>
-              <input
-                id="pincode"
-                value={address.pincode}
-                onChange={(e) => setAddress((a) => ({ ...a, pincode: e.target.value }))}
-                className={`chk-input${errors.pincode ? " error" : ""}`}
-                placeholder="400001"
-                maxLength={6}
-              />
-              {errors.pincode && <p className="chk-error">{errors.pincode}</p>}
-            </div>
-            <div className="chk-field">
-              <label htmlFor="country" className="chk-label">Country</label>
-              <input id="country" value={address.country} readOnly className="chk-input" style={{ background: "var(--bg-warm)", color: "var(--text-2)" }} />
+          <div className="grid grid-cols-2 gap-4">
+            {field("pincode", "PIN Code", "400001", { maxLength: 6 })}
+            <div>
+              <label htmlFor="country" className="mb-1.5 block text-sm font-medium text-[#333]">Country</label>
+              <input id="country" value={address.country} readOnly className="w-full rounded-xl border border-[#ddd] bg-[#f8f8f6] px-4 py-3 text-[#555] outline-none" />
             </div>
           </div>
         </div>
       </section>
 
-      <section className="chk-sidebar">
-        <OrderSummary
-          items={cartItems}
-          subtotalPaise={subtotalPaise}
-          shippingPaise={shippingPaise}
-          shippingLabel={`${SHIPPING_OPTIONS[shippingOption].label} \u00B7 ${SHIPPING_OPTIONS[shippingOption].description}`}
-          totalPaise={totalPaise}
-        />
-
-        <div className="chk-card chk-form">
-          <button type="submit" disabled={paying} className="chk-btn chk-btn-pay">
+      <section className="space-y-5">
+        <div className="rounded-[1.5rem] border border-neutral-200 bg-white p-5 shadow-[0_10px_24px_rgba(0,0,0,0.06)] sm:p-6">
+          <button type="submit" disabled={paying} className="h-12 w-full rounded-xl bg-[#5b43f4] text-sm font-semibold text-white transition hover:bg-[#4e37df] disabled:cursor-not-allowed disabled:opacity-60">
             {paying ? "Processing..." : "Place Order"}
           </button>
-          <p className="chk-summary-note">
-            By placing your order, you agree to our company privacy policy and conditions of use.
-          </p>
+          <p className="mt-3 text-xs leading-5 text-neutral-500">By placing your order, you agree to our company privacy policy and conditions of use.</p>
+
+          <div className="mt-6">
+            <OrderSummary
+              items={cartItems}
+              subtotalPaise={subtotalPaise}
+              shippingPaise={shippingPaise}
+              shippingLabel={`${SHIPPING_OPTIONS[shippingOption].label} · ${SHIPPING_OPTIONS[shippingOption].description}`}
+              totalPaise={totalPaise}
+            />
+          </div>
         </div>
 
-        <p className="chk-summary-note" style={{ textAlign: "center" }}>Secured by Razorpay &middot; 256-bit SSL encryption</p>
+        <p className="text-center text-xs text-[#888]">Secured by Razorpay · 256-bit SSL encryption</p>
       </section>
     </form>
   );

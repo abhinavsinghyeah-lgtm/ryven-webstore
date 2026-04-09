@@ -20,7 +20,10 @@ export default function AccountDashboardPage() {
 
   useEffect(() => {
     const token = authStorage.getToken();
-    if (!token) { router.replace("/login"); return; }
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
 
     const run = async () => {
       try {
@@ -28,6 +31,7 @@ export default function AccountDashboardPage() {
           apiRequest<CustomerDashboardResponse>("/account/dashboard", { token }),
           apiRequest<OrdersListResponse>("/account/orders?page=1&limit=5", { token }),
         ]);
+
         setDashboard(dashboardResponse);
         setOrdersData(ordersResponse);
       } catch (err) {
@@ -36,87 +40,106 @@ export default function AccountDashboardPage() {
         setLoading(false);
       }
     };
+
     void run();
   }, [router]);
 
-  const onLogout = () => { authStorage.clear(); router.push("/"); };
+  const onLogout = () => {
+    authStorage.clear();
+    router.push("/");
+  };
 
   const activeOrders = useMemo(() => {
     if (!ordersData) return 0;
-    return ordersData.orders.filter((o) => orderActiveStatuses.includes(o.status as (typeof orderActiveStatuses)[number])).length;
+    return ordersData.orders.filter((order) => orderActiveStatuses.includes(order.status as (typeof orderActiveStatuses)[number])).length;
   }, [ordersData]);
 
   if (loading) {
-    return <div className="acct-card"><div className="acct-spinner-wrap"><span className="acct-spinner" /><span className="acct-spinner-label">Loading overview...</span></div></div>;
+    return (
+      <div className="rounded-3xl border border-black/5 bg-white p-8">
+        <Spinner label="Loading overview..." />
+      </div>
+    );
   }
 
   if (error || !dashboard || !ordersData) {
-    return <div className="acct-alert acct-alert-error">{error || "Dashboard unavailable"}</div>;
+    return (
+      <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        {error || "Dashboard unavailable"}
+      </div>
+    );
   }
 
   const firstName = dashboard.user.fullName.split(" ")[0] || "there";
 
   return (
-    <div>
-      <header className="acct-welcome">
+    <div className="space-y-6">
+      <header className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-black/5 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
         <div>
-          <p className="acct-welcome-tag">Account</p>
-          <h1>Welcome back, {firstName}.</h1>
-          <p>Track orders, update details, and manage your account.</p>
+          <p className="text-xs uppercase tracking-[0.28em] text-neutral-400">Account</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900">
+            Welcome back, {firstName}.
+          </h1>
+          <p className="mt-2 text-sm text-neutral-500">Track orders, update details, and manage your account.</p>
         </div>
-        <div className="acct-welcome-actions">
-          <Link href="/products" className="btn btn-outline">Continue shopping</Link>
-          <Link href="/cart" className="btn btn-dark">View cart</Link>
-          <button type="button" onClick={onLogout} className="btn btn-outline">Logout</button>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/products" className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-800">
+            Continue shopping
+          </Link>
+          <Link href="/cart" className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white">
+            View cart
+          </Link>
+          <button
+            type="button"
+            onClick={onLogout}
+            className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-800"
+          >
+            Logout
+          </button>
         </div>
       </header>
 
-      <section className="acct-metrics">
-        <article className="acct-metric">
-          <p className="acct-metric-label">Total Orders</p>
-          <p className="acct-metric-value">{dashboard.summary.totalOrders}</p>
-        </article>
-        <article className="acct-metric">
-          <p className="acct-metric-label">Total Spend</p>
-          <p className="acct-metric-value">{formatPricePaise(dashboard.summary.totalSpentPaise, "INR")}</p>
-        </article>
-        <article className="acct-metric">
-          <p className="acct-metric-label">Active Orders</p>
-          <p className="acct-metric-value">{activeOrders}</p>
-        </article>
+      <section className="grid gap-4 sm:grid-cols-3">
+        <MetricCard label="Total Orders" value={String(dashboard.summary.totalOrders)} />
+        <MetricCard label="Total Spend" value={formatPricePaise(dashboard.summary.totalSpentPaise, "INR")} />
+        <MetricCard label="Active Orders" value={String(activeOrders)} />
       </section>
 
-      <section className="acct-card">
-        <div className="acct-card-header">
+      <section className="rounded-3xl border border-black/5 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2>Recent orders</h2>
-            <p>Latest purchases and delivery status.</p>
+            <h2 className="text-xl font-semibold text-neutral-900">Recent orders</h2>
+            <p className="mt-1 text-sm text-neutral-500">Latest purchases and delivery status.</p>
           </div>
-          <Link href="/account/orders" className="btn btn-outline">View all orders</Link>
+          <Link href="/account/orders" className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-800">
+            View all orders
+          </Link>
         </div>
 
         {ordersData.orders.length === 0 ? (
-          <p className="acct-empty">No orders yet. Place your first order from products.</p>
+          <p className="mt-6 text-sm text-neutral-600">No orders yet. Place your first order from products.</p>
         ) : (
-          <div className="acct-table-wrap">
-            <table className="acct-table">
+          <div className="mt-6 overflow-x-auto">
+            <table className="w-full min-w-[760px] text-sm">
               <thead>
-                <tr>
-                  <th>Order</th>
-                  <th>Date</th>
-                  <th>Items</th>
-                  <th>Status</th>
-                  <th>Total</th>
+                <tr className="text-left text-neutral-500">
+                  <th className="pb-4 pr-3 font-medium">Order</th>
+                  <th className="pb-4 pr-3 font-medium">Date</th>
+                  <th className="pb-4 pr-3 font-medium">Items</th>
+                  <th className="pb-4 pr-3 font-medium">Status</th>
+                  <th className="pb-4 pr-3 font-medium">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {ordersData.orders.map((order) => (
-                  <tr key={order.id}>
-                    <td className="order-id">#{String(order.id).padStart(6, "0")}</td>
-                    <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                    <td>{order.itemCount}</td>
-                    <td><StatusPill status={order.status} /></td>
-                    <td className="order-total">{formatPricePaise(order.totalPaise, order.currency)}</td>
+                  <tr key={order.id} className="border-t border-neutral-100 text-neutral-800">
+                    <td className="py-4 pr-3 font-semibold">#{String(order.id).padStart(6, "0")}</td>
+                    <td className="py-4 pr-3">{new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td className="py-4 pr-3">{order.itemCount}</td>
+                    <td className="py-4 pr-3">
+                      <StatusPill status={order.status} />
+                    </td>
+                    <td className="py-4 pr-3 font-semibold">{formatPricePaise(order.totalPaise, order.currency)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -128,10 +151,37 @@ export default function AccountDashboardPage() {
   );
 }
 
+function MetricCard({ label, value }: { label: string; value: string }) {
+  return (
+    <article className="rounded-3xl border border-black/5 bg-white p-5 shadow-[0_14px_32px_rgba(15,23,42,0.05)]">
+      <p className="text-xs uppercase tracking-[0.2em] text-neutral-400">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-neutral-900">{value}</p>
+    </article>
+  );
+}
+
 function StatusPill({ status }: { status: OrdersListResponse["orders"][number]["status"] }) {
-  const cls: Record<string, string> = {
-    pending: "status-pending", paid: "status-paid", processing: "status-processing",
-    shipped: "status-shipped", delivered: "status-delivered", cancelled: "status-cancelled",
+  const styles: Record<string, string> = {
+    pending: "bg-amber-100 text-amber-700",
+    paid: "bg-emerald-100 text-emerald-700",
+    processing: "bg-sky-100 text-sky-700",
+    shipped: "bg-indigo-100 text-indigo-700",
+    delivered: "bg-emerald-100 text-emerald-700",
+    cancelled: "bg-rose-100 text-rose-700",
   };
-  return <span className={`status-pill ${cls[status] || ""}`}>{status}</span>;
+
+  return (
+    <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${styles[status] || "bg-neutral-100 text-neutral-600"}`}>
+      {status}
+    </span>
+  );
+}
+
+function Spinner({ label }: { label: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 py-10 text-sm text-neutral-500">
+      <span className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-neutral-900" />
+      {label}
+    </div>
+  );
 }

@@ -10,6 +10,7 @@ import { apiRequest } from "@/lib/api";
 import { openRazorpay } from "@/lib/razorpay";
 import { clearGuestCartItems } from "@/lib/cart-storage";
 import { ContentSkeleton } from "@/components/ui/ContentSkeleton";
+import { StatusBanner } from "@/components/ui/StatusBanner";
 import type { InitiateCheckoutResponse, VerifyCheckoutResponse } from "@/types/order";
 import type { CartItem } from "@/types/cart";
 
@@ -45,23 +46,24 @@ export default function CheckoutPage() {
 
   if (!cart || !Array.isArray(cart.items)) {
     return (
-      <main className="chk-page">
-        <div className="chk-container">
-          <ContentSkeleton rows={4} showAvatar={false} className="min-h-[440px]" />
-        </div>
+      <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
+        <ContentSkeleton rows={4} showAvatar={false} className="min-h-[440px]" />
       </main>
     );
   }
 
   if (cartItems.length === 0) {
     return (
-      <main className="chk-page">
-        <div className="chk-empty">
-          <div className="chk-empty-icon">🛍️</div>
-          <h2>Your cart is empty</h2>
-          <p>Add some fragrances before checking out.</p>
-          <button onClick={() => router.push("/products")} className="chk-btn chk-btn-primary" style={{ width: "auto", display: "inline-flex" }}>
-            Browse Collection &rarr;
+      <main className="min-h-screen flex flex-col items-center justify-center px-4">
+        <div className="text-center space-y-4">
+          <div className="text-5xl">🛍️</div>
+          <h2 className="text-xl font-semibold text-[#111]">Your cart is empty</h2>
+          <p className="text-[#666] text-sm">Add some fragrances before checking out.</p>
+          <button
+            onClick={() => router.push("/products")}
+            className="px-6 py-3 bg-[#111] text-white rounded-xl text-sm font-semibold hover:bg-[#333] transition-colors"
+          >
+            Browse Collection →
           </button>
         </div>
       </main>
@@ -85,6 +87,7 @@ export default function CheckoutPage() {
       setPaymentNotice("proceeding");
       await wait(700);
 
+      // Map cart items to the payload format backend expects
       const cartPayload = cartItems.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -214,72 +217,70 @@ export default function CheckoutPage() {
     }
   };
 
+  const banner =
+    paymentNotice === "completed"
+      ? { variant: "success" as const, title: "2/2 steps completed!", description: "Address confirmed. Finalizing your secure checkout handoff." }
+      : paymentNotice === "proceeding"
+        ? { variant: "info" as const, title: "Proceeding to payment.", description: "Opening Razorpay with your order details now." }
+        : paymentNotice === "confirming"
+          ? { variant: "info" as const, title: "Confirming payment...", description: "UPI can take a minute. We are checking your payment status." }
+        : step === 1
+          ? { variant: "success" as const, title: "You are 1/2 step away", description: "Fill your contact details to continue to delivery and payment." }
+          : { variant: "success" as const, title: "You are 2/2 step away", description: "Confirm the delivery address and continue to payment." };
+
   return (
-    <main className="chk-page">
-      <div className="chk-container">
-        {/* Top bar */}
-        <div className="chk-topbar">
-          <div className="chk-logo">
-            <Link href="/">RYVEN</Link>
-          </div>
-          <div className="chk-progress">
-            <span className={`chk-dot${step >= 1 ? " active" : ""}`} />
-            <span className={`chk-step-label${step === 1 ? " active" : ""}`}>Details</span>
-            <span className={`chk-dot${step >= 2 || paymentNotice !== "idle" ? " active" : ""}`} />
-            <span className={`chk-step-label${step === 2 ? " active" : ""}`}>Checkout</span>
+    <main className="min-h-screen bg-[#f4f4f2] px-4 py-8 sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 flex items-center justify-between">
+          <Link href="/" className="text-xl font-bold tracking-[0.2em] text-[#111] uppercase">
+            RYVEN
+          </Link>
+          <div className="flex items-center gap-6 text-sm text-neutral-500">
+            <StepDot active={step >= 1} label="cart" />
+            <StepDot active={step >= 2 || paymentNotice !== "idle"} label="checkout" />
           </div>
         </div>
 
-        {/* Payment notice overlays */}
-        {paymentNotice !== "idle" && (
-          <div className="chk-notice">
-            <div className="chk-notice-card">
-              <div className="chk-spinner" />
-              {paymentNotice === "completed" && (
-                <>
-                  <h3>2/2 steps completed!</h3>
-                  <p>Address confirmed. Finalizing your secure checkout handoff.</p>
-                </>
-              )}
-              {paymentNotice === "proceeding" && (
-                <>
-                  <h3>Proceeding to payment</h3>
-                  <p>Opening Razorpay with your order details now.</p>
-                </>
-              )}
-              {paymentNotice === "confirming" && (
-                <>
-                  <h3>Confirming payment...</h3>
-                  <p>UPI can take a minute. We are checking your payment status.</p>
-                </>
-              )}
-            </div>
-          </div>
-        )}
+        <div className="mb-6">
+          <StatusBanner variant={banner.variant} title={banner.title} description={banner.description} />
+        </div>
 
         {error && (
-          <div className="chk-card" style={{ borderColor: "#d44", background: "#fff5f5", marginBottom: 20, padding: 16 }}>
-            <p style={{ color: "#d44", fontSize: 14, fontWeight: 500 }}>{error}</p>
+          <div className="mb-6">
+            <StatusBanner variant="error" title={error} />
           </div>
         )}
 
-        {step === 1 ? (
-          <CheckoutStep1 initialData={customerInfo ?? undefined} onNext={handleStep1Next} cartItems={cartItems} />
-        ) : (
-          <CheckoutStep2
-            cartItems={cartItems}
-            shippingOption={shippingOption}
-            onShippingChange={setShippingOption}
-            onBack={() => setStep(1)}
-            onPay={handlePay}
-            paying={paying}
-          />
-        )}
+        <div className="rounded-[2rem] bg-white p-6 shadow-[0_16px_40px_rgba(0,0,0,0.08)] sm:p-8">
+          {step === 1 ? (
+            <CheckoutStep1 initialData={customerInfo ?? undefined} onNext={handleStep1Next} cartItems={cartItems} />
+          ) : (
+            <CheckoutStep2
+              cartItems={cartItems}
+              shippingOption={shippingOption}
+              onShippingChange={setShippingOption}
+              onBack={() => setStep(1)}
+              onPay={handlePay}
+              paying={paying}
+            />
+          )}
+        </div>
 
-        <p style={{ textAlign: "center", fontSize: 12, color: "var(--text-4)", marginTop: 28 }}>
-          &copy; {new Date().getFullYear()} RYVEN &middot; All rights reserved
+        <p className="mt-6 text-center text-xs text-[#888]">
+          &copy; {new Date().getFullYear()} RYVEN · All rights reserved
         </p>
       </div>
     </main>
+  );
+}
+
+function StepDot({ active, label }: { active: boolean; label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className={active ? "grid h-6 w-6 place-items-center rounded-full bg-neutral-900 text-[11px] font-semibold text-white" : "grid h-6 w-6 place-items-center rounded-full border border-neutral-300 text-[11px] font-semibold text-neutral-500"}>
+        {active ? "●" : "○"}
+      </div>
+      <span className="text-xs uppercase tracking-[0.16em]">{label}</span>
+    </div>
   );
 }
